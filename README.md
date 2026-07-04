@@ -7,5 +7,3 @@ Yapay Zeka ve Teknoloji Akademisi Bootcamp 2026
 - Enis Faruk Tatlıpınar (Developer)
 - Rabianur Becit (Developer)
 - Amr Acar (Developer)
-
-
