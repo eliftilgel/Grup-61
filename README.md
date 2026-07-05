@@ -102,6 +102,7 @@ Sprint1 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştiri
 
 <img width="1873" height="1067" alt="image" src="https://github.com/user-attachments/assets/d5f4df57-b77e-4ca0-acfc-adfaf30092b7" />
 
+<img width="1592" height="842" alt="Toplantı3" src="https://github.com/user-attachments/assets/cefc8070-1f78-4bdc-b1ba-e73be6a974ba" />
 
 # Sprint Board Durum Bilgisi
 
