@@ -108,5 +108,16 @@ Sprint1 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştiri
 Sprint1 sonunda Kanban board üzerinde Sprint1 kapsamında yer alan tüm görevler "Done" sütununa taşınmıştır. İlgili Kanban board görseli eklenmiştir.
 
 # Ürün Durumu
-Ürünün temel arayüzü ve görev giriş ekranı başarıyla oluşturulmuştur.
+5 Temmuz 2026 itibariyle projemizin 1. Sprint (Planlama ve Altyapı) aşaması tamamlanmış olup, ürün geliştirme (kodlama) aşamasına geçiş yapılmıştır.
 
+Şu anki ürün durumu aşağıdaki gibidir:
+
+- Proje Altyapısı ve Kurulum (Tamamlandı): GitHub repository yapısı oluşturulmuş, bağımlılık yönetimi için requirements.txt dosyası kök dizine tanımlanmış ve geliştirme ortamı standartlaştırılmıştır.
+
+- MVP Kapsamının Belirlenmesi (Tamamlandı): Odak dağılmasını önlemek amacıyla "Minimum Uygulanabilir Ürün" sınırları çizilmiştir. Kullanıcı biyolojik saati ile senkronize çalışan, AI tabanlı bir planlama motoru hedeflenmiştir.
+
+- Teknik İnceleme ve UI/UX Planlaması (Tamamlandı): Streamlit kütüphanesi ve OpenAI API entegrasyonuna yönelik teknik fizibilite çalışmaları yapılmıştır. Arayüzün karmaşıklıktan uzak, amaca yönelik (minimalist) bir yapıda olması kararlaştırılmıştır.
+
+- Aktif Geliştirme (Sprint 2): Uygulamanın kodlanması, Streamlit arayüzünün oluşturulması ve OpenAI sistem istemlerinin (prompt engineering) yazılması süreçleri bu aşamada gerçekleştirilecektir.
+
+FlowDay şu an "Kavram Kanıtlama" (Proof of Concept) aşamasının sonundadır. Fonksiyonel prototipin Sprint 2 sonunda ayağa kaldırılması planlanmaktadır.
