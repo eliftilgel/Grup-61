@@ -15,17 +15,17 @@ Yapay Zeka ve Teknoloji Akademisi Bootcamp 2026
 FlowDay, modern profesyonellerin karşılaştığı en büyük sorunlardan biri olan "karar yorgunluğunu" (decision fatigue) ortadan kaldırmak ve görevleri optimize ederek zaman yönetimi becerilerini geliştirmek için tasarlanmış, yapay zeka destekli proaktif bir zaman yönetimi ve karar destek sistemidir. Kullanıcı; uyuma saati ve gün içerisinde tamamlaması gereken görevleri sisteme girer. Uygulama, bu bilgileri analiz ederek kullanıcıya dengeli ve kişiselleştirilmiş bir günlük plan sunmayı amaçlar.
 Geleneksel takvim uygulamalarından farklı olarak, statik bir planlayıcı değil, kullanıcının biyolojik ritmini ve görev zorluklarını analiz eden akıllı bir asistan olarak konumlandırılmıştır.
 
-# Problem Tanımı ve Gerekçe
+# Problem Tanımı
 Güncel literatür ve piyasa incelemeleri, kullanıcıların günlük görevlerini planlarken yaşadığı en temel sorunun "yetersiz önceliklendirme" ve "zaman dağılımındaki verimsizlik" olduğunu göstermektedir. Geleneksel planlama araçları, statik birer "yapılacaklar listesi" (to-do list) işlevi görmekte; ancak dinamik bir zaman optimizasyonu sağlamamaktadır. Bu proje, yapay zeka entegrasyonu sayesinde kullanıcı odaklı, pratik ve veriye dayalı bir planlama mekanizması sunarak bu boşluğu doldurmayı hedeflemektedir.
-
-# Hedef Kitle
-Projenin hedef kitlesi; zaman kısıtlılığı yaşayan akademik personel ve öğrenciler, beyaz yakalı profesyoneller, freelance çalışma modeline sahip bireyler ve gün içerisinde verimlilik artışı hedefleyen genel kullanıcı grubudur.
 
 # Çözüm
 - Verim Pencereleri (Circadian Rhythm Optimization): Uygulama, kullanıcının günlük enerji döngüsünü (sirkadiyen ritim) analiz ederek, en yüksek odak gerektiren görevleri "Deep Work" bloklarına atar.
 - Dinamik Enerji Yönetimi: Proje, görevlerin sadece ne kadar sürdüğünü değil, ne kadar zihinsel efor gerektirdiğini takip eder. Enerji seviyesi düştüğünde, sistem otomatik olarak düşük yoğunluklu görevlere (e-posta yanıtlamak, dosya düzenlemek vb.) geçiş yapılmasını önerir.
 - Tahminlemeli Risk Analizi: Basit bir karar destek sistemi olarak, kullanıcının planladığı iş yükünün gerçekçi olup olmadığını yapay zeka yardımıyla analiz eder. Planın sarkma ihtimali yüksekse, kullanıcıya proaktif uyarılar göndererek günün yeniden yapılandırılmasını sağlar.
 FlowDay ile amacımız, kullanıcılara sadece "zaman kazandırmak" değil, günün sonunda bitkinlik değil tatmin duygusu sağlayan, sürdürülebilir bir çalışma kültürü oluşturmaktır.
+
+# Hedef Kitle
+Projenin hedef kitlesi; zaman kısıtlılığı yaşayan akademik personel ve öğrenciler, beyaz yakalı profesyoneller, freelance çalışma modeline sahip bireyler ve gün içerisinde verimlilik artışı hedefleyen genel kullanıcı grubudur.
 
 # Temel Değer Önerisi:  “Kişiselleştirilmiş günlük plan, daha az stres ve daha verimli bir gün”
 FlowDay; geleneksel yöntemlerin aksine, sadece görev kaydı tutmakla kalmayıp, bu görevleri yapay zeka algoritmaları aracılığıyla günün en uygun zaman dilimlerine entegre ederek "optimize edilmiş bir zaman yönetimi deneyimi" sunmaktadır. Bu yaklaşım, kullanıcı üzerinde zihinsel yükün azaltılması ve bireysel verimliliğin artırılması sonucunu doğurmaktadır.
