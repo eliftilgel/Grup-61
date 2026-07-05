@@ -32,6 +32,17 @@ FlowDay; geleneksel yöntemlerin aksine, sadece görev kaydı tutmakla kalmayıp
 
 # Rakip Analizi
 
+FlowDay projesinin pazardaki konumunu netleştirmek ve rekabet avantajımızı vurgulamak adına, pazarın en yaygın kullanılan 7 uygulamasını 5 temel kategoride (1-5 arası) puanladık.
+
+<img width="945" height="323" alt="image" src="https://github.com/user-attachments/assets/b9c8e77b-ae0a-4648-9055-63787a05fdec" />
+
+Puanlama sonucunda en yüksek skora sahip olan (FlowDay hariç) ilk 3 uygulama Motion, TickTick ve Todoist olarak belirlenmiştir.
+
+<img width="971" height="313" alt="image" src="https://github.com/user-attachments/assets/91ece48c-c787-4938-b475-5536b0f303f9" />
+
+- Motion ile Farkımız: Motion, özellikle kurumsal ekipler ve yoğun takvim yönetimi için tasarlanmış oldukça kompleks bir araçtır. FlowDay olarak biz, bu karmaşıklığı kaldırarak bireysel odaklanmayı ve enerjiyi temel alan daha "niş" ve "erişilebilir" bir çözüm sunuyoruz.
+
+- TickTick ve Todoist ile Farkımız: Bu uygulamalar başarılı birer "yapılacaklar listesi" (to-do list) aracıdır; ancak kullanıcının gününü otonom bir şekilde planlamazlar. FlowDay, kullanıcıyı "plan yapma" sorumluluğundan kurtarıp, yapay zeka aracılığıyla bu süreci devralarak bir "karar destek" mekanizması görevini üstlenir.
 
 # SWOT Analizi
 
