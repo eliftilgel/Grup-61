@@ -47,7 +47,7 @@ Puanlama sonucunda en yüksek skora sahip olan (FlowDay hariç) ilk 3 uygulama M
 # SWOT Analizi
 
 **Güçlü Yönler**
-- Yapayzeka destekli planlama
+- Yapay zeka destekli planlama
 - Kullanımı kolay arayüz
 - Düşük geliştirme maliyeti
 
@@ -79,21 +79,22 @@ Yapılacak işleri ayırabilmek amacıyla Story (Epic), Task ve Sub-Task etiketl
 Proje süresinde yapılacak ana iş paketleri (kilometretaşları) story olarak açılmış ve bu ana iş paketlerinin içerisinde yer alacak alt iş paketleri ise task ve/veya sub-task olarak eklenmiştir.
 Backlog içerisinde yer alan iş paketlerinin hangi Sprint içerisinde yer alacağını belirleyebilmek amacıyla Sprint1, Sprint2, Sprint3 olmak üzere ayrı etiketler oluşturularak iş maddelerine eklenmiştir.
 
-# Toplantı Planları ve Daily Scrum Notları 
-Sprint1 süresince ekip içi iletişim  dijital kanallar üzerinden yürütülmüştür. Toplantılar için Zoom ve/veya Google Meetings aracılığı ile gerçekleştirilmiş olup toplantı notları .... (Confluence?) aracılığıyla tutularak toplantı sonunda ekip içinde paylaşılmıştır. Bu sayede projenin belirlenmesinden teknik implementasyon çalışmalarına kadar olan tüm sürecin adım adım takip edilmesi planlanmaktadır.
-Confluence linki:
+# Toplantı Planları ve Scrum Notları
+Sprint1 süresince ekip içi iletişim  dijital kanallar üzerinden yürütülmüştür. Toplantılar için Zoom ve/veya Google Meetings aracılığı ile gerçekleştirilmiş olup toplantı notları Confluence aracılığıyla tutulmuştur. Bu sayede projenin belirlenmesinden teknik implementasyon çalışmalarına kadar olan tüm sürecin adım adım takip edilmesi planlanmaktadır.
+Confluence linki: 
 
 Sprint1 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştirilmiştir:
 
 - 23 Haziran (Tanışma): Ekip üyeleriyle tanışıldı.
-- 25 Haziran (Proje belirleme çalışmaları): Farklı proje fikirleri belirlenerek bu fikirler kapsamlı şekilde tartışıldı. Toplam 7 farklı proje üzerine değerlendirme yapıldı.
-- 26 Haziran (Proje seçimi): Proje fikirleri arasından FlowDay projesi seçierek ana fikir ve hedef üzerine beyin fırtınası yapıldı.
-- 28 Haziran (Kapsam ve Görev Dağılımı): MVP (Minimum Viable Product) için gereken temel özellikler belirlendi; ekip rolleri proje konusuna istinaden daha detaylı şekilde atandı.
-- 29 Haziran (Teknik Araştırma): Streamlit ve OpenAI API entegrasyonu üzerine teknik incelemeler yapılmaya başlandı; dokümantasyon hazırlıkları başlatıldı.
-- 2 Temmuz (Prototip Kontrolü): Arayüz tasarımı üzerine fikirler görüşüldü ve benzer çalışmalar incelendi. Projenin "Sprint Board" yapısı kuruldu.
-- 3 Temmuz (Yoğun Çalışma - I): Streamlit giriş sayfası kodlandı; veri giriş alanları (input fields) ve kullanıcı akışı tamamlandı.
-- 4 Temmuz (Yoğun Çalışma - II): AI entegrasyonu (Prompt Engineering) yapıldı.
-- 5 Temmuz (Yoğun Çalışma - III): Sprint1 için README dokümantasyonu tamamlandı, Kanban board üzerindeki tüm Sprint 1 görevleri ve backlog kontrol edilerek iş maddelerinin durumları güncellendi. Sprint1 Review gerçekleştirildi.
+- 24 Haziran (Ortak toplantı): Ayşe Gül'ün koordine ettiği ortak bilgilenme/tanışma toplantısına katılım sağlandı.
+- 25 Haziran (Proje belirleme çalışmaları): Farklı proje fikirleri belirlenerek bu fikirler kapsamlı şekilde tartışıldı. Toplam 10 farklı proje üzerine değerlendirme yapıldı.
+- 26 Haziran (Proje seçimi): Proje fikirleri arasından FlowDay projesi seçierek ana fikir ve hedef üzerine beyin fırtınası yapıldı. Problem tanımı, çözüm, hedef kitle ve rakipler üzerine konular görüşülerek rakip analizi konusunda beyin fırtınası yapıldı. Rakiplerin eksik yönleri (AI destekli optimizasyon sunmamaları vb.) tespit edilerek projemizin sağlayacağı avantajlar ve "Değer Önerisi" yazılı hale getirildi. Ayrıca SWOT analizi ile güçlü ve zayıf yönlerimiz tartışıldı. Github'da proje sekmesinden kanban oluşturulması kararlaştırıldı.
+- 28 Haziran (Kapsam ve Görev Dağılımı): Ekip rolleri proje konusuna istinaden daha detaylı şekilde atandı. Kanban panosu oluşturuldu. 
+- 29 Haziran (MVP): MVP (Minimum Viable Product) için gereken temel özellikler belirlendi; 
+- 2 Temmuz (Teknik Araştırma): Streamlit ve OpenAI API entegrasyonu üzerine teknik incelemeler yapılmaya başlandı; dokümantasyon hazırlıkları başlatıldı.
+- 3 Temmuz (Yoğun Çalışma - I): Arayüz tasarımı üzerine fikirler görüşüldü ve benzer çalışmalar incelendi. Projenin "Sprint Board" yapısı kuruldu.
+- 4 Temmuz (Yoğun Çalışma - II): Streamlit giriş sayfası kodlandı; veri giriş alanları (input fields) ve kullanıcı akışı tamamlandı.
+- 5 Temmuz (Yoğun Çalışma - III): Sprint1 için README dokümantasyonu tamamlandı, Kanban board üzerindeki Sprint 1 görevleri ve backlog kontrol edilerek iş maddelerinin durumları güncellendi. Sprint1 Review gerçekleştirildi.
 
 # Sprint Board Durum Bilgisi
 
