@@ -80,8 +80,9 @@ Proje süresinde yapılacak ana iş paketleri (kilometretaşları) story olarak 
 Backlog içerisinde yer alan iş paketlerinin hangi Sprint içerisinde yer alacağını belirleyebilmek amacıyla Sprint1, Sprint2, Sprint3 olmak üzere ayrı etiketler oluşturularak iş maddelerine eklenmiştir.
 
 # Toplantı Planları ve Scrum Notları
-Sprint1 süresince ekip içi iletişim  dijital kanallar üzerinden yürütülmüştür. Toplantılar için Zoom ve/veya Google Meetings aracılığı ile gerçekleştirilmiş olup toplantı notları Confluence aracılığıyla tutulmuştur. Bu sayede projenin belirlenmesinden teknik implementasyon çalışmalarına kadar olan tüm sürecin adım adım takip edilmesi planlanmaktadır.
-Confluence linki: 
+Sprint1 süresince ekip içi iletişim  dijital kanallar üzerinden yürütülmüştür. Toplantılar için Zoom ve/veya Google Meetings aracılığı ile gerçekleştirilmiş olup toplantı notları Confluence aracılığıyla tutulmuştur (birkaç ekran görüntüsü örnek amaçlı eklenmiştir). Bu sayede projenin belirlenmesinden teknik implementasyon çalışmalarına kadar olan tüm sürecin adım adım takip edilmesi planlanmaktadır.
+
+Confluence linki: https://grup61-yzta-bootcamp.atlassian.net/wiki/external/OTYxOTMzNzJlMjJhNGJjNjgwNzkxZDFkZjlmNzBkYmM
 
 Sprint1 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştirilmiştir:
 
@@ -89,12 +90,18 @@ Sprint1 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştiri
 - 24 Haziran (Ortak toplantı): Ayşe Gül'ün koordine ettiği ortak bilgilenme/tanışma toplantısına katılım sağlandı.
 - 25 Haziran (Proje belirleme çalışmaları): Farklı proje fikirleri belirlenerek bu fikirler kapsamlı şekilde tartışıldı. Toplam 10 farklı proje üzerine değerlendirme yapıldı.
 - 26 Haziran (Proje seçimi): Proje fikirleri arasından FlowDay projesi seçierek ana fikir ve hedef üzerine beyin fırtınası yapıldı. Problem tanımı, çözüm, hedef kitle ve rakipler üzerine konular görüşülerek rakip analizi konusunda beyin fırtınası yapıldı. Rakiplerin eksik yönleri (AI destekli optimizasyon sunmamaları vb.) tespit edilerek projemizin sağlayacağı avantajlar ve "Değer Önerisi" yazılı hale getirildi. Ayrıca SWOT analizi ile güçlü ve zayıf yönlerimiz tartışıldı. Github'da proje sekmesinden kanban oluşturulması kararlaştırıldı.
-- 28 Haziran (Kapsam ve Görev Dağılımı): Ekip rolleri proje konusuna istinaden daha detaylı şekilde atandı. Kanban panosu oluşturuldu. 
-- 29 Haziran (MVP): MVP (Minimum Viable Product) için gereken temel özellikler belirlendi; 
-- 2 Temmuz (Teknik Araştırma): Streamlit ve OpenAI API entegrasyonu üzerine teknik incelemeler yapılmaya başlandı; dokümantasyon hazırlıkları başlatıldı.
-- 3 Temmuz (Yoğun Çalışma - I): Arayüz tasarımı üzerine fikirler görüşüldü ve benzer çalışmalar incelendi. Projenin "Sprint Board" yapısı kuruldu.
-- 4 Temmuz (Yoğun Çalışma - II): Streamlit giriş sayfası kodlandı; veri giriş alanları (input fields) ve kullanıcı akışı tamamlandı.
-- 5 Temmuz (Yoğun Çalışma - III): Sprint1 için README dokümantasyonu tamamlandı, Kanban board üzerindeki Sprint 1 görevleri ve backlog kontrol edilerek iş maddelerinin durumları güncellendi. Sprint1 Review gerçekleştirildi.
+- 28 Haziran (Kapsam ve Görev Dağılımı): Ekip rolleri proje konusuna istinaden daha detaylı şekilde atandı. Kanban panosu oluşturuldu. Projenin "Sprint Board" yapısı kuruldu. Bir önceki toplantıda belirlenen rakipler için daha detaylı şekilde (5 temel kategoride) rakip analizi yapıldı ve yazılı hale getirildi.
+- 30 Haziran (MVP): MVP (Minimum Viable Product) için gereken temel özellikler görüşüldü.
+- 2 Temmuz (Teknik Araştırma): Streamlit ve OpenAI API entegrasyonu üzerine teknik incelemeler yapılmaya başlandı. Rakiplerle ilgili analzler devam ettirildi.
+- 4 Temmuz (Ara yüz tasarımı fikirleri): Arayüz tasarımı üzerine fikirler görüşüldü ve benzer çalışmalar incelendi. 
+- 5 Temmuz (Sprint1 kapanış): Sprint1 için README dokümantasyonu tamamlandı, Kanban board üzerindeki Sprint 1 görevleri ve backlog kontrol edilerek iş maddelerinin durumları güncellendi. Sprint1 Review gerçekleştirildi.
+
+<img width="1852" height="864" alt="image" src="https://github.com/user-attachments/assets/19fde36a-92f7-4d77-8754-f3fbd041dac0" />
+
+<img width="1796" height="1033" alt="image" src="https://github.com/user-attachments/assets/cc08e84e-197a-4933-bad4-d0556c1b9c6d" />
+
+<img width="1873" height="1067" alt="image" src="https://github.com/user-attachments/assets/d5f4df57-b77e-4ca0-acfc-adfaf30092b7" />
+
 
 # Sprint Board Durum Bilgisi
 
