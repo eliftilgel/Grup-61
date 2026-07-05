@@ -1,7 +1,7 @@
 # Grup-61
 Yapay Zeka ve Teknoloji Akademisi Bootcamp 2026
 
-# **Ekip ve Roller**
+# **Ekip Üyeleri ve Roller**
 - Elif Tilgel (Product Owner)
 - Elif Ece Gürbüz (Scrum Master)
 - Enis Faruk Tatlıpınar (Developer)
