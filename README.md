@@ -123,7 +123,9 @@ Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüler
 
 <img width="1600" height="850" alt="WhatsApp Image 2026-07-06 at 22 42 36" src="https://github.com/user-attachments/assets/c1676618-a99b-46fc-9c10-2867ac60bf8b" />
 
+<img width="1600" height="850" alt="WhatsApp Image 2026-07-06 at 23 22 55" src="https://github.com/user-attachments/assets/6dd55452-6a16-4df8-8b17-2b143fdd7c71" />
 
+<img width="1600" height="850" alt="WhatsApp Image 2026-07-06 at 23 22 28" src="https://github.com/user-attachments/assets/c09da640-78fa-4277-8c32-9dd8d3c0c2a0" />
 
 # Sprint Board Durum Bilgisi
 Sprint 1 sonunda Kanban board üzerinde Sprint 1 kapsamında yer alan tüm görevler "Done" sütununa taşınmıştır. İlgili Kanban board görseli örnek olarak eklenmiştir.
