@@ -11,7 +11,6 @@ Yapay Zeka ve Teknoloji Akademisi Bootcamp 2026
 # Proje Adı: FlowDay (Daily Routine Generator)
 
 # Proje Kapsamı: Yapay Zeka Destekli Bireysel Zaman Yönetimi ve Optimizasyon Sistemi
-
 FlowDay, modern profesyonellerin karşılaştığı en büyük sorunlardan biri olan "karar yorgunluğunu" (decision fatigue) ortadan kaldırmak ve görevleri optimize ederek zaman yönetimi becerilerini geliştirmek için tasarlanmış, yapay zeka destekli proaktif bir zaman yönetimi ve karar destek sistemidir. Kullanıcı; uyuma saati ve gün içerisinde tamamlaması gereken görevleri sisteme girer. Uygulama, bu bilgileri analiz ederek kullanıcıya dengeli ve kişiselleştirilmiş bir günlük plan sunmayı amaçlar.
 Geleneksel takvim uygulamalarından farklı olarak, statik bir planlayıcı değil, kullanıcının biyolojik ritmini ve görev zorluklarını analiz eden akıllı bir asistan olarak konumlandırılmıştır.
 
@@ -79,7 +78,6 @@ Proje süresinde yapılacak ana iş paketleri (kilometretaşları) story olarak 
 Backlog içerisinde yer alan iş paketlerinin hangi Sprint içerisinde yer alacağını belirleyebilmek amacıyla Sprint1, Sprint2, Sprint3 olmak üzere ayrı etiketler oluşturularak iş maddelerine eklenmiştir.
 
 # Toplantı Planları ve Daily Scrum Notları
-
 Sprint 1 süresince ekip içi iletişim  dijital kanallar üzerinden yürütülmüştür. Toplantılar için Zoom ve/veya Google Meetings aracılığı ile gerçekleştirilmiş olup toplantı notları Confluence aracılığıyla tutulmuştur (birkaç ekran görüntüsü örnek amaçlı eklenmiştir). Bu sayede projenin belirlenmesinden teknik implementasyon çalışmalarına kadar olan tüm sürecin adım adım takip edilmesi planlanmaktadır.
 Github repo içinde her toplantıya ilişkin özet bilgilerin yer aldığı dosya eklenmiştir.
 
@@ -106,11 +104,9 @@ Sprint 1 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 <img width="1592" height="842" alt="Toplantı3" src="https://github.com/user-attachments/assets/cefc8070-1f78-4bdc-b1ba-e73be6a974ba" />
 
 # Sprint Board Durum Bilgisi
-
 Sprint 1 sonunda Kanban board üzerinde Sprint 1 kapsamında yer alan tüm görevler "Done" sütununa taşınmıştır. İlgili Kanban board görseli eklenmiştir.
 
 # Sprint Review
-
 Sprint 1 (23 Haziran - 5 Temmuz 2026), projemizin "Planlama ve Altyapı" dönemi olarak başarıyla tamamlanmıştır. Bu süreçte gerçekleştirdiğimiz çalışmalar, projemizin teknik ve metodolojik temelini sağlamlaştırmıştır.
 
 Hedef Gerçekleşme: Teknik kurulum ve proje yönetim disiplini (Kanban/Confluence) hedefleri tamamlanmıştır.
@@ -122,7 +118,6 @@ MVP Kapsamı: Projenin odak noktasını korumak adına MVP sınırları çizilmi
 Süreç Çıktıları: Tüm Sprint 1 görevleri Kanban panosunda "Done" statüsüne taşınmış ve dijital dokümantasyon (README/Confluence) güncel tutulmuştur.
 
 # Sprint 1 Retrospective
-
 Sprint 1 sürecinde gerçekleştirdiğimiz "Retrospective" toplantısında, çalışma modelimizi objektif bir şekilde değerlendirdik. Bu öz-eleştiri, projemizin bir sonraki aşamada daha verimli ilerlemesi için kritik öneme sahiptir.
 
 - Neler İyi Gitti?
