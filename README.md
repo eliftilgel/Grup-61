@@ -154,8 +154,15 @@ Dijital kanallar üzerinden yürütülen iletişimde zaman zaman senkronizasyon 
 
 FlowDay şu an "Kavram Kanıtlama" (Proof of Concept) aşamasının sonundadır. Fonksiyonel prototipin Sprint 2 sonunda ayağa kaldırılması planlanmaktadır.
 
-<img width="794" height="1148" alt="image" src="https://github.com/user-attachments/assets/f96a2fbe-f0d0-449c-bf76-e8f0ccca01a5" />
+<img width="683" height="1236" alt="image" src="https://github.com/user-attachments/assets/e73980ac-7810-4bd9-b734-2c3a7dd4ebe3" />
 
-<img width="781" height="1156" alt="image" src="https://github.com/user-attachments/assets/3c6f25ee-8b4b-4e3d-bb22-e13a4689646f" />
+<img width="573" height="1253" alt="image" src="https://github.com/user-attachments/assets/8a0ad1dc-85d3-427a-b8e9-29a9b61183e8" />
+
+<img width="576" height="1173" alt="image" src="https://github.com/user-attachments/assets/66b2bf75-2cbb-4c3b-b09b-31ddc27324e4" />
+
+<img width="599" height="1172" alt="image" src="https://github.com/user-attachments/assets/4ee32952-c7a4-4a86-9742-d439771d3af4" />
+
+
+
 
 
