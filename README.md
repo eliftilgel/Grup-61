@@ -31,7 +31,6 @@ Projenin hedef kitlesi; zaman kısıtlılığı yaşayan akademik personel ve ö
 FlowDay; geleneksel yöntemlerin aksine, sadece görev kaydı tutmakla kalmayıp, bu görevleri yapay zeka algoritmaları aracılığıyla günün en uygun zaman dilimlerine entegre ederek "optimize edilmiş bir zaman yönetimi deneyimi" sunmaktadır. Bu yaklaşım, kullanıcı üzerinde zihinsel yükün azaltılması ve bireysel verimliliğin artırılması sonucunu doğurmaktadır.
 
 # Rakip Analizi
-
 FlowDay projesinin pazardaki konumunu netleştirmek ve rekabet avantajımızı vurgulamak adına, pazarın en yaygın kullanılan 7 uygulamasını 5 temel kategoride (1-5 arası) puanladık.
 
 <img width="945" height="323" alt="image" src="https://github.com/user-attachments/assets/b9c8e77b-ae0a-4648-9055-63787a05fdec" />
@@ -80,6 +79,7 @@ Proje süresinde yapılacak ana iş paketleri (kilometretaşları) story olarak 
 Backlog içerisinde yer alan iş paketlerinin hangi Sprint içerisinde yer alacağını belirleyebilmek amacıyla Sprint1, Sprint2, Sprint3 olmak üzere ayrı etiketler oluşturularak iş maddelerine eklenmiştir.
 
 # Toplantı Planları ve Daily Scrum Notları
+
 Sprint 1 süresince ekip içi iletişim  dijital kanallar üzerinden yürütülmüştür. Toplantılar için Zoom ve/veya Google Meetings aracılığı ile gerçekleştirilmiş olup toplantı notları Confluence aracılığıyla tutulmuştur (birkaç ekran görüntüsü örnek amaçlı eklenmiştir). Bu sayede projenin belirlenmesinden teknik implementasyon çalışmalarına kadar olan tüm sürecin adım adım takip edilmesi planlanmaktadır.
 Github repo içinde her toplantıya ilişkin özet bilgilerin yer aldığı dosya eklenmiştir.
 
@@ -108,8 +108,6 @@ Sprint 1 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 # Sprint Board Durum Bilgisi
 
 Sprint 1 sonunda Kanban board üzerinde Sprint 1 kapsamında yer alan tüm görevler "Done" sütununa taşınmıştır. İlgili Kanban board görseli eklenmiştir.
-
-
 
 # Sprint Review
 
@@ -155,3 +153,9 @@ Dijital kanallar üzerinden yürütülen iletişimde zaman zaman senkronizasyon 
 - Aktif Geliştirme (Sprint 2): Uygulamanın kodlanması, Streamlit arayüzünün oluşturulması ve OpenAI sistem istemlerinin (prompt engineering) yazılması süreçleri bu aşamada gerçekleştirilecektir.
 
 FlowDay şu an "Kavram Kanıtlama" (Proof of Concept) aşamasının sonundadır. Fonksiyonel prototipin Sprint 2 sonunda ayağa kaldırılması planlanmaktadır.
+
+<img width="794" height="1148" alt="image" src="https://github.com/user-attachments/assets/f96a2fbe-f0d0-449c-bf76-e8f0ccca01a5" />
+
+<img width="781" height="1156" alt="image" src="https://github.com/user-attachments/assets/3c6f25ee-8b4b-4e3d-bb22-e13a4689646f" />
+
+
