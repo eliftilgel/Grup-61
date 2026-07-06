@@ -77,9 +77,17 @@ Yapılacak işleri ayırabilmek amacıyla Story (Epic), Task ve Sub-Task etiketl
 Proje süresinde yapılacak ana iş paketleri (kilometretaşları) story olarak açılmış ve bu ana iş paketlerinin içerisinde yer alacak alt iş paketleri ise task ve/veya sub-task olarak eklenmiştir.
 Backlog içerisinde yer alan iş paketlerinin hangi Sprint içerisinde yer alacağını belirleyebilmek amacıyla Sprint1, Sprint2, Sprint3 olmak üzere ayrı etiketler oluşturularak iş maddelerine eklenmiştir.
 
+Table görünümü üzerinden örnek ekran görüntüleri:
+
 <img width="1860" height="1055" alt="image" src="https://github.com/user-attachments/assets/6c97ad50-8824-490e-8b88-ac40f432ff33" />
 
+<img width="1866" height="571" alt="image" src="https://github.com/user-attachments/assets/617897b0-547a-49ac-bfbb-f4af546c0568" />
 
+<img width="1878" height="1091" alt="image" src="https://github.com/user-attachments/assets/1b2c09de-0920-41c1-8af4-0dbe0d2c570c" />
+
+Kanban görünümü üzerinden örnek ekran görüntüleri:
+
+<img width="1864" height="1084" alt="image" src="https://github.com/user-attachments/assets/e7f4b24b-fd7f-4e3d-8939-92d9ffd4b70b" />
 
 # Toplantı Planları ve Daily Scrum Notları
 Sprint 1 süresince ekip içi iletişim  dijital kanallar üzerinden yürütülmüştür. Toplantılar için Zoom ve/veya Google Meetings aracılığı ile gerçekleştirilmiş olup toplantı notları Confluence aracılığıyla tutulmuştur (birkaç ekran görüntüsü örnek amaçlı eklenmiştir). Bu sayede projenin belirlenmesinden teknik implementasyon çalışmalarına kadar olan tüm sürecin adım adım takip edilmesi planlanmaktadır.
