@@ -81,10 +81,11 @@ Backlog içerisinde yer alan iş paketlerinin hangi Sprint içerisinde yer alaca
 
 # Toplantı Planları ve Daily Scrum Notları
 Sprint 1 süresince ekip içi iletişim  dijital kanallar üzerinden yürütülmüştür. Toplantılar için Zoom ve/veya Google Meetings aracılığı ile gerçekleştirilmiş olup toplantı notları Confluence aracılığıyla tutulmuştur (birkaç ekran görüntüsü örnek amaçlı eklenmiştir). Bu sayede projenin belirlenmesinden teknik implementasyon çalışmalarına kadar olan tüm sürecin adım adım takip edilmesi planlanmaktadır.
+Github repo içinde her toplantıya ilişkin özet bilgilerin yer aldığı dosya eklenmiştir.
 
 Confluence linki: https://grup61-yzta-bootcamp.atlassian.net/wiki/external/MWRhNDc0NWI4MGE0NDc3MTk4MDNlNzZkY2NkZTBhZWE
 
-Sprint1 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştirilmiştir:
+Sprint 1 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştirilmiştir:
 
 - 23 Haziran (Tanışma): Ekip üyeleriyle tanışıldı.
 - 24 Haziran (Ortak toplantı): Ayşe Gül'ün koordine ettiği ortak bilgilenme/tanışma toplantısına katılım sağlandı.
@@ -106,7 +107,39 @@ Sprint1 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştiri
 
 # Sprint Board Durum Bilgisi
 
-Sprint1 sonunda Kanban board üzerinde Sprint1 kapsamında yer alan tüm görevler "Done" sütununa taşınmıştır. İlgili Kanban board görseli eklenmiştir.
+Sprint 1 sonunda Kanban board üzerinde Sprint 1 kapsamında yer alan tüm görevler "Done" sütununa taşınmıştır. İlgili Kanban board görseli eklenmiştir.
+
+
+
+# Sprint Review
+
+Sprint 1 (23 Haziran - 5 Temmuz 2026), projemizin "Planlama ve Altyapı" dönemi olarak başarıyla tamamlanmıştır. Bu süreçte gerçekleştirdiğimiz çalışmalar, projemizin teknik ve metodolojik temelini sağlamlaştırmıştır.
+
+Hedef Gerçekleşme: Teknik kurulum ve proje yönetim disiplini (Kanban/Confluence) hedefleri tamamlanmıştır.
+
+Stratejik Kazanımlar: Rakip analizi ve pazar konumlandırması yapılarak projenin "FlowDay" vizyonu netleştirilmiştir.
+
+MVP Kapsamı: Projenin odak noktasını korumak adına MVP sınırları çizilmiş ve tasarım vizyonu (UI/UX) belirlenmiştir.
+
+Süreç Çıktıları: Tüm Sprint 1 görevleri Kanban panosunda "Done" statüsüne taşınmış ve dijital dokümantasyon (README/Confluence) güncel tutulmuştur.
+
+# Sprint 1 Retrospective
+
+Sprint 1 sürecinde gerçekleştirdiğimiz "Retrospective" toplantısında, çalışma modelimizi objektif bir şekilde değerlendirdik. Bu öz-eleştiri, projemizin bir sonraki aşamada daha verimli ilerlemesi için kritik öneme sahiptir.
+
+- Neler İyi Gitti?
+
+Ekip içi görev dağılımı ve proje yönetim araçlarının (GitHub Projects/Confluence) kullanımı oldukça verimli olmuştur.
+Projenin temel vizyonu ve MVP sınırları konusunda ekip içinde hızlı bir fikir birliği sağlanmıştır.
+
+- Gelişim Alanlarımız (Zayıf Yönler):
+
+Dijital kanallar üzerinden yürütülen iletişimde zaman zaman senkronizasyon kayıpları yaşanmış, bu da görev takibinde küçük aksamalara sebep olmuştur.
+
+- Sprint 2 İçin Alınan Aksiyonlar:
+
+İletişim aksaklıklarını gidermek adına "Aksiyon Maddeleri"nin daha sık kontrol edilmesi kararlaştırılmıştır.
+"Daily Stand-up" toplantılarının, görev takibini daha hızlı ve odaklı yapabilmek adına standartlaştırılması hedeflenmiştir.
 
 # Ürün Durumu
 5 Temmuz 2026 itibariyle projemizin 1. Sprint (Planlama ve Altyapı) aşaması tamamlanmış olup, ürün geliştirme (kodlama) aşamasına geçiş yapılmıştır.
