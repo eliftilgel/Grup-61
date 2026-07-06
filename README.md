@@ -107,6 +107,8 @@ Sprint 1 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 - 4 Temmuz (Ara yüz tasarımı fikirleri): Arayüz tasarımı üzerine fikirler görüşüldü ve benzer çalışmalar incelendi. 
 - 5 Temmuz (Sprint1 kapanış): Sprint1 için README dokümantasyonu tamamlandı, Kanban board üzerindeki Sprint 1 görevleri ve backlog kontrol edilerek iş maddelerinin durumları güncellendi. Sprint1 Review gerçekleştirildi.
 
+Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüleri:
+
 <img width="1852" height="864" alt="image" src="https://github.com/user-attachments/assets/19fde36a-92f7-4d77-8754-f3fbd041dac0" />
 
 <img width="1796" height="1033" alt="image" src="https://github.com/user-attachments/assets/cc08e84e-197a-4933-bad4-d0556c1b9c6d" />
@@ -116,7 +118,11 @@ Sprint 1 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 <img width="1592" height="842" alt="Toplantı3" src="https://github.com/user-attachments/assets/cefc8070-1f78-4bdc-b1ba-e73be6a974ba" />
 
 # Sprint Board Durum Bilgisi
-Sprint 1 sonunda Kanban board üzerinde Sprint 1 kapsamında yer alan tüm görevler "Done" sütununa taşınmıştır. İlgili Kanban board görseli eklenmiştir.
+Sprint 1 sonunda Kanban board üzerinde Sprint 1 kapsamında yer alan tüm görevler "Done" sütununa taşınmıştır. İlgili Kanban board görseli örnek olarak eklenmiştir.
+Detaylı durum bilgisi Project sekmesi altında yer almaktadır.
+Link: https://github.com/users/eliftilgel/projects/1
+
+<img width="1864" height="1084" alt="image" src="https://github.com/user-attachments/assets/e7f4b24b-fd7f-4e3d-8939-92d9ffd4b70b" />
 
 # Sprint Review
 Sprint 1 (23 Haziran - 5 Temmuz 2026), projemizin "Planlama ve Altyapı" dönemi olarak başarıyla tamamlanmıştır. Bu süreçte gerçekleştirdiğimiz çalışmalar, projemizin teknik ve metodolojik temelini sağlamlaştırmıştır.
