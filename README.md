@@ -93,7 +93,7 @@ Kanban görünümü üzerinden örnek ekran görüntüleri:
 Sprint 1 süresince ekip içi iletişim  dijital kanallar üzerinden yürütülmüştür. Toplantılar için Zoom ve/veya Google Meetings aracılığı ile gerçekleştirilmiş olup toplantı notları Confluence aracılığıyla tutulmuştur (birkaç ekran görüntüsü örnek amaçlı eklenmiştir). Bu sayede projenin belirlenmesinden teknik implementasyon çalışmalarına kadar olan tüm sürecin adım adım takip edilmesi planlanmaktadır.
 Github repo içinde her toplantıya ilişkin özet bilgilerin yer aldığı dosya eklenmiştir.
 
-Confluence linki: https://grup61-yzta-bootcamp.atlassian.net/wiki/external/MWRhNDc0NWI4MGE0NDc3MTk4MDNlNzZkY2NkZTBhZWE
+Confluence linki: https://grup61-yzta-bootcamp.atlassian.net/wiki/spaces/~712020e68e0114d0814b6994497ed0f4244a03/pages/688130/Grup+61+toplant+notlar
 
 Sprint 1 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştirilmiştir:
 
