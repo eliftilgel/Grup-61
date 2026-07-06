@@ -135,7 +135,7 @@ Dijital kanallar üzerinden yürütülen iletişimde zaman zaman senkronizasyon 
 "Daily Stand-up" toplantılarının, görev takibini daha hızlı ve odaklı yapabilmek adına standartlaştırılması hedeflenmiştir.
 
 # Ürün Durumu
-5 Temmuz 2026 itibariyle projemizin 1. Sprint (Planlama ve Altyapı) aşaması tamamlanmış olup, ürün geliştirme (kodlama) aşamasına geçiş yapılmıştır.
+5 Temmuz 2026 itibariyle projemizin 1. Sprint (Planlama ve Altyapı) aşaması tamamlanmış olup, ürün geliştirme (kodlama) aşamasına geçiş yapılacaktır.
 
 Şu anki ürün durumu aşağıdaki gibidir:
 
