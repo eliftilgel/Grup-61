@@ -4,6 +4,7 @@ import pytest
 
 from core.services.task_service import complete_task, create_task, list_tasks
 
+
 def test_gorev_olusturma(test_db):
     task = create_task("Alışveriş yap", priority=2)
 
@@ -12,13 +13,16 @@ def test_gorev_olusturma(test_db):
     assert task.priority == 2
     assert task.done is False
 
+
 def test_bos_baslik_hata_verir(test_db):
     with pytest.raises(ValueError):
         create_task("   ")
 
+
 def test_gecersiz_oncelik_hata_verir(test_db):
     with pytest.raises(ValueError):
         create_task("Geçerli başlık", priority=5)
+
 
 def test_gorev_tamamlama(test_db):
     task = create_task("Bitecek görev")
@@ -26,6 +30,7 @@ def test_gorev_tamamlama(test_db):
     guncel = complete_task(task.id)
 
     assert guncel.done is True
+
 
 def test_liste_oncelige_gore_siralanir(test_db):
     create_task("Düşük", priority=1)
