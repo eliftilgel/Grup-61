@@ -3,3 +3,9 @@ SQLAlchemy >= 2.0.51
 pytest >= 9.1.1
 -e .
 alembic >= 1.18.5
+google-api-core>=2.31.0
+google-api-python-client>=2.198.0
+google-auth>=2.55.2
+google-auth-httplib2>=0.4.0
+google-auth-oauthlib>=1.4.0
+googleapis-common-protos>=1.75.0
