@@ -10,6 +10,30 @@ from core.services.task_service import (
     update_task,
 )
 
+from datetime import datetime, time as dt_time
+
+with st.expander("Yeni etkinlik oluştur"):
+    with st.form("yeni_etkinlik", clear_on_submit=True):
+        ev_title = st.text_input("Başlık", key="ev_baslik")
+        ev_desc = st.text_area("Açıklama", height=80, key="ev_aciklama")
+        col_a, col_b, col_c = st.columns(3)
+        ev_gun = col_a.date_input("Tarih", key="ev_gun")
+        ev_bas = col_b.time_input("Başlangıç", value=dt_time(9, 0), key="ev_bas")
+        ev_bit = col_c.time_input("Bitiş", value=dt_time(10, 0), key="ev_bit")
+        if st.form_submit_button("Google Takvim'e ekle"):
+            if not ev_title.strip():
+                st.error("Başlık boş olamaz")
+            elif ev_bit <= ev_bas:
+                st.error("Bitiş, başlangıçtan sonra olmalı")
+            else:
+                from core.services.sync_service import create_event_everywhere
+
+                start_iso = datetime.combine(ev_gun, ev_bas).astimezone().isoformat()
+                end_iso = datetime.combine(ev_gun, ev_bit).astimezone().isoformat()
+                create_event_everywhere(ev_title, start_iso, end_iso, ev_desc)
+                st.success("Etkinlik Google Takvim'e eklendi")
+                st.rerun()
+
 st.set_page_config(page_title="Planlayıcı", layout="wide")
 st.title("Planlayıcı — v0.3")
 

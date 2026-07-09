@@ -58,3 +58,22 @@ def list_events() -> list[CalendarEvent]:
         return list(
             session.query(CalendarEvent).order_by(CalendarEvent.start)
         )
+
+def create_event_everywhere(
+    title: str, start_iso: str, end_iso: str, description: str = ""
+) -> None:
+    """Etkinliği önce Google'da oluşturur, sonra yerel kopyaya işler."""
+    from core.services.calendar_service import create_event
+
+    google_kayit = create_event(title, start_iso, end_iso, description)
+
+    with SessionLocal() as session:
+        session.add(CalendarEvent(
+            google_id=google_kayit["id"],
+            title=title,
+            description=description,
+            start=start_iso,
+            end=end_iso,
+            updated=google_kayit.get("updated", ""),
+        ))
+        session.commit()
