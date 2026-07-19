@@ -234,6 +234,10 @@ Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüler
 
 <img width="896" height="1083" alt="Teknik Geliştirme ve İlerleme Toplantısı" src="https://github.com/user-attachments/assets/78299b22-1075-44cc-8a14-0bbd5cc47c2e" />
 
+<img width="1600" height="749" alt="623683779-3b259ad6-0e9e-47ab-876c-401f6e8758b8" src="https://github.com/user-attachments/assets/8f9e2f62-6b98-425b-b018-ec72319d179d" />
+
+<img width="1600" height="748" alt="623683773-908a3cf7-1641-4764-91c3-730f2630348d" src="https://github.com/user-attachments/assets/5e6d7033-8b39-4e76-95ba-28a2781e6275" />
+
 
 # Toplantı Notu — Sprint 2 Review
 
@@ -298,9 +302,8 @@ Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüler
 ## İlgili Bilgiler
 - Bu aksiyonların etkisi Sprint 3 Retrospective toplantısında değerlendirilecek
 
-<img width="1600" height="749" alt="Ekran Görüntüsü 14 07 2026" src="https://github.com/user-attachments/assets/3b259ad6-0e9e-47ab-876c-401f6e8758b8" />
-<img width="1600" height="748" alt="Ekran Görüntüsü 19 07 2026" src="https://github.com/user-attachments/assets/908a3cf7-1641-4764-91c3-730f2630348d" />
 <img width="793" height="822" alt="Planlayıcı v0 2" src="https://github.com/user-attachments/assets/b23369c2-e4be-4799-abe9-e13bf234afb0" />
+
 <img width="1600" height="764" alt="Planlayıcı v0 3" src="https://github.com/user-attachments/assets/7ad55067-76a1-40df-91c8-75f885ecb017" />
 
 
