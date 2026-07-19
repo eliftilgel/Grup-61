@@ -221,67 +221,67 @@ Sprint 2 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 
 Sprint boyunca: Ekip üyeleri WhatsApp grubu üzerinden sürekli iletişim halinde kalarak günlük geliştirme durumlarını paylaşmış, ekran görüntüleri ve kısa demo videoları ile ilerlemeyi takip etmiş, görev dağılımı ve teknik konular hakkında anlık koordinasyon sağlamıştır.
 
-# Toplantı Notu — Sprint 1 Review
+# Toplantı Notu — Sprint 2 Review
 
-**Konu:** Sprint 1 Review (23 Haziran - 5 Temmuz 2026)
+**Konu:** Sprint 2 Review (6 - 19 Temmuz 2026)
 
 ## Amaçlar
-- "Planlama ve Altyapı" döneminin tamamlanma durumunu değerlendirmek
-- Sprint 1 hedeflerinin gerçekleşme oranını incelemek
-- Süreç çıktılarını ve dokümantasyonu gözden geçirmek
+- Sprint 2 boyunca tamamlanan geliştirmeleri ve test süreçlerini değerlendirmek
+- Sprint hedeflerinin gerçekleşme durumunu incelemek
+- Sprint kapanış hazırlıklarını gözden geçirmek
 
 ## Tartışma Konuları
 
 | Konu | Notlar |
 |---|---|
-| Hedef Gerçekleşme | Teknik kurulum ve proje yönetim disiplini (Kanban/Confluence) hedefleri tamamlandı |
-| Stratejik Kazanımlar | Rakip analizi ve pazar konumlandırması yapılarak "FlowDay" vizyonu netleştirildi |
-| MVP Kapsamı | Odak noktasını korumak amacıyla MVP sınırları çizildi, tasarım vizyonu (UI/UX) belirlendi |
-| Süreç Çıktıları | Tüm Sprint 1 görevleri Kanban panosunda "Done" statüsüne taşındı, dijital dokümantasyon (README/Confluence) güncellendi |
+| Fonksiyon Testleri (14 Temmuz) | Uygulamanın temel fonksiyonları test edildi; tespit edilen hatalar ekip tarafından değerlendirilerek gerekli düzeltmeler planlandı |
+| Sprint Kapanış Hazırlıkları (18 Temmuz) | Sprint boyunca tamamlanan geliştirmeler gözden geçirildi, kapanış için hazırlıklar değerlendirildi |
+| Teknik Geliştirmeler (19 Temmuz) | Sprint 2 kapsamında tamamlanan teknik geliştirmeler ekip tarafından değerlendirildi |
+| Hedef Gerçekleşme Durumu (19 Temmuz) | Sprint başında belirlenen hedeflerin ne ölçüde gerçekleştiği incelendi |
 
 ## Yapılacaklar Listesi
-- [ ] Sprint 2 kapsamının MVP sınırlarına uygun şekilde planlanması
-- [ ] Belirlenen UI/UX vizyonunun geliştirme sürecine aktarılması
-- [ ] Dokümantasyonun (README/Confluence) Sprint 2 boyunca güncel tutulması
+- [ ] Test sürecinde tespit edilen hataların tamamının kapatılması
+- [ ] Gerçekleşmeyen hedeflerin nedenlerinin belirlenmesi
+- [ ] Sprint 2 kapanış dokümantasyonunun tamamlanması
+- [ ] Sprint 3 kapsamı ve önceliklerinin netleştirilmesi
 
 ## Kararlar
-- Sprint 1'in "Planlama ve Altyapı" dönemi olarak başarıyla tamamlandığına karar verildi
-- Projenin FlowDay vizyonu ve MVP kapsamı ile Sprint 2'ye geçilmesine karar verildi
+- Sprint 2 kapsamında tespit edilen hataların giderilmesine yönelik düzeltme planı onaylandı
+- Sprint 2'nin tamamlandığına ve Sprint 3'e geçilmesine karar verildi
 
 ## İlgili Bilgiler
-- Tüm görevler Kanban panosunda "Done" statüsünde
-- Proje dokümantasyonu README ve Confluence üzerinden takip ediliyor
+- Sprint 2 boyunca test, hata giderme ve kapanış süreçleri sırasıyla 14, 18 ve 19 Temmuz toplantılarında ele alındı
+- Sprint 3 kapsamı ve hedefleri bir sonraki planlama toplantısında belirlenecek
 
 ---
 
-# Toplantı Notu — Sprint 1 Retrospective
+# Toplantı Notu — Sprint 2 Retrospective
 
-**Konu:** Sprint 1 Retrospective
+**Konu:** Sprint 2 Retrospective (6 - 19 Temmuz 2026)
 
 ## Amaçlar
-- Sprint 1 sürecindeki çalışma modelini objektif şekilde değerlendirmek
-- Güçlü ve gelişime açık yönleri belirlemek
-- Sprint 2 için aksiyon maddeleri oluşturmak
+- Sprint 2 sürecindeki çalışma modelini objektif şekilde değerlendirmek
+- Sprint 1'de alınan aksiyonların (Daily Stand-up standardizasyonu, aksiyon maddesi takibi) etkisini gözden geçirmek
+- Sprint 3 için gelişim alanlarını belirlemek
 
 ## Tartışma Konuları
 
 | Konu | Notlar |
 |---|---|
-| Neler İyi Gitti? | Ekip içi görev dağılımı ve proje yönetim araçlarının (GitHub Projects/Confluence) kullanımı verimli oldu; proje vizyonu ve MVP sınırları konusunda hızlı fikir birliği sağlandı |
-| Gelişim Alanları | Dijital kanallar üzerinden yürütülen iletişimde zaman zaman senkronizasyon kayıpları yaşandı, bu da görev takibinde küçük aksamalara yol açtı |
+| Neler İyi Gitti? | Test ve hata giderme süreci düzenli şekilde yürütüldü, tespit edilen hatalar sistematik olarak değerlendirilip planlandı |
+| Gelişim Alanlarımız | Sprint kapanış hazırlıklarının test süreciyle daha erken senkronize edilmesi gerektiği görüldü |
+| Sprint 1 Aksiyonlarının Etkisi | Daily Stand-up standardizasyonu ve aksiyon maddesi takibinin görev senkronizasyonuna katkısı değerlendirildi |
 
 ## Yapılacaklar Listesi
-- [ ] "Aksiyon Maddeleri"nin daha sık kontrol edilmesi
-- [ ] "Daily Stand-up" toplantılarının standartlaştırılması
+- [ ] Test ve kapanış süreçlerinin Sprint 3'te daha erken aşamada birlikte planlanması
+- [ ] Hata takibi için kullanılan sürecin (Kanban/Confluence) güncel tutulmaya devam edilmesi
+- [ ] Sprint 3 Daily Stand-up formatının gözden geçirilmesi
 
 ## Kararlar
-- İletişim aksaklıklarını gidermek adına aksiyon maddelerinin takip sıklığının artırılmasına karar verildi
-- Daily Stand-up toplantılarının görev takibini hızlandırmak amacıyla standart bir formata kavuşturulmasına karar verildi
+- Sprint 2'de uygulanan test-değerlendirme-düzeltme akışının Sprint 3'te de sürdürülmesine karar verildi
+- Kapanış hazırlıklarının sprint sonuna bırakılmadan erken başlatılmasına karar verildi
 
 ## İlgili Bilgiler
-- Bu aksiyonların etkisi Sprint 2 Retrospective toplantısında değerlendirilecek
-
-Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüleri:
-
+- Bu aksiyonların etkisi Sprint 3 Retrospective toplantısında değerlendirilecek
 
 
