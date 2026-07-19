@@ -8,3 +8,5 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = ["core", "core.services"]
+
+packages = ["core", "core.services", "api"]
