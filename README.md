@@ -186,6 +186,14 @@ FlowDay şu an "Kavram Kanıtlama" (Proof of Concept) aşamasının sonundadır.
 <img width="599" height="1172" alt="image" src="https://github.com/user-attachments/assets/4ee32952-c7a4-4a86-9742-d439771d3af4" />
 
 
+# SPRİNT 2 RAPORU
+
+Sprint 2 kapsamında FlowDay projesinin teknik geliştirme çalışmalarına odaklanılmıştır. Bu süreçte projenin temel yazılım altyapısı oluşturulmuş, kullanıcı arayüzü geliştirilmeye başlanmış ve veritabanı ile takvim entegrasyonu tamamlanmıştır.
+
+# Backlog Dağıtma Mantığı
+Sprint 2 süresince Sprint 1'de oluşturulan GitHub Project altyapısı kullanılmaya devam edilmiştir. Bu sprintte ağırlıklı olarak teknik geliştirme çalışmalarına odaklanılmış; kullanıcı arayüzü, veri modeli, API geliştirme, takvim senkronizasyonu, test süreçleri ve CI/CD altyapısına ilişkin görevler backlog'a eklenerek Sprint 2 etiketi ile yönetilmiştir. Görevlerin ilerleme durumları düzenli olarak güncellenmiş, tamamlanan iş paketleri Done sütununa taşınmış ve Sprint sonunda backlog kontrolü gerçekleştirilerek bir sonraki sprint için gerekli düzenlemeler planlanmıştır.
+
+
 
 
 
