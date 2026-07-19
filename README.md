@@ -205,6 +205,8 @@ https://grup61-yzta-bootcamp.atlassian.net/wiki/spaces/~712020e68e0114d0814b6994
 
 Sprint 2 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştirilmiştir:
 
+6 Temmuz (Sprint 1 Geribildirimleri) Sprint 1 için alınan geribildirimlerin üzerinden geçildi. Jira sayfasının kurulumunu değerlendirildi. Streamlit ile Flutter karşılaştırmasını değerlendirildi.
+
 7 Temmuz (Sprint 2 Planlama Toplantısı): Sprint 2 hedefleri belirlendi. Teknik geliştirme sürecinde yapılacak görevler gözden geçirilerek ekip üyeleri arasında görev dağılımı gerçekleştirildi.
 
 8 Temmuz (Arayüz Geliştirme Toplantısı): Streamlit tabanlı kullanıcı arayüzünün ilk sürümü (Planlayıcı v0.2) ekip üyeleriyle paylaşıldı. Görev oluşturma ekranı, görev listesi ve öncelik belirleme bileşenleri değerlendirildi. Arayüz tasarımı hakkında geri bildirimler alınarak geliştirilmesi planlanan noktalar belirlendi.
