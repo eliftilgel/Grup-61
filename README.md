@@ -194,6 +194,39 @@ Sprint 2 kapsamında FlowDay projesinin teknik geliştirme çalışmalarına oda
 Sprint 2 süresince Sprint 1'de oluşturulan GitHub Project altyapısı kullanılmaya devam edilmiştir. Bu sprintte ağırlıklı olarak teknik geliştirme çalışmalarına odaklanılmış; kullanıcı arayüzü, veri modeli, API geliştirme, takvim senkronizasyonu, test süreçleri ve CI/CD altyapısına ilişkin görevler backlog'a eklenerek Sprint 2 etiketi ile yönetilmiştir. Görevlerin ilerleme durumları düzenli olarak güncellenmiş, tamamlanan iş paketleri Done sütununa taşınmış ve Sprint sonunda backlog kontrolü gerçekleştirilerek bir sonraki sprint için gerekli düzenlemeler planlanmıştır.
 
 
+# Toplantı Planları ve Daily Scrum Notları
+Sprint 2 süresince ekip içi iletişim Zoom, Google Meet ve WhatsApp üzerinden aktif olarak yürütülmüştür. Teknik geliştirme sürecinde günlük ilerlemeler WhatsApp grubu üzerinden paylaşılmış, gerçekleştirilen toplantıların notları ise Confluence ortamında kayıt altına alınmıştır.
+
+
+Confluence linki: 
+
+https://grup61-yzta-bootcamp.atlassian.net/wiki/spaces/~712020e68e0114d0814b6994497ed0f4244a03/pages/688130/Grup+61+toplant+notlar
+
+
+Sprint 2 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştirilmiştir:
+
+7 Temmuz (Sprint 2 Planlama Toplantısı): Sprint 2 hedefleri belirlendi. Teknik geliştirme sürecinde yapılacak görevler gözden geçirilerek ekip üyeleri arasında görev dağılımı gerçekleştirildi.
+
+8 Temmuz (Arayüz Geliştirme Toplantısı): Streamlit tabanlı kullanıcı arayüzünün ilk sürümü (Planlayıcı v0.2) ekip üyeleriyle paylaşıldı. Görev oluşturma ekranı, görev listesi ve öncelik belirleme bileşenleri değerlendirildi. Arayüz tasarımı hakkında geri bildirimler alınarak geliştirilmesi planlanan noktalar belirlendi.
+
+<img width="848" height="826" alt="Arayüz Geliştirme Toplantısı" src="https://github.com/user-attachments/assets/2be94fde-bb82-4939-a465-0d0ed3d515b3" />
+
+9 Temmuz (Teknik Geliştirme ve İlerleme Toplantısı): Planlayıcı uygulamasının v0.3 sürümü ekip ile paylaşıldı. Görev oluşturma formu güncellenmiş, tarih ve saat seçimi gibi yeni özellikler eklenmiştir. Takvim entegrasyonu, veri modeli ve API geliştirme süreçleri değerlendirilmiş, Sprint backlogundaki teknik görevlerin son durumu gözden geçirilerek bir sonraki geliştirme adımları planlanmıştır.
+
+<img width="896" height="1083" alt="Teknik Geliştirme ve İlerleme Toplantısı" src="https://github.com/user-attachments/assets/53fa8e15-7a17-4948-8b99-201ebe39f832" />
+
+12 Temmuz (Kod Entegrasyonu Toplantısı): Takım üyeleri tarafından geliştirilen modüllerin entegrasyonu değerlendirildi.
+
+14 Temmuz (Test ve Hata Giderme Toplantısı): Uygulamanın temel fonksiyonları test edildi. Tespit edilen hatalar ekip tarafından değerlendirilerek gerekli düzeltmeler planlandı.
+
+18 Temmuz (Sprint 2 Kapanış Hazırlıkları): Sprint boyunca tamamlanan geliştirmeler gözden geçirildi.
+
+19 Temmuz (Sprint 2 Review): Sprint 2 kapsamında tamamlanan teknik geliştirmeler ekip tarafından değerlendirildi. Sprint hedeflerinin gerçekleşme durumu incelendi.
+
+Sprint boyunca: Ekip üyeleri WhatsApp grubu üzerinden sürekli iletişim halinde kalarak günlük geliştirme durumlarını paylaşmış, ekran görüntüleri ve kısa demo videoları ile ilerlemeyi takip etmiş, görev dağılımı ve teknik konular hakkında anlık koordinasyon sağlamıştır.
+
+
+Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüleri:
 
 
 
