@@ -221,6 +221,65 @@ Sprint 2 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 
 Sprint boyunca: Ekip üyeleri WhatsApp grubu üzerinden sürekli iletişim halinde kalarak günlük geliştirme durumlarını paylaşmış, ekran görüntüleri ve kısa demo videoları ile ilerlemeyi takip etmiş, görev dağılımı ve teknik konular hakkında anlık koordinasyon sağlamıştır.
 
+# Toplantı Notu — Sprint 1 Review
+
+**Konu:** Sprint 1 Review (23 Haziran - 5 Temmuz 2026)
+
+## Amaçlar
+- "Planlama ve Altyapı" döneminin tamamlanma durumunu değerlendirmek
+- Sprint 1 hedeflerinin gerçekleşme oranını incelemek
+- Süreç çıktılarını ve dokümantasyonu gözden geçirmek
+
+## Tartışma Konuları
+
+| Konu | Notlar |
+|---|---|
+| Hedef Gerçekleşme | Teknik kurulum ve proje yönetim disiplini (Kanban/Confluence) hedefleri tamamlandı |
+| Stratejik Kazanımlar | Rakip analizi ve pazar konumlandırması yapılarak "FlowDay" vizyonu netleştirildi |
+| MVP Kapsamı | Odak noktasını korumak amacıyla MVP sınırları çizildi, tasarım vizyonu (UI/UX) belirlendi |
+| Süreç Çıktıları | Tüm Sprint 1 görevleri Kanban panosunda "Done" statüsüne taşındı, dijital dokümantasyon (README/Confluence) güncellendi |
+
+## Yapılacaklar Listesi
+- [ ] Sprint 2 kapsamının MVP sınırlarına uygun şekilde planlanması
+- [ ] Belirlenen UI/UX vizyonunun geliştirme sürecine aktarılması
+- [ ] Dokümantasyonun (README/Confluence) Sprint 2 boyunca güncel tutulması
+
+## Kararlar
+- Sprint 1'in "Planlama ve Altyapı" dönemi olarak başarıyla tamamlandığına karar verildi
+- Projenin FlowDay vizyonu ve MVP kapsamı ile Sprint 2'ye geçilmesine karar verildi
+
+## İlgili Bilgiler
+- Tüm görevler Kanban panosunda "Done" statüsünde
+- Proje dokümantasyonu README ve Confluence üzerinden takip ediliyor
+
+---
+
+# Toplantı Notu — Sprint 1 Retrospective
+
+**Konu:** Sprint 1 Retrospective
+
+## Amaçlar
+- Sprint 1 sürecindeki çalışma modelini objektif şekilde değerlendirmek
+- Güçlü ve gelişime açık yönleri belirlemek
+- Sprint 2 için aksiyon maddeleri oluşturmak
+
+## Tartışma Konuları
+
+| Konu | Notlar |
+|---|---|
+| Neler İyi Gitti? | Ekip içi görev dağılımı ve proje yönetim araçlarının (GitHub Projects/Confluence) kullanımı verimli oldu; proje vizyonu ve MVP sınırları konusunda hızlı fikir birliği sağlandı |
+| Gelişim Alanları | Dijital kanallar üzerinden yürütülen iletişimde zaman zaman senkronizasyon kayıpları yaşandı, bu da görev takibinde küçük aksamalara yol açtı |
+
+## Yapılacaklar Listesi
+- [ ] "Aksiyon Maddeleri"nin daha sık kontrol edilmesi
+- [ ] "Daily Stand-up" toplantılarının standartlaştırılması
+
+## Kararlar
+- İletişim aksaklıklarını gidermek adına aksiyon maddelerinin takip sıklığının artırılmasına karar verildi
+- Daily Stand-up toplantılarının görev takibini hızlandırmak amacıyla standart bir formata kavuşturulmasına karar verildi
+
+## İlgili Bilgiler
+- Bu aksiyonların etkisi Sprint 2 Retrospective toplantısında değerlendirilecek
 
 Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüleri:
 
