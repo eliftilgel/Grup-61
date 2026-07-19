@@ -223,6 +223,18 @@ Sprint 2 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 
 Sprint boyunca: Ekip üyeleri WhatsApp grubu üzerinden sürekli iletişim halinde kalarak günlük geliştirme durumlarını paylaşmış, ekran görüntüleri ve kısa demo videoları ile ilerlemeyi takip etmiş, görev dağılımı ve teknik konular hakkında anlık koordinasyon sağlamıştır.
 
+
+Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüleri:
+
+<img width="1392" height="892" alt="Ekran görüntüsü 2026-07-19 220701" src="https://github.com/user-attachments/assets/d371d747-19fa-4efa-9512-f5c8b3f21f02" />
+
+<img width="986" height="765" alt="Ekran görüntüsü 2026-07-19 220818" src="https://github.com/user-attachments/assets/db4d26c9-b801-4f27-b0c5-e7ac71b94a65" />
+
+<img width="848" height="826" alt="Arayüz Geliştirme Toplantısı" src="https://github.com/user-attachments/assets/bdd9e97e-0641-4136-a8f9-01250cf7f989" />
+
+<img width="896" height="1083" alt="Teknik Geliştirme ve İlerleme Toplantısı" src="https://github.com/user-attachments/assets/78299b22-1075-44cc-8a14-0bbd5cc47c2e" />
+
+
 # Toplantı Notu — Sprint 2 Review
 
 **Konu:** Sprint 2 Review (6 - 19 Temmuz 2026)
