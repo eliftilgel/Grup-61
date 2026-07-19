@@ -209,11 +209,7 @@ Sprint 2 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 
 8 Temmuz (Arayüz Geliştirme Toplantısı): Streamlit tabanlı kullanıcı arayüzünün ilk sürümü (Planlayıcı v0.2) ekip üyeleriyle paylaşıldı. Görev oluşturma ekranı, görev listesi ve öncelik belirleme bileşenleri değerlendirildi. Arayüz tasarımı hakkında geri bildirimler alınarak geliştirilmesi planlanan noktalar belirlendi.
 
-<img width="848" height="826" alt="Arayüz Geliştirme Toplantısı" src="https://github.com/user-attachments/assets/2be94fde-bb82-4939-a465-0d0ed3d515b3" />
-
 9 Temmuz (Teknik Geliştirme ve İlerleme Toplantısı): Planlayıcı uygulamasının v0.3 sürümü ekip ile paylaşıldı. Görev oluşturma formu güncellenmiş, tarih ve saat seçimi gibi yeni özellikler eklenmiştir. Takvim entegrasyonu, veri modeli ve API geliştirme süreçleri değerlendirilmiş, Sprint backlogundaki teknik görevlerin son durumu gözden geçirilerek bir sonraki geliştirme adımları planlanmıştır.
-
-<img width="896" height="1083" alt="Teknik Geliştirme ve İlerleme Toplantısı" src="https://github.com/user-attachments/assets/53fa8e15-7a17-4948-8b99-201ebe39f832" />
 
 12 Temmuz (Kod Entegrasyonu Toplantısı): Takım üyeleri tarafından geliştirilen modüllerin entegrasyonu değerlendirildi.
 
