@@ -234,10 +234,10 @@ Sprint boyunca: Ekip üyeleri WhatsApp grubu üzerinden sürekli iletişim halin
 
 | Konu | Notlar |
 |---|---|
-| Fonksiyon Testleri (14 Temmuz) | Uygulamanın temel fonksiyonları test edildi; tespit edilen hatalar ekip tarafından değerlendirilerek gerekli düzeltmeler planlandı |
-| Sprint Kapanış Hazırlıkları (18 Temmuz) | Sprint boyunca tamamlanan geliştirmeler gözden geçirildi, kapanış için hazırlıklar değerlendirildi |
-| Teknik Geliştirmeler (19 Temmuz) | Sprint 2 kapsamında tamamlanan teknik geliştirmeler ekip tarafından değerlendirildi |
-| Hedef Gerçekleşme Durumu (19 Temmuz) | Sprint başında belirlenen hedeflerin ne ölçüde gerçekleştiği incelendi |
+| Fonksiyon Testleri  | Uygulamanın temel fonksiyonları test edildi; tespit edilen hatalar ekip tarafından değerlendirilerek gerekli düzeltmeler planlandı |
+| Sprint Kapanış Hazırlıkları  | Sprint boyunca tamamlanan geliştirmeler gözden geçirildi, kapanış için hazırlıklar değerlendirildi |
+| Teknik Geliştirmeler  | Sprint 2 kapsamında tamamlanan teknik geliştirmeler ekip tarafından değerlendirildi |
+| Hedef Gerçekleşme Durumu  | Sprint başında belirlenen hedeflerin ne ölçüde gerçekleştiği incelendi |
 
 ## Yapılacaklar Listesi
 - [ ] Test sürecinde tespit edilen hataların tamamının kapatılması
