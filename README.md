@@ -284,4 +284,9 @@ Sprint boyunca: Ekip üyeleri WhatsApp grubu üzerinden sürekli iletişim halin
 ## İlgili Bilgiler
 - Bu aksiyonların etkisi Sprint 3 Retrospective toplantısında değerlendirilecek
 
+<img width="1600" height="749" alt="Ekran Görüntüsü 14 07 2026" src="https://github.com/user-attachments/assets/3b259ad6-0e9e-47ab-876c-401f6e8758b8" />
+<img width="1600" height="748" alt="Ekran Görüntüsü 19 07 2026" src="https://github.com/user-attachments/assets/908a3cf7-1641-4764-91c3-730f2630348d" />
+<img width="793" height="822" alt="Planlayıcı v0 2" src="https://github.com/user-attachments/assets/b23369c2-e4be-4799-abe9-e13bf234afb0" />
+<img width="1600" height="764" alt="Planlayıcı v0 3" src="https://github.com/user-attachments/assets/7ad55067-76a1-40df-91c8-75f885ecb017" />
+
 
