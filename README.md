@@ -309,21 +309,17 @@ Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüler
 
 # SPRİNT 3 RAPORU
 
-...
+Sprint 3 kapsamında FlowDay projesinin ana vaadi olan yapay zeka entegrasyonunun tamamlanmasına, uygulamanın uçtan uca (end-to-end) test edilmesine, son arayüz (UI/UX) iyileştirmelerine ve projenin canlı ortama (deployment) taşınarak final sunumuna hazır hale getirilmesine odaklanılmıştır.
 
 # Backlog Dağıtma Mantığı
-
-...
-
+Sprint 3 süresince de GitHub Project içerisindeki "Kanban" yapısı kullanılmaya devam edilmiştir. Bu final sprintinde ürünün canlıya alınması ve sunum süreçlerine yönelik iş paketleri oluşturulmuştur. OpenAI API entegrasyonu, prompt engineering, hata yakalama (bug-fixing), deployment ve sunum (pitch deck) hazırlığı görevleri backlog'a eklenerek "Sprint 3" etiketi ile yönetilmiştir. Görevler tamamlandıkça "Done" sütununa taşınmış ve Bootcamp bitirme kriterlerine uygunluk açısından sürekli kontrol edilmiştir.
 
 # Toplantı Planları ve Daily Scrum Notları
 Sprint 3 süresince ekip içi iletişim Zoom, Google Meet ve WhatsApp üzerinden aktif olarak yürütülmüştür. Teknik geliştirme sürecinde günlük ilerlemeler WhatsApp grubu üzerinden paylaşılmış, gerçekleştirilen toplantıların notları ise Confluence ortamında kayıt altına alınmıştır.
 
-
 Confluence linki: 
 
 https://grup61-yzta-bootcamp.atlassian.net/wiki/spaces/~712020e68e0114d0814b6994497ed0f4244a03/pages/688130/Grup+61+toplant+notlar
-
 
 Sprint 3 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştirilmiştir:
 
@@ -333,26 +329,37 @@ Sprint 3 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 
 ...
 
-
 Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüleri:
 
+<img width="1918" height="912" alt="Ekran görüntüsü 2026-07-20 221859" src="https://github.com/user-attachments/assets/4ff591ff-a839-492f-9d93-55be0bd9bd8c" />
 
-...
+<img width="1600" height="900" alt="WhatsApp Image 2026-07-20 at 21 11 01" src="https://github.com/user-attachments/assets/c81ba178-63aa-4d7b-8c98-65546e793d49" />
 
 # Sprint 3 Review
+Sprint 3, FlowDay projesinin teknik geliştirme aşamasının tamamlanıp son kullanıcıyla buluşmaya hazır hale getirildiği "Canlıya Alma ve Lansman" dönemi olarak başarıyla tamamlanmıştır.
 
+Hedef Gerçekleşme: OpenAI tabanlı dinamik planlama algoritması sisteme entegre edilmiş ve MVP tam fonksiyonel olarak hayata geçirilmiştir.
 
-...
-
-
+Süreç Çıktıları: Uygulama bulut ortamında deploy edilmiş, README dokümantasyonu tamamlanmış ve Bootcamp final sunumu hazır hale getirilmiştir.
 
 # Sprint 3 Retrospective
+Bootcamp kapanışında gerçekleştirdiğimiz Retrospective toplantısında sürecin genel bir değerlendirmesi yapılmıştır:
 
+Neler İyi Gitti? Ekibin yapay zeka entegrasyonu aşamasındaki yardımlaşması ve kriz anlarındaki çözüm odaklı yaklaşımı projenin zamanında bitmesini sağladı.
 
+Gelişim Alanlarımız (Zayıf Yönler): Uygulamayı canlı ortama (deployment) alırken lokal ortam ile bulut ortamı arasında yaşanan bağımlılık (requirements.txt) uyuşmazlıkları zaman kaybına yol açtı.
 
-...
+Alınan Aksiyonlar: Gelecekteki projelerde CI/CD süreçlerinin ve deployment testlerinin son sprinte bırakılmadan, projenin daha erken aşamalarında test edilmesine karar verildi.
 
+# Ürün Durumu
+Bootcamp bitimi itibarıyla projemizin 3. Sprint aşaması başarıyla tamamlanmıştır. Şu anki ürün durumu aşağıdaki gibidir:
 
+Yapay Zeka Entegrasyonu (Tamamlandı): FlowDay, kullanıcının girdiği görevleri OpenAI destekli algoritması ile analiz ederek sirkadiyen ritme uygun günlük planlamayı otonom olarak sunmaktadır.
 
+Kullanıcı Arayüzü (Tamamlandı): Streamlit ile tasarlanan minimalist arayüz, amaca hizmet eden temiz bir yapıya kavuşturulmuştur.
 
+Canlıya Alma (Tamamlandı): Uygulama son kullanıcıların erişimine açılmıştır.
 
+Canlı Uygulama Linki: [Buraya uygulamanın canlı linki eklenecektir.]
+
+Gelecek Vizyonu (Future Work): Projenin ilerleyen versiyonları için Google Calendar entegrasyonu, kişiselleştirilmiş öğrenme modelleri ve mobil uygulama varyasyonları hedeflenmektedir.
