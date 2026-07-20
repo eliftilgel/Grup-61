@@ -271,7 +271,6 @@ Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüler
 - Sprint 2 boyunca test, hata giderme ve kapanış süreçleri sırasıyla 14, 18 ve 19 Temmuz toplantılarında ele alındı
 - Sprint 3 kapsamı ve hedefleri bir sonraki planlama toplantısında belirlenecek
 
----
 
 # Toplantı Notu — Sprint 2 Retrospective
 
@@ -305,5 +304,55 @@ Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüler
 <img width="793" height="822" alt="Planlayıcı v0 2" src="https://github.com/user-attachments/assets/b23369c2-e4be-4799-abe9-e13bf234afb0" />
 
 <img width="1600" height="764" alt="Planlayıcı v0 3" src="https://github.com/user-attachments/assets/7ad55067-76a1-40df-91c8-75f885ecb017" />
+
+
+
+# SPRİNT 3 RAPORU
+
+...
+
+# Backlog Dağıtma Mantığı
+
+...
+
+
+# Toplantı Planları ve Daily Scrum Notları
+Sprint 3 süresince ekip içi iletişim Zoom, Google Meet ve WhatsApp üzerinden aktif olarak yürütülmüştür. Teknik geliştirme sürecinde günlük ilerlemeler WhatsApp grubu üzerinden paylaşılmış, gerçekleştirilen toplantıların notları ise Confluence ortamında kayıt altına alınmıştır.
+
+
+Confluence linki: 
+
+https://grup61-yzta-bootcamp.atlassian.net/wiki/spaces/~712020e68e0114d0814b6994497ed0f4244a03/pages/688130/Grup+61+toplant+notlar
+
+
+Sprint 3 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştirilmiştir:
+
+20 Temmuz (Sprint 3 Planlama Toplantısı): Sprint 3 hedefleri belirlendi. Teknik geliştirme sürecinde yapılacak görevler gözden geçirilerek ekip üyeleri arasında görev dağılımı gerçekleştirildi.
+
+
+
+...
+
+
+Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüleri:
+
+
+...
+
+# Sprint 3 Review
+
+
+...
+
+
+
+# Sprint 3 Retrospective
+
+
+
+...
+
+
+
 
 
