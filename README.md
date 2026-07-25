@@ -325,6 +325,9 @@ Sprint 3 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 
 20 Temmuz (Sprint 3 Planlama Toplantısı): Sprint 3 hedefleri belirlendi. Teknik geliştirme sürecinde yapılacak görevler gözden geçirilerek ekip üyeleri arasında görev dağılımı gerçekleştirildi.
 
+21 Temmuz (AI Entegrasyon Toplantısı): OpenAI API entegrasyonu ve prompt yapısı değerlendirildi. Yapay zekâ tarafından oluşturulan günlük planların doğruluğu incelendi ve iyileştirilmesi gereken noktalar belirlendi.
+
+23 Temmuz (Fonksiyonel Test Toplantısı): Uygulamanın temel fonksiyonları uçtan uca test edildi. Görev oluşturma, görev listeleme ve plan oluşturma süreçleri değerlendirildi.
 
 
 ...
