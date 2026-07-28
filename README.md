@@ -185,6 +185,188 @@ FlowDay şu an "Kavram Kanıtlama" (Proof of Concept) aşamasının sonundadır.
 
 <img width="599" height="1172" alt="image" src="https://github.com/user-attachments/assets/4ee32952-c7a4-4a86-9742-d439771d3af4" />
 
+
+# SPRİNT 2 RAPORU
+
+Sprint 2 kapsamında FlowDay projesinin teknik geliştirme çalışmalarına odaklanılmıştır. Bu süreçte projenin temel yazılım altyapısı oluşturulmuş, kullanıcı arayüzü geliştirilmeye başlanmış ve veritabanı ile takvim entegrasyonu tamamlanmıştır.
+
+# Backlog Dağıtma Mantığı
+Sprint 2 süresince Sprint 1'de oluşturulan GitHub Project altyapısı kullanılmaya devam edilmiştir. Bu sprintte ağırlıklı olarak teknik geliştirme çalışmalarına odaklanılmış; kullanıcı arayüzü, veri modeli, API geliştirme, takvim senkronizasyonu, test süreçleri ve CI/CD altyapısına ilişkin görevler backlog'a eklenerek Sprint 2 etiketi ile yönetilmiştir. Görevlerin ilerleme durumları düzenli olarak güncellenmiş, tamamlanan iş paketleri Done sütununa taşınmış ve Sprint sonunda backlog kontrolü gerçekleştirilerek bir sonraki sprint için gerekli düzenlemeler planlanmıştır.
+
+
+# Toplantı Planları ve Daily Scrum Notları
+Sprint 2 süresince ekip içi iletişim Zoom, Google Meet ve WhatsApp üzerinden aktif olarak yürütülmüştür. Teknik geliştirme sürecinde günlük ilerlemeler WhatsApp grubu üzerinden paylaşılmış, gerçekleştirilen toplantıların notları ise Confluence ortamında kayıt altına alınmıştır.
+
+
+Confluence linki: 
+
+https://grup61-yzta-bootcamp.atlassian.net/wiki/spaces/~712020e68e0114d0814b6994497ed0f4244a03/pages/688130/Grup+61+toplant+notlar
+
+
+Sprint 2 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştirilmiştir:
+
+6 Temmuz (Sprint 1 Geribildirimleri) Sprint 1 için alınan geribildirimlerin üzerinden geçildi. Jira sayfasının kurulumunu değerlendirildi. Streamlit ile Flutter karşılaştırmasını değerlendirildi.
+
+7 Temmuz (Sprint 2 Planlama Toplantısı): Sprint 2 hedefleri belirlendi. Teknik geliştirme sürecinde yapılacak görevler gözden geçirilerek ekip üyeleri arasında görev dağılımı gerçekleştirildi.
+
+8 Temmuz (Arayüz Geliştirme Toplantısı): Streamlit tabanlı kullanıcı arayüzünün ilk sürümü (Planlayıcı v0.2) ekip üyeleriyle paylaşıldı. Görev oluşturma ekranı, görev listesi ve öncelik belirleme bileşenleri değerlendirildi. Arayüz tasarımı hakkında geri bildirimler alınarak geliştirilmesi planlanan noktalar belirlendi.
+
+9 Temmuz (Teknik Geliştirme ve İlerleme Toplantısı): Planlayıcı uygulamasının v0.3 sürümü ekip ile paylaşıldı. Görev oluşturma formu güncellenmiş, tarih ve saat seçimi gibi yeni özellikler eklenmiştir. Takvim entegrasyonu, veri modeli ve API geliştirme süreçleri değerlendirilmiş, Sprint backlogundaki teknik görevlerin son durumu gözden geçirilerek bir sonraki geliştirme adımları planlanmıştır.
+
+12 Temmuz (Kod Entegrasyonu Toplantısı): Takım üyeleri tarafından geliştirilen modüllerin entegrasyonu değerlendirildi.
+
+14 Temmuz (Test ve Hata Giderme Toplantısı): Uygulamanın temel fonksiyonları test edildi. Tespit edilen hatalar ekip tarafından değerlendirilerek gerekli düzeltmeler planlandı.
+
+18 Temmuz (Sprint 2 Kapanış Hazırlıkları): Sprint boyunca tamamlanan geliştirmeler gözden geçirildi.
+
+19 Temmuz (Sprint 2 Review): Sprint 2 kapsamında tamamlanan teknik geliştirmeler ekip tarafından değerlendirildi. Sprint hedeflerinin gerçekleşme durumu incelendi.
+
+Sprint boyunca: Ekip üyeleri WhatsApp grubu üzerinden sürekli iletişim halinde kalarak günlük geliştirme durumlarını paylaşmış, ekran görüntüleri ve kısa demo videoları ile ilerlemeyi takip etmiş, görev dağılımı ve teknik konular hakkında anlık koordinasyon sağlamıştır.
+
+
+Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüleri:
+
+<img width="1392" height="892" alt="Ekran görüntüsü 2026-07-19 220701" src="https://github.com/user-attachments/assets/d371d747-19fa-4efa-9512-f5c8b3f21f02" />
+
+<img width="986" height="765" alt="Ekran görüntüsü 2026-07-19 220818" src="https://github.com/user-attachments/assets/db4d26c9-b801-4f27-b0c5-e7ac71b94a65" />
+
+<img width="848" height="826" alt="Arayüz Geliştirme Toplantısı" src="https://github.com/user-attachments/assets/bdd9e97e-0641-4136-a8f9-01250cf7f989" />
+
+<img width="896" height="1083" alt="Teknik Geliştirme ve İlerleme Toplantısı" src="https://github.com/user-attachments/assets/78299b22-1075-44cc-8a14-0bbd5cc47c2e" />
+
+<img width="1600" height="749" alt="623683779-3b259ad6-0e9e-47ab-876c-401f6e8758b8" src="https://github.com/user-attachments/assets/8f9e2f62-6b98-425b-b018-ec72319d179d" />
+
+<img width="1600" height="748" alt="623683773-908a3cf7-1641-4764-91c3-730f2630348d" src="https://github.com/user-attachments/assets/5e6d7033-8b39-4e76-95ba-28a2781e6275" />
+
+
+# Toplantı Notu — Sprint 2 Review
+
+**Konu:** Sprint 2 Review (6 - 19 Temmuz 2026)
+
+## Amaçlar
+- Sprint 2 boyunca tamamlanan geliştirmeleri ve test süreçlerini değerlendirmek
+- Sprint hedeflerinin gerçekleşme durumunu incelemek
+- Sprint kapanış hazırlıklarını gözden geçirmek
+
+## Tartışma Konuları
+
+| Konu | Notlar |
+|---|---|
+| Fonksiyon Testleri  | Uygulamanın temel fonksiyonları test edildi; tespit edilen hatalar ekip tarafından değerlendirilerek gerekli düzeltmeler planlandı |
+| Sprint Kapanış Hazırlıkları  | Sprint boyunca tamamlanan geliştirmeler gözden geçirildi, kapanış için hazırlıklar değerlendirildi |
+| Teknik Geliştirmeler  | Sprint 2 kapsamında tamamlanan teknik geliştirmeler ekip tarafından değerlendirildi |
+| Hedef Gerçekleşme Durumu  | Sprint başında belirlenen hedeflerin ne ölçüde gerçekleştiği incelendi |
+
+## Yapılacaklar Listesi
+- [ ] Test sürecinde tespit edilen hataların tamamının kapatılması
+- [ ] Gerçekleşmeyen hedeflerin nedenlerinin belirlenmesi
+- [ ] Sprint 2 kapanış dokümantasyonunun tamamlanması
+- [ ] Sprint 3 kapsamı ve önceliklerinin netleştirilmesi
+
+## Kararlar
+- Sprint 2 kapsamında tespit edilen hataların giderilmesine yönelik düzeltme planı onaylandı
+- Sprint 2'nin tamamlandığına ve Sprint 3'e geçilmesine karar verildi
+
+## İlgili Bilgiler
+- Sprint 2 boyunca test, hata giderme ve kapanış süreçleri sırasıyla 14, 18 ve 19 Temmuz toplantılarında ele alındı
+- Sprint 3 kapsamı ve hedefleri bir sonraki planlama toplantısında belirlenecek
+
+
+# Toplantı Notu — Sprint 2 Retrospective
+
+**Konu:** Sprint 2 Retrospective (6 - 19 Temmuz 2026)
+
+## Amaçlar
+- Sprint 2 sürecindeki çalışma modelini objektif şekilde değerlendirmek
+- Sprint 1'de alınan aksiyonların (Daily Stand-up standardizasyonu, aksiyon maddesi takibi) etkisini gözden geçirmek
+- Sprint 3 için gelişim alanlarını belirlemek
+
+## Tartışma Konuları
+
+| Konu | Notlar |
+|---|---|
+| Neler İyi Gitti? | Test ve hata giderme süreci düzenli şekilde yürütüldü, tespit edilen hatalar sistematik olarak değerlendirilip planlandı |
+| Gelişim Alanlarımız | Sprint kapanış hazırlıklarının test süreciyle daha erken senkronize edilmesi gerektiği görüldü |
+| Sprint 1 Aksiyonlarının Etkisi | Daily Stand-up standardizasyonu ve aksiyon maddesi takibinin görev senkronizasyonuna katkısı değerlendirildi |
+
+## Yapılacaklar Listesi
+- [ ] Test ve kapanış süreçlerinin Sprint 3'te daha erken aşamada birlikte planlanması
+- [ ] Hata takibi için kullanılan sürecin (Kanban/Confluence) güncel tutulmaya devam edilmesi
+- [ ] Sprint 3 Daily Stand-up formatının gözden geçirilmesi
+
+## Kararlar
+- Sprint 2'de uygulanan test-değerlendirme-düzeltme akışının Sprint 3'te de sürdürülmesine karar verildi
+- Kapanış hazırlıklarının sprint sonuna bırakılmadan erken başlatılmasına karar verildi
+
+## İlgili Bilgiler
+- Bu aksiyonların etkisi Sprint 3 Retrospective toplantısında değerlendirilecek
+
+<img width="793" height="822" alt="Planlayıcı v0 2" src="https://github.com/user-attachments/assets/b23369c2-e4be-4799-abe9-e13bf234afb0" />
+
+<img width="1600" height="764" alt="Planlayıcı v0 3" src="https://github.com/user-attachments/assets/7ad55067-76a1-40df-91c8-75f885ecb017" />
+
+
+
+# SPRİNT 3 RAPORU
+
+Sprint 3 kapsamında FlowDay projesinin ana vaadi olan yapay zeka entegrasyonunun tamamlanmasına, uygulamanın uçtan uca (end-to-end) test edilmesine, son arayüz (UI/UX) iyileştirmelerine ve projenin canlı ortama (deployment) taşınarak final sunumuna hazır hale getirilmesine odaklanılmıştır.
+
+# Backlog Dağıtma Mantığı
+Sprint 3 süresince de GitHub Project içerisindeki "Kanban" yapısı kullanılmaya devam edilmiştir. Bu final sprintinde ürünün canlıya alınması ve sunum süreçlerine yönelik iş paketleri oluşturulmuştur. OpenAI API entegrasyonu, prompt engineering, hata yakalama (bug-fixing), deployment ve sunum (pitch deck) hazırlığı görevleri backlog'a eklenerek "Sprint 3" etiketi ile yönetilmiştir. Görevler tamamlandıkça "Done" sütununa taşınmış ve Bootcamp bitirme kriterlerine uygunluk açısından sürekli kontrol edilmiştir.
+
+# Toplantı Planları ve Daily Scrum Notları
+Sprint 3 süresince ekip içi iletişim Zoom, Google Meet ve WhatsApp üzerinden aktif olarak yürütülmüştür. Teknik geliştirme sürecinde günlük ilerlemeler WhatsApp grubu üzerinden paylaşılmış, gerçekleştirilen toplantıların notları ise Confluence ortamında kayıt altına alınmıştır.
+
+Confluence linki: 
+
+https://grup61-yzta-bootcamp.atlassian.net/wiki/spaces/~712020e68e0114d0814b6994497ed0f4244a03/pages/688130/Grup+61+toplant+notlar
+
+Sprint 3 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştirilmiştir:
+
+20 Temmuz (Sprint 3 Planlama Toplantısı): Sprint 3 hedefleri belirlendi. Teknik geliştirme sürecinde yapılacak görevler gözden geçirilerek ekip üyeleri arasında görev dağılımı gerçekleştirildi.
+
+21 Temmuz (AI Entegrasyon Toplantısı): OpenAI API entegrasyonu ve prompt yapısı değerlendirildi. Yapay zekâ tarafından oluşturulan günlük planların doğruluğu incelendi ve iyileştirilmesi gereken noktalar belirlendi.
+
+23 Temmuz (Fonksiyonel Test Toplantısı): Uygulamanın temel fonksiyonları uçtan uca test edildi. Görev oluşturma, görev listeleme ve plan oluşturma süreçleri değerlendirildi.
+
+
+...
+
+Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüleri:
+
+<img width="1918" height="912" alt="Ekran görüntüsü 2026-07-20 221859" src="https://github.com/user-attachments/assets/4ff591ff-a839-492f-9d93-55be0bd9bd8c" />
+
+<img width="1600" height="900" alt="WhatsApp Image 2026-07-20 at 21 11 01" src="https://github.com/user-attachments/assets/c81ba178-63aa-4d7b-8c98-65546e793d49" />
+
+# Sprint 3 Review
+Sprint 3, FlowDay projesinin teknik geliştirme aşamasının tamamlanıp son kullanıcıyla buluşmaya hazır hale getirildiği "Canlıya Alma ve Lansman" dönemi olarak başarıyla tamamlanmıştır.
+
+Hedef Gerçekleşme: OpenAI tabanlı dinamik planlama algoritması sisteme entegre edilmiş ve MVP tam fonksiyonel olarak hayata geçirilmiştir.
+
+Süreç Çıktıları: Uygulama bulut ortamında deploy edilmiş, README dokümantasyonu tamamlanmış ve Bootcamp final sunumu hazır hale getirilmiştir.
+
+# Sprint 3 Retrospective
+Bootcamp kapanışında gerçekleştirdiğimiz Retrospective toplantısında sürecin genel bir değerlendirmesi yapılmıştır:
+
+Neler İyi Gitti? Ekibin yapay zeka entegrasyonu aşamasındaki yardımlaşması ve kriz anlarındaki çözüm odaklı yaklaşımı projenin zamanında bitmesini sağladı.
+
+Gelişim Alanlarımız (Zayıf Yönler): Uygulamayı canlı ortama (deployment) alırken lokal ortam ile bulut ortamı arasında yaşanan bağımlılık (requirements.txt) uyuşmazlıkları zaman kaybına yol açtı.
+
+Alınan Aksiyonlar: Gelecekteki projelerde CI/CD süreçlerinin ve deployment testlerinin son sprinte bırakılmadan, projenin daha erken aşamalarında test edilmesine karar verildi.
+
+# Ürün Durumu
+Bootcamp bitimi itibarıyla projemizin 3. Sprint aşaması başarıyla tamamlanmıştır. Şu anki ürün durumu aşağıdaki gibidir:
+
+Yapay Zeka Entegrasyonu (Tamamlandı): FlowDay, kullanıcının girdiği görevleri OpenAI destekli algoritması ile analiz ederek sirkadiyen ritme uygun günlük planlamayı otonom olarak sunmaktadır.
+
+Kullanıcı Arayüzü (Tamamlandı): Streamlit ile tasarlanan minimalist arayüz, amaca hizmet eden temiz bir yapıya kavuşturulmuştur.
+
+Canlıya Alma (Tamamlandı): Uygulama son kullanıcıların erişimine açılmıştır.
+
+Canlı Uygulama Linki: [Buraya uygulamanın canlı linki eklenecektir.]
+
+Gelecek Vizyonu (Future Work): Projenin ilerleyen versiyonları için Google Calendar entegrasyonu, kişiselleştirilmiş öğrenme modelleri ve mobil uygulama varyasyonları hedeflenmektedir.
+
 # Uygulama: Planla! — Teknik Genel Bakış
 
 Yukarıdaki bölümler Sprint 1'in ürün vizyonu ve proje yönetimi çıktılarını (tarihsel kayıt olarak) anlatıyor. Bu bölüm ise, o vizyondan yola çıkılarak şu ana kadar gerçekten kodlanmış ve çalışan uygulamayı ("Planla!") teknik olarak özetler.
