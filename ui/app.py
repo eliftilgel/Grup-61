@@ -76,15 +76,23 @@ current_user_id = st.session_state["user_id"]
 # açık/koyu Streamlit temasına uyumlu.
 # ---------------------------------------------------------------------------
 RENK_IYI = "#0ca30c"
-RENK_UYARI = "#fab219"
+RENK_UYARI = "#c98500"
 RENK_MAVI = "#2a78d6"
 RENK_KRITIK = "#d03b3b"
 RENK_MOR = "#4a3aa7"
 GRADYAN = f"linear-gradient(135deg, {RENK_MOR} 0%, {RENK_MAVI} 100%)"
 
+# Yumuşak-ton (tinted) yüzeyler: doygun renk yerine yarı-saydam ton + renkli metin —
+# daha minimal/flat bir okunabilirlik için (Notion/Linear tarzı "callout" deseni).
+# rgba (hex değil) kullanılıyor ki altındaki kart açık/koyu temaya göre otomatik uyum sağlasın.
+RENK_IYI_TON = "rgba(12,163,12,0.14)"
+RENK_UYARI_TON = "rgba(201,133,0,0.16)"
+RENK_MAVI_TON = "rgba(42,120,214,0.14)"
+RENK_KRITIK_TON = "rgba(208,59,59,0.14)"
+
 ONCELIK_ETIKET = {3: "KRİTİK", 2: "ORTA", 1: "DÜŞÜK"}
 ONCELIK_RENK = {3: RENK_KRITIK, 2: RENK_UYARI, 1: RENK_IYI}
-ONCELIK_METIN_RENK = {3: "#ffffff", 2: "#0b0b0b", 1: "#ffffff"}
+ONCELIK_TON = {3: RENK_KRITIK_TON, 2: RENK_UYARI_TON, 1: RENK_IYI_TON}
 
 GUNLER = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"]
 AYLAR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz",
@@ -109,43 +117,36 @@ with st.sidebar:
 _STYLE = """
 <style>
 .stApp {
-    background: linear-gradient(180deg, #f7f7fb 0%, #f1f0f6 100%);
+    background: #f6f6f8;
 }
 @media (prefers-color-scheme: dark) {
-    .stApp { background: linear-gradient(180deg, #131318 0%, #0e0e12 100%); }
+    .stApp { background: #101013; }
 }
 .stTabs [data-baseweb="tab-list"] {
-    gap: 4px;
+    gap: 2px;
     background: #ffffff;
-    padding: 6px;
-    border-radius: 14px;
-    box-shadow: 0 2px 10px rgba(11,11,11,0.07);
+    padding: 5px;
+    border-radius: 12px;
+    border: 1px solid rgba(11,11,11,0.06);
 }
 @media (prefers-color-scheme: dark) {
-    .stTabs [data-baseweb="tab-list"] { background: #1c1c24; box-shadow: 0 2px 10px rgba(0,0,0,0.45); }
+    .stTabs [data-baseweb="tab-list"] { background: #18181e; border-color: rgba(255,255,255,0.07); }
 }
 .stTabs [data-baseweb="tab"] {
-    border-radius: 10px;
-    padding: 8px 16px;
+    border-radius: 8px;
+    padding: 7px 14px;
     transition: background 0.15s ease;
 }
 .stTabs [aria-selected="true"] {
     background: __GRADYAN__ !important;
-    box-shadow: 0 3px 10px rgba(74,58,167,0.35);
 }
 .stTabs [aria-selected="true"] p {
     color: #ffffff !important;
     font-weight: 600;
 }
 div.stButton > button, div.stDownloadButton > button, div[data-testid="stFormSubmitButton"] > button {
-    border-radius: 10px;
-    transition: transform 0.12s ease, box-shadow 0.15s ease;
-}
-div.stButton > button:hover:not(:disabled),
-div.stDownloadButton > button:hover,
-div[data-testid="stFormSubmitButton"] > button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(11,11,11,0.15);
+    border-radius: 8px;
+    transition: border-color 0.15s ease, background 0.15s ease;
 }
 div.stButton > button[kind="primary"],
 button[data-testid="baseButton-primary"] {
@@ -153,100 +154,94 @@ button[data-testid="baseButton-primary"] {
     border: none;
 }
 .fd-header {
-    background: __GRADYAN__;
+    background: __RENK_MOR__;
     color: #ffffff;
-    padding: 16px 22px;
-    border-radius: 16px 16px 0 0;
-    font-size: 1.15rem;
-    font-weight: 700;
+    padding: 14px 20px;
+    border-radius: 12px 12px 0 0;
+    font-size: 1.05rem;
+    font-weight: 600;
     margin-top: 8px;
-    letter-spacing: 0.2px;
+    letter-spacing: 0.1px;
 }
 .fd-card {
     background: #ffffff;
-    border-radius: 0 0 16px 16px;
-    padding: 22px;
-    box-shadow: 0 6px 20px rgba(11,11,11,0.07);
-    margin-bottom: 28px;
-    border: 1px solid rgba(11,11,11,0.04);
+    border-radius: 0 0 12px 12px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(11,11,11,0.04);
+    margin-bottom: 24px;
+    border: 1px solid rgba(11,11,11,0.06);
     border-top: none;
 }
 @media (prefers-color-scheme: dark) {
     .fd-card {
-        background: #1a1a22;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-        border-color: rgba(255,255,255,0.06);
+        background: #16161b;
+        box-shadow: none;
+        border-color: rgba(255,255,255,0.08);
         color: #e7e6f0;
     }
 }
 .fd-avatar {
-    width: 72px; height: 72px; border-radius: 50%;
+    width: 64px; height: 64px; border-radius: 50%;
     background: __GRADYAN__; color: #fff;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem; font-weight: 700; margin: 0 auto 12px auto;
-    box-shadow: 0 4px 14px rgba(74,58,167,0.35);
+    font-size: 1.25rem; font-weight: 600; margin: 0 auto 12px auto;
 }
 .fd-stat-tile {
-    border-radius: 14px; padding: 20px; text-align: center;
+    border-radius: 10px; padding: 18px; text-align: center;
     font-weight: 700; margin-bottom: 12px;
-    box-shadow: 0 4px 14px rgba(11,11,11,0.12);
-    transition: transform 0.15s ease;
 }
-.fd-stat-tile:hover { transform: translateY(-2px); }
-.fd-stat-tile .deger { font-size: 1.8rem; display: block; }
-.fd-stat-tile .etiket { font-size: 0.85rem; font-weight: 500; opacity: 0.9; }
+.fd-stat-tile .deger { font-size: 1.7rem; display: block; }
+.fd-stat-tile .etiket { font-size: 0.82rem; font-weight: 500; opacity: 0.85; }
 .fd-info-card {
-    background: #f7f7f9; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;
+    background: #f7f7f9; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px;
     border: 1px solid rgba(11,11,11,0.05);
 }
 @media (prefers-color-scheme: dark) {
-    .fd-info-card { background: #22222c; border-color: rgba(255,255,255,0.07); color: #e7e6f0; }
+    .fd-info-card { background: #1c1c22; border-color: rgba(255,255,255,0.07); color: #e7e6f0; }
 }
 .fd-badge {
     display: inline-block; padding: 3px 10px; border-radius: 999px;
-    background: __RENK_IYI__; color: #fff; font-size: 0.8rem; font-weight: 600;
+    font-size: 0.78rem; font-weight: 600;
 }
 .fd-blok-row, .fd-gorev-row {
-    border-left: 4px solid __RENK_MAVI__; background: #f7f7f9;
-    border-radius: 10px; padding: 12px 16px; margin-bottom: 8px;
+    border-left: 3px solid __RENK_MAVI__; background: #f7f7f9;
+    border-radius: 8px; padding: 10px 14px; margin-bottom: 6px;
     transition: background 0.15s ease;
 }
-.fd-blok-row:hover, .fd-gorev-row:hover { background: #eeedf7; }
+.fd-blok-row:hover, .fd-gorev-row:hover { background: #f0eff5; }
 @media (prefers-color-scheme: dark) {
-    .fd-blok-row, .fd-gorev-row { background: #22222c; color: #e7e6f0; }
-    .fd-blok-row:hover, .fd-gorev-row:hover { background: #292933; }
+    .fd-blok-row, .fd-gorev-row { background: #1c1c22; color: #e7e6f0; }
+    .fd-blok-row:hover, .fd-gorev-row:hover { background: #232329; }
 }
 .fd-rozet {
-    display: inline-block; padding: 2px 10px; border-radius: 6px;
-    font-size: 0.75rem; font-weight: 700; margin-right: 8px;
+    display: inline-block; padding: 2px 9px; border-radius: 5px;
+    font-size: 0.72rem; font-weight: 700; margin-right: 8px;
 }
 .fd-dilim-card {
-    background: #f7f7f9; border-left: 4px solid __RENK_MOR__;
-    border-radius: 10px; padding: 14px 18px; margin-bottom: 10px;
-    transition: transform 0.12s ease;
+    background: #f7f7f9; border-left: 3px solid __RENK_MOR__;
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 8px;
 }
-.fd-dilim-card:hover { transform: translateX(3px); }
-@media (prefers-color-scheme: dark) { .fd-dilim-card { background: #22222c; color: #e7e6f0; } }
+@media (prefers-color-scheme: dark) { .fd-dilim-card { background: #1c1c22; color: #e7e6f0; } }
 .fd-oneri-kutu {
-    background: #e6f6f2; border-radius: 12px; padding: 18px 22px; margin-top: 16px;
-    border-left: 4px solid __RENK_IYI__;
+    background: rgba(12,163,12,0.08); border-radius: 10px; padding: 16px 20px; margin-top: 14px;
+    border-left: 3px solid __RENK_IYI__;
 }
 @media (prefers-color-scheme: dark) {
     .fd-oneri-kutu { background: rgba(12,163,12,0.14); color: #e7e6f0; }
 }
 .fd-analiz-kutu {
-    background: #e8f0fb; border-radius: 12px; padding: 18px 22px; margin-top: 16px;
-    border-left: 4px solid __RENK_MAVI__;
+    background: rgba(42,120,214,0.08); border-radius: 10px; padding: 16px 20px; margin-top: 14px;
+    border-left: 3px solid __RENK_MAVI__;
 }
 @media (prefers-color-scheme: dark) {
     .fd-analiz-kutu { background: rgba(42,120,214,0.16); color: #e7e6f0; }
 }
 .fd-bucket-track {
-    background: #e5e4ec; border-radius: 999px; height: 24px; overflow: hidden;
+    background: #ececf1; border-radius: 999px; height: 20px; overflow: hidden;
 }
-@media (prefers-color-scheme: dark) { .fd-bucket-track { background: #2b2b35; } }
+@media (prefers-color-scheme: dark) { .fd-bucket-track { background: #26262d; } }
 .fd-bucket-fill {
-    background: __GRADYAN__; border-radius: 999px; height: 24px;
+    background: __RENK_MAVI__; border-radius: 999px; height: 20px;
     transition: width 0.5s ease;
 }
 </style>
@@ -392,8 +387,8 @@ with tab_plan:
                     gun_farki = (date.today() - gecikmis.due_date).days
                     gc1.markdown(
                         f"<div class='fd-gorev-row'>"
-                        f"<span class='fd-rozet' style='background:{ONCELIK_RENK[gecikmis.priority]}; "
-                        f"color:{ONCELIK_METIN_RENK[gecikmis.priority]};'>{ONCELIK_ETIKET[gecikmis.priority]}</span>"
+                        f"<span class='fd-rozet' style='background:{ONCELIK_TON[gecikmis.priority]}; "
+                        f"color:{ONCELIK_RENK[gecikmis.priority]};'>{ONCELIK_ETIKET[gecikmis.priority]}</span>"
                         f"<strong>{gecikmis.title}</strong>"
                         f"<br><span style='color:#898781; font-size:0.85rem;'>{gun_farki} gündür gecikmiş</span>"
                         f"</div>",
@@ -462,8 +457,8 @@ with tab_plan:
             tamamlandi_isareti = " ✓" if task.done else ""
             c1.markdown(
                 f"<div class='fd-gorev-row'>"
-                f"<span class='fd-rozet' style='background:{ONCELIK_RENK[task.priority]}; "
-                f"color:{ONCELIK_METIN_RENK[task.priority]};'>{ONCELIK_ETIKET[task.priority]}</span>"
+                f"<span class='fd-rozet' style='background:{ONCELIK_TON[task.priority]}; "
+                f"color:{ONCELIK_RENK[task.priority]};'>{ONCELIK_ETIKET[task.priority]}</span>"
                 f"<strong>{task.title}{tamamlandi_isareti}</strong>"
                 f"<br><span style='color:#898781; font-size:0.85rem;'>⏱ {task.duration_minutes} dakika</span>"
                 f"</div>",
@@ -541,11 +536,11 @@ with tab_ai:
         aktif_gorev_sayisi = len(list_tasks(current_user_id, include_done=False, due_date=kayit.gun))
         yerlesemeyen_sayisi = max(aktif_gorev_sayisi - len(kayit.dilimler), 0)
         if not kayit.dilimler:
-            rozet, rozet_renk, rozet_metin = "Planlanamadı", RENK_KRITIK, "#ffffff"
+            rozet, rozet_renk, rozet_ton = "Planlanamadı", RENK_KRITIK, RENK_KRITIK_TON
         elif yerlesemeyen_sayisi:
-            rozet, rozet_renk, rozet_metin = "Kısmen Planlandı", RENK_UYARI, "#0b0b0b"
+            rozet, rozet_renk, rozet_ton = "Kısmen Planlandı", RENK_UYARI, RENK_UYARI_TON
         else:
-            rozet, rozet_renk, rozet_metin = "Tamamen Planlandı ✓", RENK_IYI, "#ffffff"
+            rozet, rozet_renk, rozet_ton = "Tamamen Planlandı ✓", RENK_IYI, RENK_IYI_TON
 
         gun_adi = GUNLER[kayit.gun.weekday()]
         gun_metni = f"{gun_adi}, {kayit.gun.day} {AYLAR[kayit.gun.month - 1]} {kayit.gun.year}"
@@ -553,7 +548,7 @@ with tab_ai:
             f"<div class='fd-info-card'>"
             f"<span style='color:#898781;'>{gun_metni}</span><br>"
             f"<strong style='font-size:1.2rem;'>Günlük Plan Hazır</strong><br>"
-            f"<span class='fd-badge' style='background:{rozet_renk}; color:{rozet_metin};'>{rozet}</span></div>",
+            f"<span class='fd-badge' style='background:{rozet_ton}; color:{rozet_renk};'>{rozet}</span></div>",
             unsafe_allow_html=True,
         )
         if yerlesemeyen_sayisi:
@@ -618,26 +613,26 @@ with tab_rapor:
 
     tcol1, tcol2 = st.columns(2)
     tcol1.markdown(
-        f"<div class='fd-stat-tile' style='background:{RENK_IYI}; color:#fff;'>"
+        f"<div class='fd-stat-tile' style='background:{RENK_IYI_TON}; color:{RENK_IYI};'>"
         f"<span class='deger'>%{rapor['verimlilik_orani']}</span>"
         f"<span class='etiket'>Verimlilik Oranı</span></div>",
         unsafe_allow_html=True,
     )
     tcol2.markdown(
-        f"<div class='fd-stat-tile' style='background:{RENK_UYARI}; color:#0b0b0b;'>"
+        f"<div class='fd-stat-tile' style='background:{RENK_UYARI_TON}; color:{RENK_UYARI};'>"
         f"<span class='deger'>%{rapor['erteleme_orani']}</span>"
         f"<span class='etiket'>Erteleme Oranı</span></div>",
         unsafe_allow_html=True,
     )
     tcol3, tcol4 = st.columns(2)
     tcol3.markdown(
-        f"<div class='fd-stat-tile' style='background:{RENK_MAVI}; color:#fff;'>"
+        f"<div class='fd-stat-tile' style='background:{RENK_MAVI_TON}; color:{RENK_MAVI};'>"
         f"<span class='deger'>{rapor['tamamlanan_sayisi']}</span>"
         f"<span class='etiket'>Tamamlanan Görev</span></div>",
         unsafe_allow_html=True,
     )
     tcol4.markdown(
-        f"<div class='fd-stat-tile' style='background:{RENK_KRITIK}; color:#fff;'>"
+        f"<div class='fd-stat-tile' style='background:{RENK_KRITIK_TON}; color:{RENK_KRITIK};'>"
         f"<span class='deger'>{rapor['ertelenen_sayisi']}</span>"
         f"<span class='etiket'>Ertelenen Görev</span></div>",
         unsafe_allow_html=True,
