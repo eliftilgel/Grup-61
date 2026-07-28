@@ -1,7 +1,11 @@
 """Google Calendar ile yerel veritabanı arasındaki senkronizasyon."""
 
+import logging
+
 from core.database import SessionLocal
 from core.models import CalendarEvent
+
+logger = logging.getLogger(__name__)
 
 
 def upsert_events(events: list[dict]) -> dict:
@@ -49,7 +53,16 @@ def sync_from_google() -> dict:
     """Google'dan çek ve veritabanıyla eşitle."""
     from core.services.calendar_service import fetch_events
 
-    return upsert_events(fetch_events())
+    try:
+        sayac = upsert_events(fetch_events())
+    except Exception:
+        logger.exception("Google Takvim senkronu başarısız oldu")
+        raise
+    logger.info(
+        "Google Takvim senkronu tamamlandı: %(eklendi)s eklendi, "
+        "%(guncellendi)s güncellendi, %(silindi)s silindi", sayac
+    )
+    return sayac
 
 
 def list_events() -> list[CalendarEvent]:
@@ -65,7 +78,11 @@ def create_event_everywhere(
     """Etkinliği önce Google'da oluşturur, sonra yerel kopyaya işler."""
     from core.services.calendar_service import create_event
 
-    google_kayit = create_event(title, start_iso, end_iso, description)
+    try:
+        google_kayit = create_event(title, start_iso, end_iso, description)
+    except Exception:
+        logger.exception("Google Takvim'de etkinlik oluşturulamadı: %s", title)
+        raise
 
     with SessionLocal() as session:
         session.add(CalendarEvent(
@@ -77,3 +94,4 @@ def create_event_everywhere(
             updated=google_kayit.get("updated", ""),
         ))
         session.commit()
+    logger.info("Etkinlik oluşturuldu ve yerel kopyaya işlendi: %s", title)

@@ -5,11 +5,14 @@ gelecekte gerçek bir OpenAI tabanlı `ai_advisor.py` bu tek fonksiyonu
 değiştirerek devreye girebilir, geri kalan yerleştirme mantığına dokunmadan.
 """
 
+import logging
 from datetime import date, time
 from typing import Callable
 
 from core.database import SessionLocal
 from core.models import PlanKaydi, Task
+
+logger = logging.getLogger(__name__)
 
 GUN_BASLANGIC = time(6, 0)
 GUN_BITIS = time(23, 0)
@@ -183,7 +186,13 @@ def plan_olustur(
         session.add(kayit)
         session.commit()
         session.refresh(kayit)
-        return kayit
+
+    yerlesemeyen = len(sirali_gorevler) - len(dilimler)
+    logger.info(
+        "%s günü için plan oluşturuldu: %d/%d görev yerleştirildi (%d yerleşemedi)",
+        gun, len(dilimler), len(sirali_gorevler), yerlesemeyen,
+    )
+    return kayit
 
 
 def son_plan(gun: date) -> PlanKaydi | None:

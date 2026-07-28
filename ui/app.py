@@ -1,10 +1,13 @@
+import json
+import logging
 from datetime import date, datetime, time as dt_time, timedelta
 
 import streamlit as st
 
 from core.auth import sifre_dogrula
 from core.config import settings
-from core.services import planning_service, profil_service, report_service
+from core.logging_config import setup_logging
+from core.services import export_service, planning_service, profil_service, report_service
 from core.services.task_service import (
     complete_task,
     create_task,
@@ -12,6 +15,9 @@ from core.services.task_service import (
     list_tasks,
     update_task,
 )
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 st.set_page_config(page_title="Planla!", layout="wide")
 
@@ -216,6 +222,7 @@ with tab_profil:
                 st.success("Profil kaydedildi")
                 st.rerun()
             except ValueError as e:
+                logger.warning("Profil kaydetme hatası: %s", e)
                 st.error(str(e))
 
     if st.button("🚪 Çıkış Yap"):
@@ -224,6 +231,17 @@ with tab_profil:
             st.rerun()
         else:
             st.info("Giriş ekranı yapılandırılmadığı için çıkılacak bir oturum yok (.env'de AUTH_PASSWORD_HASH ayarlayın).")
+
+    st.divider()
+    st.subheader("🗂️ Veri Yönetimi")
+    st.caption("Tüm görevlerini, takvim etkinliklerini, profilini ve plan geçmişini tek bir JSON dosyası olarak indir.")
+    yedek = export_service.tum_veriyi_disa_aktar()
+    st.download_button(
+        "📦 Verilerini İndir (JSON)",
+        data=json.dumps(yedek, ensure_ascii=False, indent=2),
+        file_name=f"planla_yedek_{date.today():%Y-%m-%d}.json",
+        mime="application/json",
+    )
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -250,7 +268,7 @@ with tab_plan:
     blok_bas = bcol1.time_input("Başlangıç", value=dt_time(9, 0), key="blok_bas")
     blok_bit = bcol2.time_input("Bitiş", value=dt_time(12, 0), key="blok_bit")
     blok_etiket = bcol3.text_input(
-        "Etiket", key="blok_etiket", label_visibility="collapsed", placeholder="Etiket (ör: Ders)"
+        "Etiket", key="blok_etiket", placeholder="ör: Ders"
     )
     if bcol4.button("+ Ekle"):
         if blok_bit > blok_bas:
@@ -284,6 +302,7 @@ with tab_plan:
             create_task(g_title, priority=g_oncelik, due_date=secili_gun, duration_minutes=g_sure)
             st.rerun()
         except ValueError as e:
+            logger.warning("Görev oluşturma hatası: %s", e)
             st.error(str(e))
 
     gunun_gorevleri = list_tasks(due_date=secili_gun)
@@ -302,13 +321,13 @@ with tab_plan:
             f"</div>",
             unsafe_allow_html=True,
         )
-        if c2.button("✓", key=f"tamamla_{task.id}", disabled=task.done):
+        if c2.button("✓", key=f"tamamla_{task.id}", disabled=task.done, help="Görevi tamamla"):
             complete_task(task.id)
             st.rerun()
-        if c3.button("✎", key=f"duzenle_{task.id}"):
+        if c3.button("✎", key=f"duzenle_{task.id}", help="Görevi düzenle"):
             st.session_state["duzenle_id"] = None if st.session_state.get("duzenle_id") == task.id else task.id
             st.rerun()
-        if c4.button("🗑", key=f"sil_{task.id}"):
+        if c4.button("🗑", key=f"sil_{task.id}", help="Görevi sil"):
             delete_task(task.id)
             st.rerun()
 
@@ -327,6 +346,7 @@ with tab_plan:
                         st.session_state["duzenle_id"] = None
                         st.rerun()
                     except ValueError as e:
+                        logger.warning("Görev düzenleme hatası: %s", e)
                         st.error(str(e))
 
     st.markdown("<br>", unsafe_allow_html=True)

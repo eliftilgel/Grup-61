@@ -2,7 +2,10 @@
 from fastapi import FastAPI, HTTPException
 
 from api.schemas import TaskCreate, TaskOut
+from core.logging_config import setup_logging
 from core.services import task_service
+
+setup_logging()
 
 app = FastAPI(title="Planner API", version="0.1.0")
 
