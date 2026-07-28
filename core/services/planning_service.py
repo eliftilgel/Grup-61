@@ -131,6 +131,25 @@ def _genel_tavsiye_uret(kritik_tercih_penceresinde: int, toplam_kritik: int) -> 
     )
 
 
+def kapasite_kontrolu(gorevler: list[Task], uygun_olmayan_bloklar: list[dict], profil) -> dict:
+    """Görevlerin toplam süresini günün müsait zamanıyla karşılaştırır.
+
+    plan_olustur ile aynı _bos_araliklar hesabını kullanır, böylece burada
+    "sığar" denen bir gün, plan_olustur çalıştığında da gerçekten sığar.
+    """
+    bos = _bos_araliklar(profil, uygun_olmayan_bloklar)
+    musait_dakika = sum(b - a for a, b in bos)
+    toplam_gorev_dakika = sum(t.duration_minutes for t in gorevler)
+    fark_dakika = toplam_gorev_dakika - musait_dakika
+
+    return {
+        "toplam_gorev_dakika": toplam_gorev_dakika,
+        "musait_dakika": musait_dakika,
+        "asiri_yuklenme": fark_dakika > 0,
+        "fark_dakika": max(fark_dakika, 0),
+    }
+
+
 def plan_olustur(
     gun: date,
     gorevler: list[Task],

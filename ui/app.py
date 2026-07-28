@@ -12,6 +12,7 @@ from core.services.task_service import (
     complete_task,
     create_task,
     delete_task,
+    gecikmis_gorevleri_listele,
     list_tasks,
     update_task,
 )
@@ -263,6 +264,32 @@ with tab_plan:
         ]
         st.session_state["bloklar_gun"] = secili_gun
 
+    if secili_gun >= date.today():
+        gecikmisler = gecikmis_gorevleri_listele(date.today())
+        if gecikmisler:
+            st.subheader("⏰ Geçmişten Kalan Görevler")
+            for gecikmis in gecikmisler:
+                gc1, gc2 = st.columns([5, 2])
+                gun_farki = (date.today() - gecikmis.due_date).days
+                gc1.markdown(
+                    f"<div class='fd-gorev-row'>"
+                    f"<span class='fd-rozet' style='background:{ONCELIK_RENK[gecikmis.priority]}; "
+                    f"color:{ONCELIK_METIN_RENK[gecikmis.priority]};'>{ONCELIK_ETIKET[gecikmis.priority]}</span>"
+                    f"<strong>{gecikmis.title}</strong>"
+                    f"<br><span style='color:#898781; font-size:0.85rem;'>{gun_farki} gündür gecikmiş</span>"
+                    f"</div>",
+                    unsafe_allow_html=True,
+                )
+                if gc2.button(
+                    f"→ {secili_gun:%d.%m}'e taşı", key=f"tasi_{gecikmis.id}",
+                    help="Görevi seçili güne taşı",
+                ):
+                    update_task(
+                        gecikmis.id, gecikmis.title, gecikmis.description, gecikmis.priority,
+                        due_date=secili_gun, duration_minutes=gecikmis.duration_minutes,
+                    )
+                    st.rerun()
+
     st.subheader("🚫 Uygun Olmayan Saatler (Ders, Uyku vb.)")
     bcol1, bcol2, bcol3, bcol4 = st.columns([2, 2, 3, 1])
     blok_bas = bcol1.time_input("Başlangıç", value=dt_time(9, 0), key="blok_bas")
@@ -349,9 +376,20 @@ with tab_plan:
                         logger.warning("Görev düzenleme hatası: %s", e)
                         st.error(str(e))
 
+    aktif_gorevler = list_tasks(include_done=False, due_date=secili_gun)
+    if aktif_gorevler:
+        kapasite = planning_service.kapasite_kontrolu(
+            aktif_gorevler, st.session_state["uygun_olmayan_bloklar"], profil
+        )
+        if kapasite["asiri_yuklenme"]:
+            st.warning(
+                f"⚠️ Bugünkü işlerin toplam {kapasite['toplam_gorev_dakika']} dk, "
+                f"müsait zamanın {kapasite['musait_dakika']} dk — "
+                f"{kapasite['fark_dakika']} dk sığmayabilir."
+            )
+
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🚀 Planı Oluştur", type="primary", use_container_width=True):
-        aktif_gorevler = list_tasks(include_done=False, due_date=secili_gun)
         if not aktif_gorevler:
             st.warning("Plan oluşturmak için en az bir görev ekleyin.")
         else:
@@ -377,9 +415,12 @@ with tab_ai:
     if kayit is None:
         st.info("Bu gün için henüz bir plan oluşturulmadı — 'Plan Oluştur' sekmesinden oluşturabilirsin.")
     else:
+        aktif_gorev_sayisi = len(list_tasks(include_done=False, due_date=kayit.gun))
+        yerlesemeyen_sayisi = max(aktif_gorev_sayisi - len(kayit.dilimler), 0)
+        rozet = "Tamamen Planlandı ✓" if not yerlesemeyen_sayisi and kayit.dilimler else "Planlanamadı" if not kayit.dilimler else "Kısmen Planlandı"
+
         gun_adi = GUNLER[kayit.gun.weekday()]
         gun_metni = f"{gun_adi}, {kayit.gun.day} {AYLAR[kayit.gun.month - 1]} {kayit.gun.year}"
-        rozet = "Tamamen Planlandı ✓" if kayit.dilimler else "Planlanamadı"
         st.markdown(
             f"<div class='fd-info-card'>"
             f"<span style='color:#898781;'>{gun_metni}</span><br>"
@@ -387,6 +428,8 @@ with tab_ai:
             f"<span class='fd-badge'>{rozet}</span></div>",
             unsafe_allow_html=True,
         )
+        if yerlesemeyen_sayisi:
+            st.warning(f"⚠️ {yerlesemeyen_sayisi} görev bu plana sığmadı — gün dolu.")
 
         scol1, scol2 = st.columns(2)
         scol1.markdown(

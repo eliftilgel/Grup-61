@@ -4,7 +4,13 @@ from datetime import date, timedelta
 
 import pytest
 
-from core.services.task_service import complete_task, create_task, list_tasks, update_task
+from core.services.task_service import (
+    complete_task,
+    create_task,
+    gecikmis_gorevleri_listele,
+    list_tasks,
+    update_task,
+)
 
 
 def test_gorev_olusturma(test_db):
@@ -113,3 +119,31 @@ def test_tamamlanmis_gecikmis_gorev_ertelenince_sayac_artmaz(test_db):
                           due_date=date.today() + timedelta(days=1))
 
     assert guncel.postponement_count == 0
+
+
+def test_gecikmis_gorevler_listelenir(test_db):
+    bugun = date.today()
+    gecmis = bugun - timedelta(days=2)
+    create_task("Gecikmiş", due_date=gecmis)
+
+    gecikmisler = gecikmis_gorevleri_listele(bugun)
+
+    assert [g.title for g in gecikmisler] == ["Gecikmiş"]
+
+
+def test_tamamlanmis_gecikmis_gorev_listelenmez(test_db):
+    bugun = date.today()
+    gecmis = bugun - timedelta(days=2)
+    task = create_task("Tamamlanmış", due_date=gecmis)
+    complete_task(task.id)
+
+    assert gecikmis_gorevleri_listele(bugun) == []
+
+
+def test_bugunku_ve_gelecek_gorevler_gecikmis_sayilmaz(test_db):
+    bugun = date.today()
+    create_task("Bugünkü", due_date=bugun)
+    create_task("Gelecek", due_date=bugun + timedelta(days=1))
+    create_task("Tarihsiz")
+
+    assert gecikmis_gorevleri_listele(bugun) == []

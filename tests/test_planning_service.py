@@ -3,7 +3,7 @@
 from datetime import date, time
 
 from core.models import Profil
-from core.services.planning_service import plan_olustur, son_plan
+from core.services.planning_service import kapasite_kontrolu, plan_olustur, son_plan
 from core.services.task_service import create_task
 
 VARSAYILAN_PROFIL = Profil(
@@ -76,3 +76,36 @@ def test_son_plan_en_son_kaydi_doner(test_db):
 
 def test_plan_olmayan_gun_none_doner(test_db):
     assert son_plan(date(2099, 1, 1)) is None
+
+
+def test_kapasite_asilmazsa_asiri_yuklenme_false(test_db):
+    gorev = create_task("Kısa iş", priority=2, duration_minutes=500)
+
+    sonuc = kapasite_kontrolu([gorev], [], VARSAYILAN_PROFIL)
+
+    assert sonuc["asiri_yuklenme"] is False
+    assert sonuc["fark_dakika"] == 0
+    assert sonuc["toplam_gorev_dakika"] == 500
+
+
+def test_kapasite_asilirsa_asiri_yuklenme_true(test_db):
+    # Gün 06:00-23:00 (1020 dk), uyku 23:00-07:00 sadece 06:00-07:00'ı (60 dk) kapsıyor.
+    # Müsait: 1020 - 60 = 960 dk.
+    gorev = create_task("Uzun iş", priority=2, duration_minutes=1000)
+
+    sonuc = kapasite_kontrolu([gorev], [], VARSAYILAN_PROFIL)
+
+    assert sonuc["musait_dakika"] == 960
+    assert sonuc["asiri_yuklenme"] is True
+    assert sonuc["fark_dakika"] == 40
+
+
+def test_kapasite_uygun_olmayan_bloklari_dikkate_alir(test_db):
+    gorev = create_task("İş", priority=2, duration_minutes=30)
+    tam_gun_blogu = [{"start": time(7, 0), "end": time(23, 0), "label": "Meşgul"}]
+
+    sonuc = kapasite_kontrolu([gorev], tam_gun_blogu, VARSAYILAN_PROFIL)
+
+    assert sonuc["musait_dakika"] == 0
+    assert sonuc["asiri_yuklenme"] is True
+    assert sonuc["fark_dakika"] == 30

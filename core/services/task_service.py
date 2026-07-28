@@ -48,6 +48,16 @@ def list_tasks(
         return list(query)
 
 
+def gecikmis_gorevleri_listele(referans_gun: date) -> list[Task]:
+    """referans_gun'dan önce vadesi geçmiş, henüz tamamlanmamış görevleri döner."""
+    with SessionLocal() as session:
+        return list(
+            session.query(Task)
+            .filter(Task.due_date < referans_gun, Task.done.is_(False))
+            .order_by(Task.priority.desc(), Task.due_date.asc())
+        )
+
+
 def complete_task(task_id: int) -> Task:
     """Görevi tamamlandı olarak işaretler."""
     with SessionLocal() as session:
