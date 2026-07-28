@@ -1,0 +1,25 @@
+"""Uygulama ayarları — .env dosyasından okunur, tek doğruluk kaynağı."""
+
+from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=BASE_DIR / ".env", env_file_encoding="utf-8")
+
+    database_url: str = f"sqlite:///{BASE_DIR / 'planner.db'}"
+    sqlalchemy_echo: bool = False
+
+    google_credentials_file: Path = BASE_DIR / "credentials.json"
+    google_token_file: Path = BASE_DIR / "token.json"
+    google_calendar_scopes: list[str] = ["https://www.googleapis.com/auth/calendar.events"]
+
+    # İleride ai_advisor.py tarafından kullanılacak (Faz 3)
+    openai_api_key: str | None = None
+    openai_model: str = "gpt-4o-mini"
+
+
+settings = Settings()

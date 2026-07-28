@@ -6,3 +6,6 @@ __pycache__/
 .pytest_cache/
 credentials.json
 token.json
+.env
+*.egg-info/
+logs/
