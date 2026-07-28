@@ -185,7 +185,82 @@ FlowDay şu an "Kavram Kanıtlama" (Proof of Concept) aşamasının sonundadır.
 
 <img width="599" height="1172" alt="image" src="https://github.com/user-attachments/assets/4ee32952-c7a4-4a86-9742-d439771d3af4" />
 
+# Uygulama: Planla! — Teknik Genel Bakış
 
+Yukarıdaki bölümler Sprint 1'in ürün vizyonu ve proje yönetimi çıktılarını (tarihsel kayıt olarak) anlatıyor. Bu bölüm ise, o vizyondan yola çıkılarak şu ana kadar gerçekten kodlanmış ve çalışan uygulamayı ("Planla!") teknik olarak özetler.
 
+## Ne Yapıyor
 
+"Planla!", tek kullanıcılı, yerel çalışan bir günlük görev/plan yöneticisidir:
+
+- Görev oluşturma, düzenleme, tamamlama, silme (öncelik: Kritik/Orta/Düşük, süre, son tarih).
+- Google Takvim ile senkronizasyon: yerelde oluşturulan etkinlikler Google Takvim'e yazılır ve yerel bir kopya (`calendar_events`) tutulur.
+- Kural tabanlı (kural motoruyla, henüz gerçek bir LLM çağrısı olmadan) günlük plan üretimi: görevleri önceliğe göre kullanıcının "en verimli olduğu saatler"ine, uygun olmayan saatleri (ders, uyku vb.) hariç tutarak yerleştirir ve her yerleştirme için Türkçe bir gerekçe metni üretir.
+- Haftalık verimlilik/erteleme raporu: tamamlanan/ertelenen görev oranları, saat dilimine göre verimlilik yüzdeleri, en çok ertelenen görevler.
+
+## Mimari
+
+| Katman | Konum | Sorumluluk |
+|---|---|---|
+| UI | `ui/app.py` | Streamlit arayüzü — 4 sekme: Profil, Plan Oluştur, AI Planı, Rapor. `core/services/*` fonksiyonlarını doğrudan çağırır. |
+| API | `api/main.py`, `api/schemas.py` | FastAPI — şu an yalnızca görev (task) CRUD endpoint'leri. |
+| Servisler | `core/services/` | İş mantığı; arayüzden bağımsız, doğrudan test edilebilir. |
+| Veri | `core/models.py`, `core/database.py` | SQLAlchemy 2.0 ORM, SQLite. |
+| Config | `core/config.py` | `pydantic-settings` ile `.env` tabanlı merkezi ayarlar (DB yolu, Google OAuth dosya yolları/scope'ları). |
+| Migration | `migrations/` (Alembic) | Şema versiyonlama. |
+| Test | `tests/` | pytest — servis katmanı birim testleri. |
+
+UI ve API, `core/` üzerinde çalışan iki bağımsız, simetrik istemci olarak tasarlanmıştır (UI, API'yi çağırmaz).
+
+## Teknoloji Yığını
+
+- **Arayüz:** Streamlit (>=1.59)
+- **API:** FastAPI + Uvicorn
+- **ORM / Veritabanı:** SQLAlchemy 2.0 (typed `Mapped`/`mapped_column`), SQLite
+- **Migration:** Alembic
+- **Takvim entegrasyonu:** `google-api-python-client`, `google-auth-oauthlib` (OAuth 2.0 installed-app akışı)
+- **Config:** `pydantic-settings` (`.env` dosyasından okunur)
+- **Test:** pytest
+
+## Ekranlar
+
+1. **👤 Profil** — ad/e-posta, en verimli olunan saat aralığı, varsayılan uyku saatleri, günlük görev hedefi. Tek satırlık yerel bir ayar profili (gerçek çoklu kullanıcı girişi değildir).
+2. **📝 Plan Oluştur** — gün seçimi, o gün için uygun olmayan saat blokları (uyku bloğu profilden otomatik gelir), görev ekleme/tamamlama/düzenleme/silme, "Planı Oluştur" ile plan üretimini tetikler.
+3. **🗓️ AI Planı** — seçili gün için en son üretilen planı gösterir: zaman dilimli görev sıralaması, her dilim için gerekçe metni, toplam iş süresi / boş zaman istatistikleri, genel bir öneri metni.
+4. **📊 Rapor** — son 7 güne ait verimlilik oranı, erteleme oranı, tamamlanan/ertelenen görev sayıları, 5 sabit zaman dilimine (07–10, 10–13, 13–16, 16–19, 19–22) göre verimlilik yüzdeleri, en çok ertelenen görevler.
+
+## Veri Modeli (`core/models.py`)
+
+- **`Task`** — `title`, `description`, `priority` (1-3), `done`, `due_date`, `duration_minutes`, `completed_at`, `postponement_count`.
+- **`CalendarEvent`** — Google Takvim etkinliklerinin yerel aynası (`google_id`, `title`, `start`/`end`/`updated`).
+- **`Profil`** — tek satırlık (id=1) kullanıcı ayarları (verimli/uyku saat aralıkları, günlük hedef).
+- **`PlanKaydi`** — bir günlük plan üretiminin geçmiş kaydı (`gun`, üretilen zaman dilimleri JSON olarak, toplam iş/boş süre, genel tavsiye metni). Her yeniden üretim yeni bir kayıt oluşturur.
+
+## Servis Katmanı (`core/services/`)
+
+- `task_service.py` — görev CRUD, erteleme sayacı, tamamlanma zaman damgası.
+- `calendar_service.py` — Google Calendar API ile ham iletişim (OAuth, fetch/create/delete).
+- `sync_service.py` — yerel veritabanı ile Google Takvim arasındaki iki yönlü senkronizasyon mantığı.
+- `profil_service.py` — kullanıcı ayar profilinin okunması/kaydedilmesi.
+- `planning_service.py` — kural tabanlı günlük plan üretimi (öncelik + uygun olmayan saatlere göre yerleştirme, gerekçe metni üretimi).
+- `report_service.py` — haftalık verimlilik/erteleme istatistiklerinin hesaplanması.
+
+## Kurulum ve Çalıştırma
+
+```bash
+pip install -r requirements.txt
+pip install -e .
+alembic upgrade head          # veritabanı şemasını güncelle
+streamlit run ui/app.py       # arayüzü başlat (http://localhost:8501)
+uvicorn api.main:app --reload # (isteğe bağlı) API'yi başlat
+pytest                        # testleri çalıştır
+```
+
+Google Takvim senkronu için proje köküne bir Google Cloud OAuth `credentials.json` dosyası eklenmelidir; ilk kullanımda tarayıcı üzerinden izin akışı başlar ve `token.json` otomatik oluşturulur.
+
+## Şu An Kapsamda Olmayanlar
+
+- Gerçek bir OpenAI/LLM entegrasyonu yok — plan ve rapor metinleri kural tabanlı şablonlarla üretiliyor (mimari, ileride bu metinleri üreten fonksiyonun bir LLM çağrısıyla değiştirilebilmesine göre tasarlandı).
+- Gerçek çoklu kullanıcı kimlik doğrulaması yok.
+- API katmanı henüz sadece görevleri kapsıyor; takvim ve plan/rapor endpoint'leri yok.
 
