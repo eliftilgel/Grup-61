@@ -21,8 +21,5 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     openai_model: str = "gpt-4o-mini"
 
-    # Boşsa giriş ekranı devre dışı kalır (geriye dönük uyumlu varsayılan).
-    auth_password_hash: str | None = None
-
 
 settings = Settings()

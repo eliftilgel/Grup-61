@@ -4,10 +4,15 @@ from datetime import date, datetime, time as dt_time, timedelta
 
 import streamlit as st
 
-from core.auth import sifre_dogrula
-from core.config import settings
 from core.logging_config import setup_logging
-from core.services import export_service, planning_service, profil_service, report_service
+from core.services import (
+    export_service,
+    planning_service,
+    profil_service,
+    report_service,
+    sync_service,
+    user_service,
+)
 from core.services.task_service import (
     complete_task,
     create_task,
@@ -22,21 +27,56 @@ logger = logging.getLogger(__name__)
 
 st.set_page_config(page_title="Planla!", layout="wide")
 
-if settings.auth_password_hash and not st.session_state.get("authenticated"):
+# ---------------------------------------------------------------------------
+# Giriş / Kayıt — çoklu kullanıcı sistemi, her kullanıcı kendi hesabıyla girer.
+# ---------------------------------------------------------------------------
+if not st.session_state.get("user_id"):
     st.markdown(
         "<h2 style='text-align:center; margin-top:80px;'>🔒 Planla!</h2>", unsafe_allow_html=True
     )
     _giris_col1, _giris_col2, _giris_col3 = st.columns([1, 1, 1])
     with _giris_col2:
-        with st.form("giris_formu"):
-            girilen_sifre = st.text_input("Parola", type="password")
-            if st.form_submit_button("Giriş Yap", use_container_width=True):
-                if sifre_dogrula(settings.auth_password_hash, girilen_sifre):
-                    st.session_state["authenticated"] = True
-                    st.rerun()
-                else:
-                    st.error("Parola hatalı")
+        giris_tab, kayit_tab = st.tabs(["Giriş Yap", "Kayıt Ol"])
+        with giris_tab:
+            with st.form("giris_formu"):
+                g_kullanici_adi = st.text_input("Kullanıcı adı")
+                g_sifre = st.text_input("Parola", type="password")
+                if st.form_submit_button("Giriş Yap", width="stretch"):
+                    kullanici = user_service.authenticate(g_kullanici_adi, g_sifre)
+                    if kullanici:
+                        st.session_state["user_id"] = kullanici.id
+                        st.session_state["is_admin"] = kullanici.is_admin
+                        st.session_state["username"] = kullanici.username
+                        st.rerun()
+                    else:
+                        logger.warning("Başarısız giriş denemesi: %s", g_kullanici_adi)
+                        st.error("Kullanıcı adı veya parola hatalı")
+        with kayit_tab:
+            with st.form("kayit_formu"):
+                k_kullanici_adi = st.text_input("Kullanıcı adı", key="kayit_ka")
+                k_sifre = st.text_input("Parola", type="password", key="kayit_sifre")
+                if st.form_submit_button("Kayıt Ol", width="stretch"):
+                    try:
+                        kullanici = user_service.create_user(k_kullanici_adi, k_sifre)
+                        st.session_state["user_id"] = kullanici.id
+                        st.session_state["is_admin"] = kullanici.is_admin
+                        st.session_state["username"] = kullanici.username
+                        st.rerun()
+                    except ValueError as e:
+                        logger.warning("Kayıt hatası: %s", e)
+                        st.error(str(e))
     st.stop()
+
+current_user_id = st.session_state["user_id"]
+
+with st.sidebar:
+    st.markdown(f"👤 **{st.session_state.get('username', '')}**")
+    if st.session_state.get("is_admin"):
+        st.caption("🛠️ Admin")
+    if st.button("🚪 Çıkış Yap", width="stretch", key="sidebar_cikis"):
+        for anahtar in ("user_id", "is_admin", "username"):
+            st.session_state.pop(anahtar, None)
+        st.rerun()
 
 # ---------------------------------------------------------------------------
 # Renkler — dataviz skill'inin durum paletinden (good/warning/critical) +
@@ -176,17 +216,18 @@ with st.expander("📅 Google Takvim'e etkinlik ekle"):
             elif ev_bit <= ev_bas:
                 st.error("Bitiş, başlangıçtan sonra olmalı")
             else:
-                from core.services.sync_service import create_event_everywhere
-
                 start_iso = datetime.combine(ev_gun, ev_bas).astimezone().isoformat()
                 end_iso = datetime.combine(ev_gun, ev_bit).astimezone().isoformat()
-                create_event_everywhere(ev_title, start_iso, end_iso, ev_desc)
+                sync_service.create_event_everywhere(current_user_id, ev_title, start_iso, end_iso, ev_desc)
                 st.success("Etkinlik Google Takvim'e eklendi")
                 st.rerun()
 
-tab_profil, tab_plan, tab_ai, tab_rapor = st.tabs(
-    ["👤 Profil", "📝 Plan Oluştur", "🗓️ AI Planı", "📊 Rapor"]
-)
+_sekme_etiketleri = ["👤 Profil", "📝 Plan Oluştur", "🗓️ AI Planı", "📊 Rapor"]
+if st.session_state.get("is_admin"):
+    _sekme_etiketleri.append("🛠️ Admin")
+_sekmeler = st.tabs(_sekme_etiketleri)
+tab_profil, tab_plan, tab_ai, tab_rapor = _sekmeler[:4]
+tab_admin = _sekmeler[4] if len(_sekmeler) > 4 else None
 
 # ---------------------------------------------------------------------------
 # Profil
@@ -195,11 +236,11 @@ with tab_profil:
     st.markdown("<div class='fd-header'>👤 Profil &amp; Ayarlar</div>", unsafe_allow_html=True)
     st.markdown("<div class='fd-card'>", unsafe_allow_html=True)
 
-    profil = profil_service.get_or_create()
+    profil = profil_service.get_or_create(current_user_id)
     baslangic_harfleri = "".join(p[0].upper() for p in profil.ad_soyad.split()[:2]) or "?"
     st.markdown(
         f"<div class='fd-avatar'>{baslangic_harfleri}</div>"
-        f"<p style='text-align:center; font-weight:700; margin-bottom:0;'>{profil.ad_soyad or 'Ad Soyad'}</p>"
+        f"<p style='text-align:center; font-weight:700; margin-bottom:0;'>{profil.ad_soyad or st.session_state['username']}</p>"
         f"<p style='text-align:center; color:#898781; margin-top:0;'>{profil.e_posta or '—'}</p>",
         unsafe_allow_html=True,
     )
@@ -217,32 +258,42 @@ with tab_profil:
         p_uyku_e = col4.time_input("Bitiş", value=profil.uyku_bitis, key="p_uyku_e")
         p_hedef = st.number_input("🎯 Günlük Hedef (görev sayısı)", min_value=1, value=profil.gunluk_hedef)
 
-        if st.form_submit_button("💾 Kaydet", type="primary", use_container_width=True):
+        if st.form_submit_button("💾 Kaydet", type="primary", width="stretch"):
             try:
-                profil_service.save(p_ad, p_eposta, p_verimli_b, p_verimli_e, p_uyku_b, p_uyku_e, p_hedef)
+                profil_service.save(
+                    current_user_id, p_ad, p_eposta, p_verimli_b, p_verimli_e, p_uyku_b, p_uyku_e, p_hedef
+                )
                 st.success("Profil kaydedildi")
                 st.rerun()
             except ValueError as e:
                 logger.warning("Profil kaydetme hatası: %s", e)
                 st.error(str(e))
 
-    if st.button("🚪 Çıkış Yap"):
-        if settings.auth_password_hash:
-            st.session_state["authenticated"] = False
-            st.rerun()
-        else:
-            st.info("Giriş ekranı yapılandırılmadığı için çıkılacak bir oturum yok (.env'de AUTH_PASSWORD_HASH ayarlayın).")
-
     st.divider()
     st.subheader("🗂️ Veri Yönetimi")
     st.caption("Tüm görevlerini, takvim etkinliklerini, profilini ve plan geçmişini tek bir JSON dosyası olarak indir.")
-    yedek = export_service.tum_veriyi_disa_aktar()
+    yedek = export_service.tum_veriyi_disa_aktar(current_user_id)
     st.download_button(
         "📦 Verilerini İndir (JSON)",
         data=json.dumps(yedek, ensure_ascii=False, indent=2),
         file_name=f"planla_yedek_{date.today():%Y-%m-%d}.json",
         mime="application/json",
     )
+
+    st.divider()
+    st.subheader("⚠️ Hesabı Sil")
+    st.caption("Hesabını ve tüm görev/etkinlik/profil/plan verini kalıcı olarak siler. Bu işlem geri alınamaz.")
+    kendi_hesap_onay = st.checkbox(
+        "Hesabımı kalıcı olarak silmek istediğimi onaylıyorum", key="kendi_hesap_silme_onay"
+    )
+    if st.button("🗑️ Hesabımı Kalıcı Olarak Sil", disabled=not kendi_hesap_onay, key="kendi_hesap_sil"):
+        try:
+            user_service.delete_user(current_user_id)
+            for anahtar in ("user_id", "is_admin", "username"):
+                st.session_state.pop(anahtar, None)
+            st.rerun()
+        except ValueError as e:
+            st.error(str(e))
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -253,7 +304,7 @@ with tab_plan:
     st.markdown("<div class='fd-header'>📝 Günlük Plan Oluştur</div>", unsafe_allow_html=True)
     st.markdown("<div class='fd-card'>", unsafe_allow_html=True)
 
-    profil = profil_service.get_or_create()
+    profil = profil_service.get_or_create(current_user_id)
     secili_gun = st.date_input(
         "📅 Günü Seç", value=st.session_state.get("secili_gun", date.today()), key="secili_gun"
     )
@@ -265,7 +316,7 @@ with tab_plan:
         st.session_state["bloklar_gun"] = secili_gun
 
     if secili_gun >= date.today():
-        gecikmisler = gecikmis_gorevleri_listele(date.today())
+        gecikmisler = gecikmis_gorevleri_listele(current_user_id, date.today())
         if gecikmisler:
             st.subheader("⏰ Geçmişten Kalan Görevler")
             for gecikmis in gecikmisler:
@@ -285,7 +336,7 @@ with tab_plan:
                     help="Görevi seçili güne taşı",
                 ):
                     update_task(
-                        gecikmis.id, gecikmis.title, gecikmis.description, gecikmis.priority,
+                        current_user_id, gecikmis.id, gecikmis.title, gecikmis.description, gecikmis.priority,
                         due_date=secili_gun, duration_minutes=gecikmis.duration_minutes,
                     )
                     st.rerun()
@@ -324,15 +375,15 @@ with tab_plan:
     g_oncelik = st.selectbox(
         "Öncelik Seç", options=[3, 2, 1], format_func=lambda p: ONCELIK_ETIKET[p], key="g_oncelik"
     )
-    if st.button("+ Görev Ekle", type="primary", use_container_width=True):
+    if st.button("+ Görev Ekle", type="primary", width="stretch"):
         try:
-            create_task(g_title, priority=g_oncelik, due_date=secili_gun, duration_minutes=g_sure)
+            create_task(current_user_id, g_title, priority=g_oncelik, due_date=secili_gun, duration_minutes=g_sure)
             st.rerun()
         except ValueError as e:
             logger.warning("Görev oluşturma hatası: %s", e)
             st.error(str(e))
 
-    gunun_gorevleri = list_tasks(due_date=secili_gun)
+    gunun_gorevleri = list_tasks(current_user_id, due_date=secili_gun)
     if not gunun_gorevleri:
         st.caption("Bu gün için henüz görev eklenmedi.")
 
@@ -349,13 +400,13 @@ with tab_plan:
             unsafe_allow_html=True,
         )
         if c2.button("✓", key=f"tamamla_{task.id}", disabled=task.done, help="Görevi tamamla"):
-            complete_task(task.id)
+            complete_task(current_user_id, task.id)
             st.rerun()
         if c3.button("✎", key=f"duzenle_{task.id}", help="Görevi düzenle"):
             st.session_state["duzenle_id"] = None if st.session_state.get("duzenle_id") == task.id else task.id
             st.rerun()
         if c4.button("🗑", key=f"sil_{task.id}", help="Görevi sil"):
-            delete_task(task.id)
+            delete_task(current_user_id, task.id)
             st.rerun()
 
         if st.session_state.get("duzenle_id") == task.id:
@@ -369,14 +420,14 @@ with tab_plan:
                 e_due = st.date_input("Son tarih", value=task.due_date or secili_gun)
                 if st.form_submit_button("Kaydet"):
                     try:
-                        update_task(task.id, e_title, task.description, e_oncelik, e_due, e_sure)
+                        update_task(current_user_id, task.id, e_title, task.description, e_oncelik, e_due, e_sure)
                         st.session_state["duzenle_id"] = None
                         st.rerun()
                     except ValueError as e:
                         logger.warning("Görev düzenleme hatası: %s", e)
                         st.error(str(e))
 
-    aktif_gorevler = list_tasks(include_done=False, due_date=secili_gun)
+    aktif_gorevler = list_tasks(current_user_id, include_done=False, due_date=secili_gun)
     if aktif_gorevler:
         kapasite = planning_service.kapasite_kontrolu(
             aktif_gorevler, st.session_state["uygun_olmayan_bloklar"], profil
@@ -389,12 +440,12 @@ with tab_plan:
             )
 
     st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🚀 Planı Oluştur", type="primary", use_container_width=True):
+    if st.button("🚀 Planı Oluştur", type="primary", width="stretch"):
         if not aktif_gorevler:
             st.warning("Plan oluşturmak için en az bir görev ekleyin.")
         else:
             planning_service.plan_olustur(
-                secili_gun, aktif_gorevler, st.session_state["uygun_olmayan_bloklar"], profil
+                current_user_id, secili_gun, aktif_gorevler, st.session_state["uygun_olmayan_bloklar"], profil
             )
             st.success("Plan oluşturuldu! 'AI Planı' sekmesinden görüntüleyebilirsin.")
 
@@ -410,12 +461,12 @@ with tab_ai:
     st.markdown("<div class='fd-card'>", unsafe_allow_html=True)
 
     gosterilecek_gun = st.session_state.get("secili_gun", date.today())
-    kayit = planning_service.son_plan(gosterilecek_gun)
+    kayit = planning_service.son_plan(current_user_id, gosterilecek_gun)
 
     if kayit is None:
         st.info("Bu gün için henüz bir plan oluşturulmadı — 'Plan Oluştur' sekmesinden oluşturabilirsin.")
     else:
-        aktif_gorev_sayisi = len(list_tasks(include_done=False, due_date=kayit.gun))
+        aktif_gorev_sayisi = len(list_tasks(current_user_id, include_done=False, due_date=kayit.gun))
         yerlesemeyen_sayisi = max(aktif_gorev_sayisi - len(kayit.dilimler), 0)
         rozet = "Tamamen Planlandı ✓" if not yerlesemeyen_sayisi and kayit.dilimler else "Planlanamadı" if not kayit.dilimler else "Kısmen Planlandı"
 
@@ -477,7 +528,7 @@ with tab_rapor:
     st.markdown("<div class='fd-header'>📊 Verim &amp; Erteleme Raporu</div>", unsafe_allow_html=True)
     st.markdown("<div class='fd-card'>", unsafe_allow_html=True)
 
-    rapor = report_service.haftalik_rapor()
+    rapor = report_service.haftalik_rapor(current_user_id)
     r_bitis = date.today()
     r_baslangic = r_bitis - timedelta(days=6)
     st.markdown(
@@ -537,3 +588,114 @@ with tab_rapor:
     )
 
     st.markdown("</div>", unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
+# Admin — sadece is_admin=True kullanıcılara görünür
+# ---------------------------------------------------------------------------
+if tab_admin is not None:
+    with tab_admin:
+        st.markdown("<div class='fd-header'>🛠️ Admin</div>", unsafe_allow_html=True)
+        st.markdown("<div class='fd-card'>", unsafe_allow_html=True)
+
+        kullanicilar = user_service.list_users()
+
+        st.subheader("👥 Kullanıcılar")
+        st.dataframe(
+            [
+                {
+                    "Kullanıcı Adı": u.username,
+                    "Admin mi": "Evet" if u.is_admin else "Hayır",
+                    "Kayıt Tarihi": u.created_at.strftime("%d.%m.%Y"),
+                    "Görev Sayısı": len(list_tasks(u.id)),
+                }
+                for u in kullanicilar
+            ],
+            width="stretch",
+            hide_index=True,
+        )
+
+        st.subheader("🔍 Kullanıcı Detayı ve Yönetimi")
+        secilen_ad = st.selectbox(
+            "Kullanıcı seç", options=[u.username for u in kullanicilar], key="admin_secili_kullanici"
+        )
+        secilen = next(u for u in kullanicilar if u.username == secilen_ad)
+
+        detay_gorevler = list_tasks(secilen.id)
+        st.caption(f"📋 {len(detay_gorevler)} görev")
+        if detay_gorevler:
+            st.dataframe(
+                [
+                    {
+                        "Başlık": t.title,
+                        "Öncelik": ONCELIK_ETIKET[t.priority],
+                        "Bitti mi": "Evet" if t.done else "Hayır",
+                        "Son Tarih": t.due_date,
+                        "Süre (dk)": t.duration_minutes,
+                        "Erteleme": t.postponement_count,
+                    }
+                    for t in detay_gorevler
+                ],
+                width="stretch",
+                hide_index=True,
+            )
+
+        detay_planlar = planning_service.kullanicinin_planlari(secilen.id)
+        st.caption(f"🗓️ {len(detay_planlar)} plan kaydı")
+        if detay_planlar:
+            st.dataframe(
+                [
+                    {
+                        "Gün": p.gun,
+                        "Oluşturulma": p.created_at.strftime("%d.%m.%Y %H:%M"),
+                        "Dilim Sayısı": len(p.dilimler),
+                        "Toplam İş (dk)": p.toplam_is_dakika,
+                    }
+                    for p in detay_planlar
+                ],
+                width="stretch",
+                hide_index=True,
+            )
+
+        detay_etkinlikler = sync_service.list_events(secilen.id)
+        st.caption(f"📅 {len(detay_etkinlikler)} takvim etkinliği")
+        if detay_etkinlikler:
+            st.dataframe(
+                [{"Başlık": e.title, "Başlangıç": e.start, "Bitiş": e.end} for e in detay_etkinlikler],
+                width="stretch",
+                hide_index=True,
+            )
+
+        st.markdown("**⚙️ Yönetim**")
+        mcol1, mcol2 = st.columns(2)
+        if mcol1.button(
+            "Admin yetkisini kaldır" if secilen.is_admin else "Admin yap",
+            key="admin_toggle",
+            disabled=secilen.id == current_user_id,
+            help="Kendi admin yetkini kaldıramazsın" if secilen.id == current_user_id else None,
+        ):
+            user_service.set_admin(secilen.id, not secilen.is_admin)
+            st.rerun()
+
+        with st.form("admin_sifre_sifirla_formu"):
+            yeni_sifre = st.text_input("Yeni parola", type="password")
+            if st.form_submit_button("🔑 Parolayı Sıfırla"):
+                try:
+                    user_service.sifre_sifirla(secilen.id, yeni_sifre)
+                    st.success(f"{secilen.username} için parola sıfırlandı.")
+                except ValueError as e:
+                    st.error(str(e))
+
+        st.markdown("**🗑️ Hesabı Sil**")
+        onay = st.checkbox(
+            f"{secilen.username} hesabını ve TÜM verisini kalıcı olarak silmeyi onaylıyorum",
+            key="admin_silme_onay",
+        )
+        if st.button("Hesabı Kalıcı Olarak Sil", disabled=not onay, key="admin_hesap_sil"):
+            if secilen.id == current_user_id:
+                st.error("Kendi hesabını silemezsin.")
+            else:
+                user_service.delete_user(secilen.id)
+                st.success(f"{secilen.username} silindi.")
+                st.rerun()
+
+        st.markdown("</div>", unsafe_allow_html=True)

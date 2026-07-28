@@ -4,146 +4,177 @@ from datetime import date, timedelta
 
 import pytest
 
+from core.models import User
 from core.services.task_service import (
     complete_task,
     create_task,
+    delete_task,
     gecikmis_gorevleri_listele,
     list_tasks,
     update_task,
 )
 
 
-def test_gorev_olusturma(test_db):
-    task = create_task("Alışveriş yap", priority=2)
+def test_gorev_olusturma(test_db, test_user_id):
+    task = create_task(test_user_id, "Alışveriş yap", priority=2)
 
     assert task.id is not None
+    assert task.user_id == test_user_id
     assert task.title == "Alışveriş yap"
     assert task.priority == 2
     assert task.done is False
 
 
-def test_bos_baslik_hata_verir(test_db):
+def test_bos_baslik_hata_verir(test_db, test_user_id):
     with pytest.raises(ValueError):
-        create_task("   ")
+        create_task(test_user_id, "   ")
 
 
-def test_gecersiz_oncelik_hata_verir(test_db):
+def test_gecersiz_oncelik_hata_verir(test_db, test_user_id):
     with pytest.raises(ValueError):
-        create_task("Geçerli başlık", priority=5)
+        create_task(test_user_id, "Geçerli başlık", priority=5)
 
 
-def test_gorev_tamamlama(test_db):
-    task = create_task("Bitecek görev")
+def test_gorev_tamamlama(test_db, test_user_id):
+    task = create_task(test_user_id, "Bitecek görev")
 
-    guncel = complete_task(task.id)
+    guncel = complete_task(test_user_id, task.id)
 
     assert guncel.done is True
     assert guncel.completed_at is not None
 
 
-def test_liste_oncelige_gore_siralanir(test_db):
-    create_task("Düşük", priority=1)
-    create_task("Yüksek", priority=3)
-    create_task("Orta", priority=2)
+def test_liste_oncelige_gore_siralanir(test_db, test_user_id):
+    create_task(test_user_id, "Düşük", priority=1)
+    create_task(test_user_id, "Yüksek", priority=3)
+    create_task(test_user_id, "Orta", priority=2)
 
-    gorevler = list_tasks()
+    gorevler = list_tasks(test_user_id)
 
     oncelikler = [g.priority for g in gorevler]
     assert oncelikler == [3, 2, 1]
 
 
-def test_gecersiz_sure_hata_verir(test_db):
+def test_gecersiz_sure_hata_verir(test_db, test_user_id):
     with pytest.raises(ValueError):
-        create_task("Görev", duration_minutes=0)
+        create_task(test_user_id, "Görev", duration_minutes=0)
 
 
-def test_gorev_gune_gore_filtrelenir(test_db):
+def test_gorev_gune_gore_filtrelenir(test_db, test_user_id):
     bugun = date.today()
     yarin = bugun + timedelta(days=1)
-    create_task("Bugünkü", due_date=bugun)
-    create_task("Yarınki", due_date=yarin)
+    create_task(test_user_id, "Bugünkü", due_date=bugun)
+    create_task(test_user_id, "Yarınki", due_date=yarin)
 
-    gorevler = list_tasks(due_date=bugun)
+    gorevler = list_tasks(test_user_id, due_date=bugun)
 
     assert [g.title for g in gorevler] == ["Bugünkü"]
 
 
-def test_ertelenmemis_gorev_erteleme_sayaci_artmaz(test_db):
-    yarin = date.today() + timedelta(days=1)
-    task = create_task("Görev", due_date=yarin)
+def test_baska_kullanicinin_gorevini_goremez(test_db, test_user_id):
+    with test_db() as session:
+        diger = User(username="diger_kullanici", password_hash="x", is_admin=False)
+        session.add(diger)
+        session.commit()
+        diger_id = diger.id
 
-    guncel = update_task(task.id, task.title, task.description, task.priority, due_date=yarin + timedelta(days=1))
+    create_task(diger_id, "Diğer kullanıcının görevi")
+
+    assert list_tasks(test_user_id) == []
+
+
+def test_baska_kullanicinin_gorevi_tamamlanamaz(test_db, test_user_id):
+    with test_db() as session:
+        diger = User(username="diger_kullanici2", password_hash="x", is_admin=False)
+        session.add(diger)
+        session.commit()
+        diger_id = diger.id
+
+    diger_gorev = create_task(diger_id, "Diğer kullanıcının görevi")
+
+    with pytest.raises(ValueError):
+        complete_task(test_user_id, diger_gorev.id)
+    with pytest.raises(ValueError):
+        delete_task(test_user_id, diger_gorev.id)
+
+
+def test_ertelenmemis_gorev_erteleme_sayaci_artmaz(test_db, test_user_id):
+    yarin = date.today() + timedelta(days=1)
+    task = create_task(test_user_id, "Görev", due_date=yarin)
+
+    guncel = update_task(test_user_id, task.id, task.title, task.description, task.priority,
+                          due_date=yarin + timedelta(days=1))
 
     assert guncel.postponement_count == 0
 
 
-def test_gecikmis_gorev_ileri_tarihe_ertelenince_sayac_artar(test_db):
+def test_gecikmis_gorev_ileri_tarihe_ertelenince_sayac_artar(test_db, test_user_id):
     gecmis = date.today() - timedelta(days=5)
-    task = create_task("Gecikmiş görev", due_date=gecmis)
+    task = create_task(test_user_id, "Gecikmiş görev", due_date=gecmis)
 
     # Hâlâ gecikmiş bir tarihe itiliyor (today-5 -> today-2): yine de bir erteleme.
-    guncel = update_task(task.id, task.title, task.description, task.priority,
+    guncel = update_task(test_user_id, task.id, task.title, task.description, task.priority,
                           due_date=gecmis + timedelta(days=3))
     assert guncel.postponement_count == 1
 
     # Şimdi geleceğe itiliyor: eski tarih hâlâ gecikmiş olduğu için yine sayılır.
-    tekrar = update_task(guncel.id, guncel.title, guncel.description, guncel.priority,
+    tekrar = update_task(test_user_id, guncel.id, guncel.title, guncel.description, guncel.priority,
                           due_date=date.today() + timedelta(days=1))
     assert tekrar.postponement_count == 2
 
 
-def test_gecikmis_gorev_erken_tarihe_cekilirse_sayac_artmaz(test_db):
+def test_gecikmis_gorev_erken_tarihe_cekilirse_sayac_artmaz(test_db, test_user_id):
     gecmis = date.today() - timedelta(days=3)
-    task = create_task("Görev", due_date=gecmis)
+    task = create_task(test_user_id, "Görev", due_date=gecmis)
 
-    guncel = update_task(task.id, task.title, task.description, task.priority,
+    guncel = update_task(test_user_id, task.id, task.title, task.description, task.priority,
                           due_date=gecmis - timedelta(days=1))
 
     assert guncel.postponement_count == 0
 
 
-def test_due_date_yoksa_sayac_artmaz(test_db):
-    task = create_task("Görev")
+def test_due_date_yoksa_sayac_artmaz(test_db, test_user_id):
+    task = create_task(test_user_id, "Görev")
 
-    guncel = update_task(task.id, task.title, task.description, task.priority, due_date=date.today())
+    guncel = update_task(test_user_id, task.id, task.title, task.description, task.priority, due_date=date.today())
 
     assert guncel.postponement_count == 0
 
 
-def test_tamamlanmis_gecikmis_gorev_ertelenince_sayac_artmaz(test_db):
+def test_tamamlanmis_gecikmis_gorev_ertelenince_sayac_artmaz(test_db, test_user_id):
     gecmis = date.today() - timedelta(days=3)
-    task = create_task("Görev", due_date=gecmis)
-    complete_task(task.id)
+    task = create_task(test_user_id, "Görev", due_date=gecmis)
+    complete_task(test_user_id, task.id)
 
-    guncel = update_task(task.id, task.title, task.description, task.priority,
+    guncel = update_task(test_user_id, task.id, task.title, task.description, task.priority,
                           due_date=date.today() + timedelta(days=1))
 
     assert guncel.postponement_count == 0
 
 
-def test_gecikmis_gorevler_listelenir(test_db):
+def test_gecikmis_gorevler_listelenir(test_db, test_user_id):
     bugun = date.today()
     gecmis = bugun - timedelta(days=2)
-    create_task("Gecikmiş", due_date=gecmis)
+    create_task(test_user_id, "Gecikmiş", due_date=gecmis)
 
-    gecikmisler = gecikmis_gorevleri_listele(bugun)
+    gecikmisler = gecikmis_gorevleri_listele(test_user_id, bugun)
 
     assert [g.title for g in gecikmisler] == ["Gecikmiş"]
 
 
-def test_tamamlanmis_gecikmis_gorev_listelenmez(test_db):
+def test_tamamlanmis_gecikmis_gorev_listelenmez(test_db, test_user_id):
     bugun = date.today()
     gecmis = bugun - timedelta(days=2)
-    task = create_task("Tamamlanmış", due_date=gecmis)
-    complete_task(task.id)
+    task = create_task(test_user_id, "Tamamlanmış", due_date=gecmis)
+    complete_task(test_user_id, task.id)
 
-    assert gecikmis_gorevleri_listele(bugun) == []
+    assert gecikmis_gorevleri_listele(test_user_id, bugun) == []
 
 
-def test_bugunku_ve_gelecek_gorevler_gecikmis_sayilmaz(test_db):
+def test_bugunku_ve_gelecek_gorevler_gecikmis_sayilmaz(test_db, test_user_id):
     bugun = date.today()
-    create_task("Bugünkü", due_date=bugun)
-    create_task("Gelecek", due_date=bugun + timedelta(days=1))
-    create_task("Tarihsiz")
+    create_task(test_user_id, "Bugünkü", due_date=bugun)
+    create_task(test_user_id, "Gelecek", due_date=bugun + timedelta(days=1))
+    create_task(test_user_id, "Tarihsiz")
 
-    assert gecikmis_gorevleri_listele(bugun) == []
+    assert gecikmis_gorevleri_listele(test_user_id, bugun) == []

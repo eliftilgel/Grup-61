@@ -191,18 +191,20 @@ Yukarıdaki bölümler Sprint 1'in ürün vizyonu ve proje yönetimi çıktılar
 
 ## Ne Yapıyor
 
-"Planla!", tek kullanıcılı, yerel çalışan bir günlük görev/plan yöneticisidir:
+"Planla!", çoklu kullanıcılı bir günlük görev/plan yöneticisidir (her kullanıcı kendi hesabıyla giriş yapar, verisi izole tutulur):
 
-- Görev oluşturma, düzenleme, tamamlama, silme (öncelik: Kritik/Orta/Düşük, süre, son tarih).
-- Google Takvim ile senkronizasyon: yerelde oluşturulan etkinlikler Google Takvim'e yazılır ve yerel bir kopya (`calendar_events`) tutulur.
+- Hesap oluşturma/giriş, görev oluşturma/düzenleme/tamamlama/silme (öncelik: Kritik/Orta/Düşük, süre, son tarih).
+- Google Takvim ile senkronizasyon: yerelde oluşturulan etkinlikler Google Takvim'e yazılır ve yerel bir kopya (`calendar_events`) tutulur (Google hesabı şu an tüm kullanıcılar arasında paylaşılan tek hesap — bkz. Kapsam Dışı).
 - Kural tabanlı (kural motoruyla, henüz gerçek bir LLM çağrısı olmadan) günlük plan üretimi: görevleri önceliğe göre kullanıcının "en verimli olduğu saatler"ine, uygun olmayan saatleri (ders, uyku vb.) hariç tutarak yerleştirir ve her yerleştirme için Türkçe bir gerekçe metni üretir.
 - Haftalık verimlilik/erteleme raporu: tamamlanan/ertelenen görev oranları, saat dilimine göre verimlilik yüzdeleri, en çok ertelenen görevler.
+- Aşırı yüklenme uyarısı (günün müsait zamanı aşılırsa) ve geçmişten kalan görevleri seçili güne taşıma.
+- Admin paneli: tüm kullanıcıları listeleme, bir kullanıcının görev/etkinlik/plan kayıtlarını görüntüleme, admin yetkisi verme/alma, parola sıfırlama, hesap silme.
 
 ## Mimari
 
 | Katman | Konum | Sorumluluk |
 |---|---|---|
-| UI | `ui/app.py` | Streamlit arayüzü — 4 sekme: Profil, Plan Oluştur, AI Planı, Rapor. `core/services/*` fonksiyonlarını doğrudan çağırır. |
+| UI | `ui/app.py` | Streamlit arayüzü — Profil, Plan Oluştur, AI Planı, Rapor sekmeleri + admin kullanıcılara görünen Admin sekmesi. `core/services/*` fonksiyonlarını doğrudan çağırır. |
 | API | `api/main.py`, `api/schemas.py` | FastAPI — şu an yalnızca görev (task) CRUD endpoint'leri. |
 | Servisler | `core/services/` | İş mantığı; arayüzden bağımsız, doğrudan test edilebilir. |
 | Veri | `core/models.py`, `core/database.py` | SQLAlchemy 2.0 ORM, SQLite. |
@@ -224,43 +226,132 @@ UI ve API, `core/` üzerinde çalışan iki bağımsız, simetrik istemci olarak
 
 ## Ekranlar
 
-1. **👤 Profil** — ad/e-posta, en verimli olunan saat aralığı, varsayılan uyku saatleri, günlük görev hedefi. Tek satırlık yerel bir ayar profili (gerçek çoklu kullanıcı girişi değildir).
-2. **📝 Plan Oluştur** — gün seçimi, o gün için uygun olmayan saat blokları (uyku bloğu profilden otomatik gelir), görev ekleme/tamamlama/düzenleme/silme, "Planı Oluştur" ile plan üretimini tetikler.
-3. **🗓️ AI Planı** — seçili gün için en son üretilen planı gösterir: zaman dilimli görev sıralaması, her dilim için gerekçe metni, toplam iş süresi / boş zaman istatistikleri, genel bir öneri metni.
+1. **👤 Profil** — ad/e-posta, en verimli olunan saat aralığı, varsayılan uyku saatleri, günlük görev hedefi, veri dışa aktarma. Her kullanıcının tam olarak bir profili olur.
+2. **📝 Plan Oluştur** — gün seçimi, geçmişten kalan görevleri seçili güne taşıma, o gün için uygun olmayan saat blokları (uyku bloğu profilden otomatik gelir), görev ekleme/tamamlama/düzenleme/silme, aşırı yüklenme uyarısı, "Planı Oluştur" ile plan üretimini tetikler.
+3. **🗓️ AI Planı** — seçili gün için en son üretilen planı gösterir: zaman dilimli görev sıralaması, her dilim için gerekçe metni, toplam iş süresi / boş zaman istatistikleri, sığmayan görev uyarısı, genel bir öneri metni.
 4. **📊 Rapor** — son 7 güne ait verimlilik oranı, erteleme oranı, tamamlanan/ertelenen görev sayıları, 5 sabit zaman dilimine (07–10, 10–13, 13–16, 16–19, 19–22) göre verimlilik yüzdeleri, en çok ertelenen görevler.
+5. **🛠️ Admin** (sadece admin kullanıcılara görünür) — tüm kullanıcıları listeleme (görev sayısı dahil), bir kullanıcı seçip görev/plan/etkinlik kayıtlarını görüntüleme, admin yetkisi verme/alma, parola sıfırlama, hesap silme.
 
 ## Veri Modeli (`core/models.py`)
 
-- **`Task`** — `title`, `description`, `priority` (1-3), `done`, `due_date`, `duration_minutes`, `completed_at`, `postponement_count`.
-- **`CalendarEvent`** — Google Takvim etkinliklerinin yerel aynası (`google_id`, `title`, `start`/`end`/`updated`).
-- **`Profil`** — tek satırlık (id=1) kullanıcı ayarları (verimli/uyku saat aralıkları, günlük hedef).
-- **`PlanKaydi`** — bir günlük plan üretiminin geçmiş kaydı (`gun`, üretilen zaman dilimleri JSON olarak, toplam iş/boş süre, genel tavsiye metni). Her yeniden üretim yeni bir kayıt oluşturur.
+- **`User`** — `username` (benzersiz), `password_hash` (bcrypt), `is_admin`, `created_at`. Çoklu kullanıcı sisteminin temeli.
+- **`Task`** — `user_id`, `title`, `description`, `priority` (1-3), `done`, `due_date`, `duration_minutes`, `completed_at`, `postponement_count`.
+- **`CalendarEvent`** — Google Takvim etkinliklerinin yerel aynası (`user_id`, `google_id` — artık kullanıcı başına benzersiz —, `title`, `start`/`end`/`updated`).
+- **`Profil`** — kullanıcı ayarları (`user_id` benzersiz, verimli/uyku saat aralıkları, günlük hedef).
+- **`PlanKaydi`** — bir günlük plan üretiminin geçmiş kaydı (`user_id`, `gun`, üretilen zaman dilimleri JSON olarak, toplam iş/boş süre, genel tavsiye metni). Her yeniden üretim yeni bir kayıt oluşturur.
+
+Kullanıcı silinince (`ondelete="CASCADE"` + SQLite `PRAGMA foreign_keys=ON`) tüm görev/etkinlik/profil/plan verisi otomatik silinir.
 
 ## Servis Katmanı (`core/services/`)
 
-- `task_service.py` — görev CRUD, erteleme sayacı, tamamlanma zaman damgası.
-- `calendar_service.py` — Google Calendar API ile ham iletişim (OAuth, fetch/create/delete).
-- `sync_service.py` — yerel veritabanı ile Google Takvim arasındaki iki yönlü senkronizasyon mantığı.
+- `user_service.py` — hesap oluşturma, giriş doğrulama, kullanıcı listeleme/silme, admin yetkisi, parola sıfırlama.
+- `task_service.py` — görev CRUD (kullanıcı bazlı, sahiplik kontrollü), erteleme sayacı, tamamlanma zaman damgası, gecikmiş görev listesi.
+- `calendar_service.py` — Google Calendar API ile ham iletişim (OAuth, fetch/create/delete) — tüm kullanıcılar arasında paylaşılan tek Google hesabı.
+- `sync_service.py` — yerel veritabanı ile Google Takvim arasındaki senkronizasyon mantığı (kullanıcı bazlı yerel kopya).
 - `profil_service.py` — kullanıcı ayar profilinin okunması/kaydedilmesi.
-- `planning_service.py` — kural tabanlı günlük plan üretimi (öncelik + uygun olmayan saatlere göre yerleştirme, gerekçe metni üretimi).
+- `planning_service.py` — kural tabanlı günlük plan üretimi, kapasite kontrolü, kullanıcının plan geçmişi.
 - `report_service.py` — haftalık verimlilik/erteleme istatistiklerinin hesaplanması.
+- `export_service.py` — kullanıcının tüm verisini JSON'a döker.
 
 ## Kurulum ve Çalıştırma
 
 ```bash
 pip install -r requirements.txt
 pip install -e .
-alembic upgrade head          # veritabanı şemasını güncelle
+alembic upgrade head          # veritabanı şemasını güncelle (varsayılan admin hesabını oluşturur)
 streamlit run ui/app.py       # arayüzü başlat (http://localhost:8501)
 uvicorn api.main:app --reload # (isteğe bağlı) API'yi başlat
 pytest                        # testleri çalıştır
+python scripts/seed_demo_data.py  # (isteğe bağlı) 4 demo kullanıcı + 30 günlük gerçekçi veri
 ```
+
+`alembic upgrade head` ilk kez çalıştırıldığında bir varsayılan admin hesabı oluşturur: kullanıcı adı `admin`, geçici parola `admin123` — ilk girişte Admin panelinden değiştirilmesi önerilir.
 
 Google Takvim senkronu için proje köküne bir Google Cloud OAuth `credentials.json` dosyası eklenmelidir; ilk kullanımda tarayıcı üzerinden izin akışı başlar ve `token.json` otomatik oluşturulur.
 
 ## Şu An Kapsamda Olmayanlar
 
 - Gerçek bir OpenAI/LLM entegrasyonu yok — plan ve rapor metinleri kural tabanlı şablonlarla üretiliyor (mimari, ileride bu metinleri üreten fonksiyonun bir LLM çağrısıyla değiştirilebilmesine göre tasarlandı).
-- Gerçek çoklu kullanıcı kimlik doğrulaması yok.
-- API katmanı henüz sadece görevleri kapsıyor; takvim ve plan/rapor endpoint'leri yok.
+- Google Calendar OAuth kullanıcı başına değil — tüm kullanıcılar tek paylaşılan Google hesabına yazar/okur.
+- API katmanının auth'u yok — endpoint'ler zorunlu bir `user_id` parametresi alır ama kimin o id'yi kullanmaya yetkili olduğunu doğrulamaz; ayrıca takvim ve plan/rapor endpoint'leri yok.
 
+## Test Senaryosu
+
+Bir test mühendisinin uygulamayı uçtan uca manuel olarak doğrulaması için adım adım senaryo. Otomatik regresyon testleri için `pytest` kullanılır (74+ birim testi, `tests/` altında) — bu bölüm onun yerine değil, tamamlayıcısıdır.
+
+### Ön Koşullar
+1. `pip install -r requirements.txt && pip install -e .`
+2. `alembic upgrade head` — şemayı oluşturur ve varsayılan `admin` / `admin123` hesabını ekler.
+3. (İsteğe bağlı ama önerilir) `python scripts/seed_demo_data.py` — 4 demo kullanıcı + 30 günlük gerçekçi veri; AI Planı/Rapor/Admin ekranlarını dolu görmek için.
+4. `streamlit run ui/app.py` → http://localhost:8501
+
+### 1. Hesap Oluşturma ve Giriş
+| Adım | Beklenen Sonuç |
+|---|---|
+| "Kayıt Ol" sekmesinde yeni bir kullanıcı adı + 4+ karakter parola ile kayıt ol | Hesap oluşturulur, otomatik giriş yapılmış olarak ana ekrana geçilir |
+| Aynı kullanıcı adıyla tekrar kayıt olmayı dene | "Bu kullanıcı adı zaten alınmış" hatası, kayıt engellenir |
+| 3 karakterlik bir parolayla kayıt olmayı dene | "Parola en az 4 karakter olmalı" hatası |
+| Çıkış yap, doğru kullanıcı adı + yanlış parola ile giriş dene | "Kullanıcı adı veya parola hatalı", içeri alınmaz |
+| Doğru bilgilerle tekrar giriş yap | Ana ekrana (4 sekme) geçilir |
+
+### 2. Profil
+| Adım | Beklenen Sonuç |
+|---|---|
+| Profil sekmesinde ad/e-posta/verimli saatler/uyku saatleri/günlük hedef doldurup Kaydet | "Profil kaydedildi" mesajı, sayfa yenilenince değerler korunur |
+| Verimli bitiş saatini başlangıçtan önceye ayarlayıp kaydetmeyi dene | Doğrulama hatası, kaydedilmez |
+
+### 3. Görev Yönetimi (Plan Oluştur sekmesi)
+| Adım | Beklenen Sonuç |
+|---|---|
+| Bugünün tarihiyle KRİTİK öncelikli, 60 dakikalık bir görev ekle | Görev listede kırmızı "KRİTİK" rozetiyle görünür |
+| Görevi "✎" ile düzenleyip süresini değiştir, kaydet | Güncel süre listede yansır |
+| Görevi "✓" ile tamamla | Görev "✓" işaretiyle işaretlenir, tekrar tamamla butonu pasif olur |
+| Görevi "🗑" ile sil | Listeden kalkar |
+| Toplam süresi günün müsait zamanını (varsayılan ~960 dk) aşacak kadar görev ekle | "⚠️ ... sığmayabilir" uyarısı görünür |
+
+### 4. Geçmişten Kalan Görevler
+| Adım | Beklenen Sonuç |
+|---|---|
+| Son tarihi dünkü bir tarih olan, tamamlanmamış bir görev oluştur (düzenleme formundan son tarihi geçmişe çek) | Plan Oluştur sekmesinde bugünü seçince "⏰ Geçmişten Kalan Görevler" bölümünde görünür |
+| "→ ... güne taşı" butonuna bas | Görevin son tarihi bugüne taşınır, bölümden kaybolur, görev bugünün listesinde belirir |
+
+### 5. AI Planı
+| Adım | Beklenen Sonuç |
+|---|---|
+| Bugün için birkaç görev varken "🚀 Planı Oluştur" butonuna bas | Başarı mesajı görünür |
+| "AI Planı" sekmesine geç | Zaman dilimli sıralama, her dilim için gerekçe metni, toplam iş/boş zaman istatistikleri, genel öneri kutusu görünür |
+| Kapasiteyi aşacak kadar görev eklenmiş bir günde planı yeniden oluştur | Rozet "Kısmen Planlandı" olur, "X görev bu plana sığmadı" uyarısı görünür |
+
+### 6. Rapor
+| Adım | Beklenen Sonuç |
+|---|---|
+| Rapor sekmesine geç (demo veri yüklüyse anlamlı sayılar, yoksa sıfırlar) | Verimlilik/erteleme oranı, tamamlanan/ertelenen sayıları, 5 zaman dilimi barı, en çok ertelenen görevler, analiz metni — hatasız görünür |
+
+### 7. Veri Dışa Aktarma
+| Adım | Beklenen Sonuç |
+|---|---|
+| Profil sekmesinde "📦 Verilerini İndir (JSON)" butonuna bas | `planla_yedek_YYYY-MM-DD.json` iner; açılınca `gorevler`, `takvim_etkinlikleri`, `profil`, `plan_kayitlari` alanlarını içeren geçerli JSON olur |
+
+### 8. Admin Paneli (admin hesabıyla giriş yapılmalı)
+| Adım | Beklenen Sonuç |
+|---|---|
+| `admin` / `admin123` ile giriş yap | 5. sekme olarak "🛠️ Admin" görünür (normal kullanıcılarda görünmez) |
+| Admin sekmesinde kullanıcı tablosuna bak | Tüm kullanıcılar, admin durumu, kayıt tarihi, görev sayısıyla listelenir |
+| Bir kullanıcı seç | O kullanıcının görevleri, plan geçmişi, takvim etkinlikleri ayrı tablolarda görünür |
+| Seçili kullanıcıyı "Admin yap" | Kullanıcının admin durumu değişir, tabloda yansır |
+| Kendi hesabında "Admin yetkisini kaldır" butonunu incele | Buton pasif (kendi adminliğini kaldıramazsın) |
+| Bir kullanıcı için "Parolayı Sıfırla" ile yeni parola belirle | O kullanıcı artık eski parolayla giriş yapamaz, yeniyle yapabilir |
+| Bir kullanıcıyı onay kutusunu işaretlemeden silmeyi dene | Sil butonu pasif kalır |
+| Onay kutusunu işaretleyip sil | Kullanıcı ve tüm görev/etkinlik/profil/plan verisi silinir, listeden kalkar |
+| Kendi admin hesabını silmeyi dene | "Kendi hesabını silemezsin" hatası |
+
+### 9. Çıkış
+| Adım | Beklenen Sonuç |
+|---|---|
+| Profil sekmesinde "🚪 Çıkış Yap" | Giriş ekranına dönülür, tekrar giriş yapılmadan hiçbir sekmeye erişilemez |
+
+### 10. Otomatik Testler (regresyon)
+```bash
+pytest -q
+```
+Beklenen: tüm testler yeşil (servis katmanı — görev/profil/plan/rapor/dışa aktarma/kullanıcı/senkron/loglama/auth — birim testleri).

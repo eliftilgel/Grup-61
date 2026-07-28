@@ -1,19 +1,17 @@
-"""Kullanıcı profili/ayarları — tek satırlık (id=1) yerel profil, çoklu-kullanıcı auth değil."""
+"""Kullanıcı profili/ayarları — her kullanıcının tam olarak bir profili olur (user_id ile)."""
 
 from datetime import time
 
 from core.database import SessionLocal
 from core.models import Profil
 
-PROFIL_ID = 1
 
-
-def get_or_create() -> Profil:
-    """Tek profil satırını döner; yoksa varsayılan değerlerle oluşturur."""
+def get_or_create(user_id: int) -> Profil:
+    """Kullanıcının profilini döner; yoksa varsayılan değerlerle oluşturur."""
     with SessionLocal() as session:
-        profil = session.get(Profil, PROFIL_ID)
+        profil = session.query(Profil).filter(Profil.user_id == user_id).one_or_none()
         if profil is None:
-            profil = Profil(id=PROFIL_ID)
+            profil = Profil(user_id=user_id)
             session.add(profil)
             session.commit()
             session.refresh(profil)
@@ -21,6 +19,7 @@ def get_or_create() -> Profil:
 
 
 def save(
+    user_id: int,
     ad_soyad: str,
     e_posta: str,
     verimli_baslangic: time,
@@ -38,9 +37,9 @@ def save(
         raise ValueError("Günlük hedef en az 1 olmalı")
 
     with SessionLocal() as session:
-        profil = session.get(Profil, PROFIL_ID)
+        profil = session.query(Profil).filter(Profil.user_id == user_id).one_or_none()
         if profil is None:
-            profil = Profil(id=PROFIL_ID)
+            profil = Profil(user_id=user_id)
         profil.ad_soyad = ad_soyad.strip()
         profil.e_posta = e_posta.strip()
         profil.verimli_baslangic = verimli_baslangic

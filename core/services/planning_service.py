@@ -151,6 +151,7 @@ def kapasite_kontrolu(gorevler: list[Task], uygun_olmayan_bloklar: list[dict], p
 
 
 def plan_olustur(
+    user_id: int,
     gun: date,
     gorevler: list[Task],
     uygun_olmayan_bloklar: list[dict],
@@ -196,6 +197,7 @@ def plan_olustur(
 
     with SessionLocal() as session:
         kayit = PlanKaydi(
+            user_id=user_id,
             gun=gun,
             dilimler=dilimler,
             toplam_is_dakika=toplam_is_dakika,
@@ -214,12 +216,22 @@ def plan_olustur(
     return kayit
 
 
-def son_plan(gun: date) -> PlanKaydi | None:
-    """O güne ait en son oluşturulan planı döner, yoksa None."""
+def son_plan(user_id: int, gun: date) -> PlanKaydi | None:
+    """Kullanıcının o güne ait en son oluşturulan planını döner, yoksa None."""
     with SessionLocal() as session:
         return (
             session.query(PlanKaydi)
-            .filter(PlanKaydi.gun == gun)
+            .filter(PlanKaydi.user_id == user_id, PlanKaydi.gun == gun)
             .order_by(PlanKaydi.created_at.desc())
             .first()
+        )
+
+
+def kullanicinin_planlari(user_id: int) -> list[PlanKaydi]:
+    """Kullanıcının tüm plan geçmişini (en yeni gün önce) döner — admin paneli için."""
+    with SessionLocal() as session:
+        return list(
+            session.query(PlanKaydi)
+            .filter(PlanKaydi.user_id == user_id)
+            .order_by(PlanKaydi.gun.desc(), PlanKaydi.created_at.desc())
         )

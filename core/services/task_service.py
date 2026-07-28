@@ -5,6 +5,7 @@ from core.models import Task
 from datetime import date, datetime, timezone
 
 def create_task(
+    user_id: int,
     title: str,
     description: str = "",
     priority: int = 1,
@@ -21,6 +22,7 @@ def create_task(
 
     with SessionLocal() as session:
         task = Task(
+            user_id=user_id,
             title=title,
             description=description,
             priority=priority,
@@ -34,11 +36,18 @@ def create_task(
 
 
 def list_tasks(
-    include_done: bool = True, only_done: bool = False, due_date: date | None = None
+    user_id: int,
+    include_done: bool = True,
+    only_done: bool = False,
+    due_date: date | None = None,
 ) -> list[Task]:
-    """Görevleri öncelik sırasına göre listeler."""
+    """Kullanıcının görevlerini öncelik sırasına göre listeler."""
     with SessionLocal() as session:
-        query = session.query(Task).order_by(Task.priority.desc(), Task.created_at.desc())
+        query = (
+            session.query(Task)
+            .filter(Task.user_id == user_id)
+            .order_by(Task.priority.desc(), Task.created_at.desc())
+        )
         if only_done:
             query = query.filter(Task.done.is_(True))
         elif not include_done:
@@ -48,22 +57,35 @@ def list_tasks(
         return list(query)
 
 
-def gecikmis_gorevleri_listele(referans_gun: date) -> list[Task]:
+def gecikmis_gorevleri_listele(user_id: int, referans_gun: date) -> list[Task]:
     """referans_gun'dan önce vadesi geçmiş, henüz tamamlanmamış görevleri döner."""
     with SessionLocal() as session:
         return list(
             session.query(Task)
-            .filter(Task.due_date < referans_gun, Task.done.is_(False))
+            .filter(
+                Task.user_id == user_id,
+                Task.due_date < referans_gun,
+                Task.done.is_(False),
+            )
             .order_by(Task.priority.desc(), Task.due_date.asc())
         )
 
 
-def complete_task(task_id: int) -> Task:
+def _sahiplenilen_gorevi_getir(session, user_id: int, task_id: int) -> Task:
+    task = (
+        session.query(Task)
+        .filter(Task.id == task_id, Task.user_id == user_id)
+        .one_or_none()
+    )
+    if task is None:
+        raise ValueError(f"{task_id} numaralı görev bulunamadı.")
+    return task
+
+
+def complete_task(user_id: int, task_id: int) -> Task:
     """Görevi tamamlandı olarak işaretler."""
     with SessionLocal() as session:
-        task = session.get(Task, task_id)
-        if task is None:
-            raise ValueError(f"{task_id} numaralı görev bulunamadı.")
+        task = _sahiplenilen_gorevi_getir(session, user_id, task_id)
         task.done = True
         task.completed_at = datetime.now(timezone.utc)
         session.commit()
@@ -71,6 +93,7 @@ def complete_task(task_id: int) -> Task:
         return task
 
 def update_task(
+    user_id: int,
     task_id: int,
     title: str,
     description: str,
@@ -87,9 +110,7 @@ def update_task(
         raise ValueError("Süre 0'dan büyük olmalı.")
 
     with SessionLocal() as session:
-        task = session.get(Task, task_id)
-        if task is None:
-            raise ValueError(f"{task_id} numaralı görev bulunamadı.")
+        task = _sahiplenilen_gorevi_getir(session, user_id, task_id)
 
         # Erteleme sayacı: görev zaten gecikmişken (tamamlanmadan) yeni tarih
         # eskisinden daha ileriyse gerçek bir "erteleme" yapılmış demektir.
@@ -111,11 +132,9 @@ def update_task(
         session.refresh(task)
         return task
 
-def delete_task(task_id: int) -> None:
+def delete_task(user_id: int, task_id: int) -> None:
     """Görevi kalıcı olarak siler."""
     with SessionLocal() as session:
-        task = session.get(Task, task_id)
-        if task is None:
-            raise ValueError(f"{task_id} numaralı görev bulunamadı.")
+        task = _sahiplenilen_gorevi_getir(session, user_id, task_id)
         session.delete(task)
         session.commit()

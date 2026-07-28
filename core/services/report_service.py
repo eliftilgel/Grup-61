@@ -29,11 +29,15 @@ def _saat_str_to_dk(s: str) -> int:
     return int(saat) * 60 + int(dakika)
 
 
-def _son_planlar(baslangic: date, bitis: date, session) -> list[PlanKaydi]:
+def _son_planlar(user_id: int, baslangic: date, bitis: date, session) -> list[PlanKaydi]:
     """Verilen aralıktaki her gün için sadece en son oluşturulan PlanKaydi'yi döner."""
     tumu = (
         session.query(PlanKaydi)
-        .filter(PlanKaydi.gun >= baslangic, PlanKaydi.gun <= bitis)
+        .filter(
+            PlanKaydi.user_id == user_id,
+            PlanKaydi.gun >= baslangic,
+            PlanKaydi.gun <= bitis,
+        )
         .order_by(PlanKaydi.created_at.desc())
         .all()
     )
@@ -55,15 +59,19 @@ def _analiz_metni_uret(saat_dilimi_verimi: dict[str, int]) -> str:
     )
 
 
-def haftalik_rapor(bitis: date | None = None, gun_sayisi: int = 7) -> dict:
-    """[bitis - gun_sayisi + 1, bitis] aralığı için Rapor ekranının tüm sayılarını döner."""
+def haftalik_rapor(user_id: int, bitis: date | None = None, gun_sayisi: int = 7) -> dict:
+    """Kullanıcının [bitis - gun_sayisi + 1, bitis] aralığı için Rapor ekranının tüm sayılarını döner."""
     bitis = bitis or date.today()
     baslangic = bitis - timedelta(days=gun_sayisi - 1)
 
     with SessionLocal() as session:
         gorevler = (
             session.query(Task)
-            .filter(Task.due_date >= baslangic, Task.due_date <= bitis)
+            .filter(
+                Task.user_id == user_id,
+                Task.due_date >= baslangic,
+                Task.due_date <= bitis,
+            )
             .all()
         )
         toplam = len(gorevler)
@@ -80,14 +88,16 @@ def haftalik_rapor(bitis: date | None = None, gun_sayisi: int = 7) -> dict:
             ]
         ]
 
-        planlar = _son_planlar(baslangic, bitis, session)
+        planlar = _son_planlar(user_id, baslangic, bitis, session)
         gecen_task_idler = {
             dilim.get("task_id") for kayit in planlar for dilim in kayit.dilimler
         }
         gecen_task_idler.discard(None)
         tamamlanma_by_id = {
             t.id: t.completed_at is not None
-            for t in session.query(Task).filter(Task.id.in_(gecen_task_idler)).all()
+            for t in session.query(Task)
+            .filter(Task.user_id == user_id, Task.id.in_(gecen_task_idler))
+            .all()
         } if gecen_task_idler else {}
 
         bucket_toplam = [0] * len(BUCKETS)

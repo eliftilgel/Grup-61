@@ -70,13 +70,13 @@ def _plan_kaydi_sozluk(kayit: PlanKaydi) -> dict:
     }
 
 
-def tum_veriyi_disa_aktar() -> dict:
+def tum_veriyi_disa_aktar(user_id: int) -> dict:
     """Kullanıcının tüm verisini JSON-serileştirilebilir tek bir sözlükte döner."""
     with SessionLocal() as session:
-        gorevler = session.query(Task).all()
-        etkinlikler = session.query(CalendarEvent).all()
-        profil = session.get(Profil, 1)
-        plan_kayitlari = session.query(PlanKaydi).all()
+        gorevler = session.query(Task).filter(Task.user_id == user_id).all()
+        etkinlikler = session.query(CalendarEvent).filter(CalendarEvent.user_id == user_id).all()
+        profil = session.query(Profil).filter(Profil.user_id == user_id).one_or_none()
+        plan_kayitlari = session.query(PlanKaydi).filter(PlanKaydi.user_id == user_id).all()
 
         return {
             "disa_aktarma_tarihi": datetime.now(timezone.utc).isoformat(),
