@@ -3,9 +3,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
-DATABASE_URL = "sqlite:///planner.db"
+from core.config import settings
 
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(settings.database_url, echo=settings.sqlalchemy_echo)
 SessionLocal = sessionmaker(bind=engine)
 
 class Base(DeclarativeBase):

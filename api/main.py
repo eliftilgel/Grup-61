@@ -1,6 +1,4 @@
 """Planner REST API"""
-from ast import List
-
 from fastapi import FastAPI, HTTPException
 
 from api.schemas import TaskCreate, TaskOut
@@ -8,7 +6,7 @@ from core.services import task_service
 
 app = FastAPI(title="Planner API", version="0.1.0")
 
-@app.get("/tasks", response_model=List[TaskOut])
+@app.get("/tasks", response_model=list[TaskOut])
 def gorevleri_listele(include_done: bool = True):
     """Görevleri öncelik sırasına göre döner."""
     return task_service.list_tasks(include_done=include_done)
