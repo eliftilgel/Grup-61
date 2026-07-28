@@ -15,4 +15,7 @@ def test_db(tmp_path, monkeypatch):
     TestSession = sessionmaker(bind=engine)
     monkeypatch.setattr("core.services.task_service.SessionLocal", TestSession)
     monkeypatch.setattr("core.services.sync_service.SessionLocal", TestSession)
+    monkeypatch.setattr("core.services.profil_service.SessionLocal", TestSession)
+    monkeypatch.setattr("core.services.planning_service.SessionLocal", TestSession)
+    monkeypatch.setattr("core.services.report_service.SessionLocal", TestSession)
     return TestSession
