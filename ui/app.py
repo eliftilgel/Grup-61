@@ -99,15 +99,30 @@ AYLAR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz",
          "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
 
 with st.sidebar:
-    st.markdown(f"### 👤 {st.session_state.get('username', '')}")
-    if st.session_state.get("is_admin"):
-        st.caption("🛠️ Admin")
+    _kullanici_adi = st.session_state.get("username", "")
+    _admin_rozeti = (
+        "<br><span class='fd-badge' style='background:rgba(74,58,167,0.14); color:#4a3aa7; margin-top:2px;'>🛠️ Admin</span>"
+        if st.session_state.get("is_admin") else ""
+    )
+    st.markdown(
+        f"<div style='display:flex; align-items:center; gap:10px;'>"
+        f"<div class='fd-avatar-sm'>{(_kullanici_adi or '?')[0].upper()}</div>"
+        f"<div><strong>{_kullanici_adi}</strong>{_admin_rozeti}</div></div>",
+        unsafe_allow_html=True,
+    )
     _bugun = date.today()
     st.caption(f"📅 {_bugun.day} {AYLAR[_bugun.month - 1]} {_bugun.year}")
     _bugunku_gorevler = list_tasks(current_user_id, due_date=date.today())
     if _bugunku_gorevler:
         _tamamlanan_sayi = sum(1 for t in _bugunku_gorevler if t.done)
-        st.caption(f"✅ Bugün {_tamamlanan_sayi}/{len(_bugunku_gorevler)} görev tamamlandı")
+        _tamamlanma_yuzdesi = round(_tamamlanan_sayi / len(_bugunku_gorevler) * 100)
+        st.markdown(
+            f"<span style='font-size:0.82rem; color:#898781;'>"
+            f"Bugün {_tamamlanan_sayi}/{len(_bugunku_gorevler)} görev tamamlandı</span>"
+            f"<div class='fd-bucket-track' style='height:6px; margin-top:5px;'>"
+            f"<div class='fd-bucket-fill' style='height:6px; width:{_tamamlanma_yuzdesi}%;'></div></div>",
+            unsafe_allow_html=True,
+        )
     st.divider()
     if st.button("🚪 Çıkış Yap", width="stretch", key="sidebar_cikis"):
         for anahtar in ("user_id", "is_admin", "username"):
@@ -116,6 +131,14 @@ with st.sidebar:
 
 _STYLE = """
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+html, body, [class*="css"], .stApp, .stMarkdown, button, input, textarea, select {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+@keyframes fdFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 .stApp {
     background: #f6f6f8;
 }
@@ -146,7 +169,15 @@ _STYLE = """
 }
 div.stButton > button, div.stDownloadButton > button, div[data-testid="stFormSubmitButton"] > button {
     border-radius: 8px;
-    transition: border-color 0.15s ease, background 0.15s ease;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+div.stButton > button:hover, div.stDownloadButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(11,11,11,0.10);
+}
+div.stButton > button:active, div.stDownloadButton > button:active, div[data-testid="stFormSubmitButton"] > button:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 div.stButton > button[kind="primary"],
 button[data-testid="baseButton-primary"] {
@@ -171,6 +202,7 @@ button[data-testid="baseButton-primary"] {
     margin-bottom: 24px;
     border: 1px solid rgba(11,11,11,0.06);
     border-top: none;
+    animation: fdFadeIn 0.25s ease;
 }
 @media (prefers-color-scheme: dark) {
     .fd-card {
@@ -185,10 +217,26 @@ button[data-testid="baseButton-primary"] {
     background: __GRADYAN__; color: #fff;
     display: flex; align-items: center; justify-content: center;
     font-size: 1.25rem; font-weight: 600; margin: 0 auto 12px auto;
+    transition: transform 0.2s ease;
+}
+.fd-avatar:hover { transform: scale(1.06); }
+.fd-avatar-sm {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: __GRADYAN__; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; font-weight: 600; flex-shrink: 0;
 }
 .fd-stat-tile {
     border-radius: 10px; padding: 18px; text-align: center;
     font-weight: 700; margin-bottom: 12px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.fd-stat-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(11,11,11,0.08);
+}
+@media (prefers-color-scheme: dark) {
+    .fd-stat-tile:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.4); }
 }
 .fd-stat-tile .deger { font-size: 1.7rem; display: block; }
 .fd-stat-tile .etiket { font-size: 0.82rem; font-weight: 500; opacity: 0.85; }
@@ -244,6 +292,12 @@ button[data-testid="baseButton-primary"] {
     background: __RENK_MAVI__; border-radius: 999px; height: 20px;
     transition: width 0.5s ease;
 }
+.fd-empty {
+    text-align: center; padding: 32px 20px; color: #898781;
+}
+.fd-empty .fd-empty-icon {
+    font-size: 1.8rem; display: block; margin-bottom: 8px; opacity: 0.6;
+}
 </style>
 """
 _STYLE = (
@@ -255,8 +309,8 @@ _STYLE = (
 st.markdown(_STYLE, unsafe_allow_html=True)
 
 st.markdown(
-    "<h1 style='text-align:center; margin-bottom:0;'>🎯 Planla!</h1>"
-    "<p style='text-align:center; color:#898781; margin-top:4px;'>"
+    "<h1 style='text-align:center; margin-bottom:0; letter-spacing:-0.5px;'>🎯 Planla!</h1>"
+    "<p style='text-align:center; color:#898781; margin-top:4px; font-size:0.95rem;'>"
     "Dinamik Günlük Planlayıcı</p>",
     unsafe_allow_html=True,
 )
@@ -450,7 +504,11 @@ with tab_plan:
 
         gunun_gorevleri = list_tasks(current_user_id, due_date=secili_gun)
         if not gunun_gorevleri:
-            st.caption("Bu gün için henüz görev eklenmedi.")
+            st.markdown(
+                "<div class='fd-empty'><span class='fd-empty-icon'>🗒️</span>"
+                "Bu gün için henüz görev eklenmedi.</div>",
+                unsafe_allow_html=True,
+            )
 
         for task in gunun_gorevleri:
             c1, c2, c3, c4 = st.columns([5, 1, 1, 1])
@@ -531,7 +589,11 @@ with tab_ai:
     kayit = planning_service.son_plan(current_user_id, gosterilecek_gun)
 
     if kayit is None:
-        st.info("Bu gün için henüz bir plan oluşturulmadı — 'Plan Oluştur' sekmesinden oluşturabilirsin.")
+        st.markdown(
+            "<div class='fd-empty'><span class='fd-empty-icon'>🗓️</span>"
+            "Bu gün için henüz bir plan oluşturulmadı — 'Plan Oluştur' sekmesinden oluşturabilirsin.</div>",
+            unsafe_allow_html=True,
+        )
     else:
         aktif_gorev_sayisi = len(list_tasks(current_user_id, include_done=False, due_date=kayit.gun))
         yerlesemeyen_sayisi = max(aktif_gorev_sayisi - len(kayit.dilimler), 0)
@@ -572,7 +634,11 @@ with tab_ai:
 
         st.subheader("📊 Önerilen Sıralama")
         if not kayit.dilimler:
-            st.caption("Hiçbir görev yerleştirilemedi.")
+            st.markdown(
+                "<div class='fd-empty'><span class='fd-empty-icon'>🧩</span>"
+                "Hiçbir görev yerleştirilemedi.</div>",
+                unsafe_allow_html=True,
+            )
         for dilim in kayit.dilimler:
             st.markdown(
                 f"<div class='fd-dilim-card'>"
@@ -650,7 +716,11 @@ with tab_rapor:
 
     st.subheader("🔁 En Çok Ertelenen Görevler")
     if not rapor["en_cok_ertelenenler"]:
-        st.caption("Henüz ertelenen görev yok.")
+        st.markdown(
+            "<div class='fd-empty'><span class='fd-empty-icon'>🎉</span>"
+            "Henüz ertelenen görev yok.</div>",
+            unsafe_allow_html=True,
+        )
     for satir in rapor["en_cok_ertelenenler"]:
         st.markdown(f"<div class='fd-gorev-row'>{satir}</div>", unsafe_allow_html=True)
 
