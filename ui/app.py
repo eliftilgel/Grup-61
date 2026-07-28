@@ -13,6 +13,7 @@ from core.services import (
     sync_service,
     user_service,
 )
+from core.services.planning_service import GUN_BASLANGIC, GUN_BITIS
 from core.services.task_service import (
     complete_task,
     create_task,
@@ -97,6 +98,35 @@ ONCELIK_TON = {3: RENK_KRITIK_TON, 2: RENK_UYARI_TON, 1: RENK_IYI_TON}
 GUNLER = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"]
 AYLAR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz",
          "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
+
+
+# ---------------------------------------------------------------------------
+# "AI Planı" sekmesindeki saat-eksenli görsel çizelge için salt sunum
+# amaçlı yardımcılar — iş mantığı içermez, planning_service'teki yerleştirme
+# algoritmasına dokunmaz.
+# ---------------------------------------------------------------------------
+def _gun_dakikasi(t: dt_time) -> int:
+    return t.hour * 60 + t.minute
+
+
+def _saat_metni_dakikaya(saat_metni: str) -> int:
+    saat, dakika = saat_metni.split(":")
+    return int(saat) * 60 + int(dakika)
+
+
+def _uyku_bloklari_gun_icinde(uyku_baslangic: dt_time, uyku_bitis: dt_time) -> list[tuple[int, int]]:
+    """Uyku penceresini GUN_BASLANGIC–GUN_BITIS sınırlarına kırpar (gece yarısı sarma dahil)."""
+    gun_b, gun_e = _gun_dakikasi(GUN_BASLANGIC), _gun_dakikasi(GUN_BITIS)
+    b, e = _gun_dakikasi(uyku_baslangic), _gun_dakikasi(uyku_bitis)
+    if b == e:
+        return []
+    parcalar = [(b, e)] if b < e else [(b, 24 * 60), (0, e)]
+    sonuc = []
+    for p_b, p_e in parcalar:
+        kirpilmis_b, kirpilmis_e = max(p_b, gun_b), min(p_e, gun_e)
+        if kirpilmis_b < kirpilmis_e:
+            sonuc.append((kirpilmis_b, kirpilmis_e))
+    return sonuc
 
 with st.sidebar:
     _kullanici_adi = st.session_state.get("username", "")
@@ -298,6 +328,61 @@ button[data-testid="baseButton-primary"] {
 .fd-empty .fd-empty-icon {
     font-size: 1.8rem; display: block; margin-bottom: 8px; opacity: 0.6;
 }
+.fd-zaman-cizelgesi {
+    position: relative;
+    margin-left: 52px;
+    border-left: 1px solid rgba(11,11,11,0.08);
+    background-image: repeating-linear-gradient(
+        to bottom,
+        rgba(11,11,11,0.06) 0, rgba(11,11,11,0.06) 1px,
+        transparent 1px, transparent 60px
+    );
+}
+@media (prefers-color-scheme: dark) {
+    .fd-zaman-cizelgesi {
+        border-left-color: rgba(255,255,255,0.10);
+        background-image: repeating-linear-gradient(
+            to bottom,
+            rgba(255,255,255,0.08) 0, rgba(255,255,255,0.08) 1px,
+            transparent 1px, transparent 60px
+        );
+    }
+}
+.fd-zaman-etiket {
+    position: absolute; left: -52px; width: 44px; text-align: right;
+    font-size: 0.72rem; color: #898781; transform: translateY(-6px);
+}
+.fd-zaman-uyku {
+    position: absolute; left: 4px; right: 4px;
+    background: rgba(137,135,129,0.12);
+    border-radius: 6px;
+    font-size: 0.72rem; color: #898781;
+    padding: 2px 8px; box-sizing: border-box;
+}
+@media (prefers-color-scheme: dark) {
+    .fd-zaman-uyku { background: rgba(255,255,255,0.05); }
+}
+.fd-zaman-blok {
+    position: absolute; left: 4px; right: 4px;
+    border-radius: 6px; border-left: 3px solid;
+    padding: 3px 8px; box-sizing: border-box;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    font-size: 0.78rem; font-weight: 600;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.fd-zaman-blok:hover {
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(11,11,11,0.12);
+    z-index: 2;
+}
+.fd-zaman-simdi {
+    position: absolute; left: 0; right: 4px; height: 2px;
+    background: __RENK_KRITIK__; z-index: 3;
+}
+.fd-zaman-simdi::before {
+    content: ""; position: absolute; left: -5px; top: -4px;
+    width: 8px; height: 8px; border-radius: 50%; background: __RENK_KRITIK__;
+}
 </style>
 """
 _STYLE = (
@@ -305,6 +390,7 @@ _STYLE = (
     .replace("__RENK_IYI__", RENK_IYI)
     .replace("__RENK_MAVI__", RENK_MAVI)
     .replace("__RENK_MOR__", RENK_MOR)
+    .replace("__RENK_KRITIK__", RENK_KRITIK)
 )
 st.markdown(_STYLE, unsafe_allow_html=True)
 
@@ -631,6 +717,46 @@ with tab_ai:
             f"{kayit.bos_zaman_dakika % 60}dk</strong></div>",
             unsafe_allow_html=True,
         )
+
+        if kayit.dilimler:
+            st.subheader("🕐 Gün Akışı")
+            profil_cizelge = profil_service.get_or_create(current_user_id)
+            gun_baslangic_dk = _gun_dakikasi(GUN_BASLANGIC)
+            gun_bitis_dk = _gun_dakikasi(GUN_BITIS)
+            gorev_oncelikleri = {t.id: t.priority for t in list_tasks(current_user_id, due_date=kayit.gun)}
+
+            parcalar = [
+                f"<div class='fd-zaman-etiket' style='top:{s - gun_baslangic_dk - 6}px;'>{s // 60:02d}:00</div>"
+                for s in range(gun_baslangic_dk, gun_bitis_dk + 1, 60)
+            ]
+            for uyku_b, uyku_e in _uyku_bloklari_gun_icinde(profil_cizelge.uyku_baslangic, profil_cizelge.uyku_bitis):
+                parcalar.append(
+                    f"<div class='fd-zaman-uyku' style='top:{uyku_b - gun_baslangic_dk}px; "
+                    f"height:{uyku_e - uyku_b}px;'>😴 Uyku</div>"
+                )
+            for dilim in kayit.dilimler:
+                d_baslangic_dk = _saat_metni_dakikaya(dilim["start"])
+                oncelik = gorev_oncelikleri.get(dilim.get("task_id"), 2)
+                parcalar.append(
+                    f"<div class='fd-zaman-blok' style='top:{d_baslangic_dk - gun_baslangic_dk}px; "
+                    f"height:{max(dilim['duration_minutes'] - 2, 16)}px; "
+                    f"background:{ONCELIK_TON[oncelik]}; color:{ONCELIK_RENK[oncelik]}; "
+                    f"border-left-color:{ONCELIK_RENK[oncelik]};'>"
+                    f"{dilim['start']}–{dilim['end']} · {dilim['title']}</div>"
+                )
+            if kayit.gun == date.today():
+                simdi_dk = _gun_dakikasi(datetime.now().time())
+                if gun_baslangic_dk <= simdi_dk <= gun_bitis_dk:
+                    parcalar.append(
+                        f"<div class='fd-zaman-simdi' style='top:{simdi_dk - gun_baslangic_dk}px;'></div>"
+                    )
+
+            st.markdown(
+                f"<div class='fd-zaman-cizelgesi' style='height:{gun_bitis_dk - gun_baslangic_dk}px;'>"
+                + "".join(parcalar) + "</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown("<br>", unsafe_allow_html=True)
 
         st.subheader("📊 Önerilen Sıralama")
         if not kayit.dilimler:
