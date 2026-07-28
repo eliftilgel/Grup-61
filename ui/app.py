@@ -69,20 +69,11 @@ if not st.session_state.get("user_id"):
 
 current_user_id = st.session_state["user_id"]
 
-with st.sidebar:
-    st.markdown(f"👤 **{st.session_state.get('username', '')}**")
-    if st.session_state.get("is_admin"):
-        st.caption("🛠️ Admin")
-    if st.button("🚪 Çıkış Yap", width="stretch", key="sidebar_cikis"):
-        for anahtar in ("user_id", "is_admin", "username"):
-            st.session_state.pop(anahtar, None)
-        st.rerun()
-
 # ---------------------------------------------------------------------------
 # Renkler — dataviz skill'inin durum paletinden (good/warning/critical) +
 # kategorik mavi/mor. Orijinal FlowDay mockup'undaki mor-indigo gradyan
-# kimliğini yaklaşık olarak uygulayan hafif bir CSS katmanı (piksel-mükemmel
-# değil).
+# kimliğini yaklaşık olarak uygulayan bir CSS katmanı (piksel-mükemmel değil),
+# açık/koyu Streamlit temasına uyumlu.
 # ---------------------------------------------------------------------------
 RENK_IYI = "#0ca30c"
 RENK_UYARI = "#fab219"
@@ -99,25 +90,62 @@ GUNLER = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", 
 AYLAR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz",
          "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
 
+with st.sidebar:
+    st.markdown(f"### 👤 {st.session_state.get('username', '')}")
+    if st.session_state.get("is_admin"):
+        st.caption("🛠️ Admin")
+    _bugun = date.today()
+    st.caption(f"📅 {_bugun.day} {AYLAR[_bugun.month - 1]} {_bugun.year}")
+    _bugunku_gorevler = list_tasks(current_user_id, due_date=date.today())
+    if _bugunku_gorevler:
+        _tamamlanan_sayi = sum(1 for t in _bugunku_gorevler if t.done)
+        st.caption(f"✅ Bugün {_tamamlanan_sayi}/{len(_bugunku_gorevler)} görev tamamlandı")
+    st.divider()
+    if st.button("🚪 Çıkış Yap", width="stretch", key="sidebar_cikis"):
+        for anahtar in ("user_id", "is_admin", "username"):
+            st.session_state.pop(anahtar, None)
+        st.rerun()
+
 _STYLE = """
 <style>
+.stApp {
+    background: linear-gradient(180deg, #f7f7fb 0%, #f1f0f6 100%);
+}
+@media (prefers-color-scheme: dark) {
+    .stApp { background: linear-gradient(180deg, #131318 0%, #0e0e12 100%); }
+}
 .stTabs [data-baseweb="tab-list"] {
     gap: 4px;
     background: #ffffff;
     padding: 6px;
     border-radius: 14px;
-    box-shadow: 0 1px 3px rgba(11,11,11,0.08);
+    box-shadow: 0 2px 10px rgba(11,11,11,0.07);
+}
+@media (prefers-color-scheme: dark) {
+    .stTabs [data-baseweb="tab-list"] { background: #1c1c24; box-shadow: 0 2px 10px rgba(0,0,0,0.45); }
 }
 .stTabs [data-baseweb="tab"] {
     border-radius: 10px;
     padding: 8px 16px;
+    transition: background 0.15s ease;
 }
 .stTabs [aria-selected="true"] {
     background: __GRADYAN__ !important;
+    box-shadow: 0 3px 10px rgba(74,58,167,0.35);
 }
 .stTabs [aria-selected="true"] p {
     color: #ffffff !important;
     font-weight: 600;
+}
+div.stButton > button, div.stDownloadButton > button, div[data-testid="stFormSubmitButton"] > button {
+    border-radius: 10px;
+    transition: transform 0.12s ease, box-shadow 0.15s ease;
+}
+div.stButton > button:hover:not(:disabled),
+div.stDownloadButton > button:hover,
+div[data-testid="stFormSubmitButton"] > button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(11,11,11,0.15);
 }
 div.stButton > button[kind="primary"],
 button[data-testid="baseButton-primary"] {
@@ -127,63 +155,99 @@ button[data-testid="baseButton-primary"] {
 .fd-header {
     background: __GRADYAN__;
     color: #ffffff;
-    padding: 14px 20px;
-    border-radius: 14px 14px 0 0;
-    font-size: 1.1rem;
+    padding: 16px 22px;
+    border-radius: 16px 16px 0 0;
+    font-size: 1.15rem;
     font-weight: 700;
     margin-top: 8px;
+    letter-spacing: 0.2px;
 }
 .fd-card {
     background: #ffffff;
-    border-radius: 0 0 14px 14px;
-    padding: 20px;
-    box-shadow: 0 1px 3px rgba(11,11,11,0.08);
-    margin-bottom: 24px;
+    border-radius: 0 0 16px 16px;
+    padding: 22px;
+    box-shadow: 0 6px 20px rgba(11,11,11,0.07);
+    margin-bottom: 28px;
+    border: 1px solid rgba(11,11,11,0.04);
+    border-top: none;
+}
+@media (prefers-color-scheme: dark) {
+    .fd-card {
+        background: #1a1a22;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+        border-color: rgba(255,255,255,0.06);
+        color: #e7e6f0;
+    }
 }
 .fd-avatar {
     width: 72px; height: 72px; border-radius: 50%;
     background: __GRADYAN__; color: #fff;
     display: flex; align-items: center; justify-content: center;
     font-size: 1.4rem; font-weight: 700; margin: 0 auto 12px auto;
+    box-shadow: 0 4px 14px rgba(74,58,167,0.35);
 }
 .fd-stat-tile {
-    border-radius: 12px; padding: 18px; text-align: center;
+    border-radius: 14px; padding: 20px; text-align: center;
     font-weight: 700; margin-bottom: 12px;
+    box-shadow: 0 4px 14px rgba(11,11,11,0.12);
+    transition: transform 0.15s ease;
 }
+.fd-stat-tile:hover { transform: translateY(-2px); }
 .fd-stat-tile .deger { font-size: 1.8rem; display: block; }
 .fd-stat-tile .etiket { font-size: 0.85rem; font-weight: 500; opacity: 0.9; }
 .fd-info-card {
-    background: #f9f9f7; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;
+    background: #f7f7f9; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;
+    border: 1px solid rgba(11,11,11,0.05);
+}
+@media (prefers-color-scheme: dark) {
+    .fd-info-card { background: #22222c; border-color: rgba(255,255,255,0.07); color: #e7e6f0; }
 }
 .fd-badge {
     display: inline-block; padding: 3px 10px; border-radius: 999px;
     background: __RENK_IYI__; color: #fff; font-size: 0.8rem; font-weight: 600;
 }
 .fd-blok-row, .fd-gorev-row {
-    border-left: 4px solid __RENK_MAVI__; background: #f9f9f7;
-    border-radius: 8px; padding: 10px 14px; margin-bottom: 8px;
+    border-left: 4px solid __RENK_MAVI__; background: #f7f7f9;
+    border-radius: 10px; padding: 12px 16px; margin-bottom: 8px;
+    transition: background 0.15s ease;
+}
+.fd-blok-row:hover, .fd-gorev-row:hover { background: #eeedf7; }
+@media (prefers-color-scheme: dark) {
+    .fd-blok-row, .fd-gorev-row { background: #22222c; color: #e7e6f0; }
+    .fd-blok-row:hover, .fd-gorev-row:hover { background: #292933; }
 }
 .fd-rozet {
     display: inline-block; padding: 2px 10px; border-radius: 6px;
     font-size: 0.75rem; font-weight: 700; margin-right: 8px;
 }
 .fd-dilim-card {
-    background: #f9f9f7; border-left: 4px solid __RENK_MOR__;
-    border-radius: 8px; padding: 12px 16px; margin-bottom: 10px;
+    background: #f7f7f9; border-left: 4px solid __RENK_MOR__;
+    border-radius: 10px; padding: 14px 18px; margin-bottom: 10px;
+    transition: transform 0.12s ease;
 }
+.fd-dilim-card:hover { transform: translateX(3px); }
+@media (prefers-color-scheme: dark) { .fd-dilim-card { background: #22222c; color: #e7e6f0; } }
 .fd-oneri-kutu {
-    background: #e6f6f2; border-radius: 10px; padding: 16px 20px; margin-top: 16px;
+    background: #e6f6f2; border-radius: 12px; padding: 18px 22px; margin-top: 16px;
     border-left: 4px solid __RENK_IYI__;
 }
+@media (prefers-color-scheme: dark) {
+    .fd-oneri-kutu { background: rgba(12,163,12,0.14); color: #e7e6f0; }
+}
 .fd-analiz-kutu {
-    background: #e8f0fb; border-radius: 10px; padding: 16px 20px; margin-top: 16px;
+    background: #e8f0fb; border-radius: 12px; padding: 18px 22px; margin-top: 16px;
     border-left: 4px solid __RENK_MAVI__;
 }
-.fd-bucket-track {
-    background: #e1e0d9; border-radius: 999px; height: 22px;
+@media (prefers-color-scheme: dark) {
+    .fd-analiz-kutu { background: rgba(42,120,214,0.16); color: #e7e6f0; }
 }
+.fd-bucket-track {
+    background: #e5e4ec; border-radius: 999px; height: 24px; overflow: hidden;
+}
+@media (prefers-color-scheme: dark) { .fd-bucket-track { background: #2b2b35; } }
 .fd-bucket-fill {
-    background: __RENK_MAVI__; border-radius: 999px; height: 22px;
+    background: __GRADYAN__; border-radius: 999px; height: 24px;
+    transition: width 0.5s ease;
 }
 </style>
 """
@@ -216,10 +280,11 @@ with st.expander("📅 Google Takvim'e etkinlik ekle"):
             elif ev_bit <= ev_bas:
                 st.error("Bitiş, başlangıçtan sonra olmalı")
             else:
-                start_iso = datetime.combine(ev_gun, ev_bas).astimezone().isoformat()
-                end_iso = datetime.combine(ev_gun, ev_bit).astimezone().isoformat()
-                sync_service.create_event_everywhere(current_user_id, ev_title, start_iso, end_iso, ev_desc)
-                st.success("Etkinlik Google Takvim'e eklendi")
+                with st.spinner("Google Takvim'e ekleniyor..."):
+                    start_iso = datetime.combine(ev_gun, ev_bas).astimezone().isoformat()
+                    end_iso = datetime.combine(ev_gun, ev_bit).astimezone().isoformat()
+                    sync_service.create_event_everywhere(current_user_id, ev_title, start_iso, end_iso, ev_desc)
+                st.toast("Etkinlik Google Takvim'e eklendi", icon="✅")
                 st.rerun()
 
 _sekme_etiketleri = ["👤 Profil", "📝 Plan Oluştur", "🗓️ AI Planı", "📊 Rapor"]
@@ -263,7 +328,7 @@ with tab_profil:
                 profil_service.save(
                     current_user_id, p_ad, p_eposta, p_verimli_b, p_verimli_e, p_uyku_b, p_uyku_e, p_hedef
                 )
-                st.success("Profil kaydedildi")
+                st.toast("Profil kaydedildi", icon="✅")
                 st.rerun()
             except ValueError as e:
                 logger.warning("Profil kaydetme hatası: %s", e)
@@ -298,7 +363,7 @@ with tab_profil:
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# Plan Oluştur
+# Plan Oluştur — iki kolon: solda gün ayarları, sağda görev listesi
 # ---------------------------------------------------------------------------
 with tab_plan:
     st.markdown("<div class='fd-header'>📝 Günlük Plan Oluştur</div>", unsafe_allow_html=True)
@@ -315,139 +380,146 @@ with tab_plan:
         ]
         st.session_state["bloklar_gun"] = secili_gun
 
-    if secili_gun >= date.today():
-        gecikmisler = gecikmis_gorevleri_listele(current_user_id, date.today())
-        if gecikmisler:
-            st.subheader("⏰ Geçmişten Kalan Görevler")
-            for gecikmis in gecikmisler:
-                gc1, gc2 = st.columns([5, 2])
-                gun_farki = (date.today() - gecikmis.due_date).days
-                gc1.markdown(
-                    f"<div class='fd-gorev-row'>"
-                    f"<span class='fd-rozet' style='background:{ONCELIK_RENK[gecikmis.priority]}; "
-                    f"color:{ONCELIK_METIN_RENK[gecikmis.priority]};'>{ONCELIK_ETIKET[gecikmis.priority]}</span>"
-                    f"<strong>{gecikmis.title}</strong>"
-                    f"<br><span style='color:#898781; font-size:0.85rem;'>{gun_farki} gündür gecikmiş</span>"
-                    f"</div>",
-                    unsafe_allow_html=True,
-                )
-                if gc2.button(
-                    f"→ {secili_gun:%d.%m}'e taşı", key=f"tasi_{gecikmis.id}",
-                    help="Görevi seçili güne taşı",
-                ):
-                    update_task(
-                        current_user_id, gecikmis.id, gecikmis.title, gecikmis.description, gecikmis.priority,
-                        due_date=secili_gun, duration_minutes=gecikmis.duration_minutes,
+    sol_kolon, sag_kolon = st.columns([1, 1.2], gap="large")
+
+    with sol_kolon:
+        if secili_gun >= date.today():
+            gecikmisler = gecikmis_gorevleri_listele(current_user_id, date.today())
+            if gecikmisler:
+                st.subheader("⏰ Geçmişten Kalan Görevler")
+                for gecikmis in gecikmisler:
+                    gc1, gc2 = st.columns([5, 2])
+                    gun_farki = (date.today() - gecikmis.due_date).days
+                    gc1.markdown(
+                        f"<div class='fd-gorev-row'>"
+                        f"<span class='fd-rozet' style='background:{ONCELIK_RENK[gecikmis.priority]}; "
+                        f"color:{ONCELIK_METIN_RENK[gecikmis.priority]};'>{ONCELIK_ETIKET[gecikmis.priority]}</span>"
+                        f"<strong>{gecikmis.title}</strong>"
+                        f"<br><span style='color:#898781; font-size:0.85rem;'>{gun_farki} gündür gecikmiş</span>"
+                        f"</div>",
+                        unsafe_allow_html=True,
                     )
-                    st.rerun()
-
-    st.subheader("🚫 Uygun Olmayan Saatler (Ders, Uyku vb.)")
-    bcol1, bcol2, bcol3, bcol4 = st.columns([2, 2, 3, 1])
-    blok_bas = bcol1.time_input("Başlangıç", value=dt_time(9, 0), key="blok_bas")
-    blok_bit = bcol2.time_input("Bitiş", value=dt_time(12, 0), key="blok_bit")
-    blok_etiket = bcol3.text_input(
-        "Etiket", key="blok_etiket", placeholder="ör: Ders"
-    )
-    if bcol4.button("+ Ekle"):
-        if blok_bit > blok_bas:
-            st.session_state["uygun_olmayan_bloklar"].append(
-                {"start": blok_bas, "end": blok_bit, "label": blok_etiket or "Meşgul"}
-            )
-            st.rerun()
-        else:
-            st.error("Bitiş, başlangıçtan sonra olmalı")
-
-    for i, blok in enumerate(st.session_state["uygun_olmayan_bloklar"]):
-        c1, c2 = st.columns([5, 1])
-        c1.markdown(
-            f"<div class='fd-blok-row'>{blok['label']}"
-            f"<br><span style='color:#898781; font-size:0.85rem;'>"
-            f"{blok['start'].strftime('%H:%M')}–{blok['end'].strftime('%H:%M')}</span></div>",
-            unsafe_allow_html=True,
-        )
-        if c2.button("Kaldır", key=f"kaldir_blok_{i}"):
-            st.session_state["uygun_olmayan_bloklar"].pop(i)
-            st.rerun()
-
-    st.subheader("📋 Yapılması Gereken İşler")
-    g_title = st.text_input("İş adı (ör: Raporu yaz)", key="g_title")
-    g_sure = st.number_input("Süre (dakika)", min_value=1, value=30, key="g_sure")
-    g_oncelik = st.selectbox(
-        "Öncelik Seç", options=[3, 2, 1], format_func=lambda p: ONCELIK_ETIKET[p], key="g_oncelik"
-    )
-    if st.button("+ Görev Ekle", type="primary", width="stretch"):
-        try:
-            create_task(current_user_id, g_title, priority=g_oncelik, due_date=secili_gun, duration_minutes=g_sure)
-            st.rerun()
-        except ValueError as e:
-            logger.warning("Görev oluşturma hatası: %s", e)
-            st.error(str(e))
-
-    gunun_gorevleri = list_tasks(current_user_id, due_date=secili_gun)
-    if not gunun_gorevleri:
-        st.caption("Bu gün için henüz görev eklenmedi.")
-
-    for task in gunun_gorevleri:
-        c1, c2, c3, c4 = st.columns([5, 1, 1, 1])
-        tamamlandi_isareti = " ✓" if task.done else ""
-        c1.markdown(
-            f"<div class='fd-gorev-row'>"
-            f"<span class='fd-rozet' style='background:{ONCELIK_RENK[task.priority]}; "
-            f"color:{ONCELIK_METIN_RENK[task.priority]};'>{ONCELIK_ETIKET[task.priority]}</span>"
-            f"<strong>{task.title}{tamamlandi_isareti}</strong>"
-            f"<br><span style='color:#898781; font-size:0.85rem;'>⏱ {task.duration_minutes} dakika</span>"
-            f"</div>",
-            unsafe_allow_html=True,
-        )
-        if c2.button("✓", key=f"tamamla_{task.id}", disabled=task.done, help="Görevi tamamla"):
-            complete_task(current_user_id, task.id)
-            st.rerun()
-        if c3.button("✎", key=f"duzenle_{task.id}", help="Görevi düzenle"):
-            st.session_state["duzenle_id"] = None if st.session_state.get("duzenle_id") == task.id else task.id
-            st.rerun()
-        if c4.button("🗑", key=f"sil_{task.id}", help="Görevi sil"):
-            delete_task(current_user_id, task.id)
-            st.rerun()
-
-        if st.session_state.get("duzenle_id") == task.id:
-            with st.form(f"duzenle_form_{task.id}"):
-                e_title = st.text_input("Başlık", value=task.title)
-                e_sure = st.number_input("Süre (dakika)", min_value=1, value=task.duration_minutes)
-                e_oncelik = st.selectbox(
-                    "Öncelik", options=[3, 2, 1], index=[3, 2, 1].index(task.priority),
-                    format_func=lambda p: ONCELIK_ETIKET[p],
-                )
-                e_due = st.date_input("Son tarih", value=task.due_date or secili_gun)
-                if st.form_submit_button("Kaydet"):
-                    try:
-                        update_task(current_user_id, task.id, e_title, task.description, e_oncelik, e_due, e_sure)
-                        st.session_state["duzenle_id"] = None
+                    if gc2.button(
+                        f"→ {secili_gun:%d.%m}'e taşı", key=f"tasi_{gecikmis.id}",
+                        help="Görevi seçili güne taşı",
+                    ):
+                        update_task(
+                            current_user_id, gecikmis.id, gecikmis.title, gecikmis.description, gecikmis.priority,
+                            due_date=secili_gun, duration_minutes=gecikmis.duration_minutes,
+                        )
+                        st.toast(f"'{gecikmis.title}' {secili_gun:%d.%m} gününe taşındı", icon="↪️")
                         st.rerun()
-                    except ValueError as e:
-                        logger.warning("Görev düzenleme hatası: %s", e)
-                        st.error(str(e))
 
-    aktif_gorevler = list_tasks(current_user_id, include_done=False, due_date=secili_gun)
-    if aktif_gorevler:
-        kapasite = planning_service.kapasite_kontrolu(
-            aktif_gorevler, st.session_state["uygun_olmayan_bloklar"], profil
+        st.subheader("🚫 Uygun Olmayan Saatler (Ders, Uyku vb.)")
+        bcol1, bcol2 = st.columns(2)
+        blok_bas = bcol1.time_input("Başlangıç", value=dt_time(9, 0), key="blok_bas")
+        blok_bit = bcol2.time_input("Bitiş", value=dt_time(12, 0), key="blok_bit")
+        blok_etiket = st.text_input("Etiket", key="blok_etiket", placeholder="ör: Ders")
+        if st.button("+ Ekle", key="blok_ekle_btn"):
+            if blok_bit > blok_bas:
+                st.session_state["uygun_olmayan_bloklar"].append(
+                    {"start": blok_bas, "end": blok_bit, "label": blok_etiket or "Meşgul"}
+                )
+                st.rerun()
+            else:
+                st.error("Bitiş, başlangıçtan sonra olmalı")
+
+        for i, blok in enumerate(st.session_state["uygun_olmayan_bloklar"]):
+            c1, c2 = st.columns([5, 1])
+            c1.markdown(
+                f"<div class='fd-blok-row'>{blok['label']}"
+                f"<br><span style='color:#898781; font-size:0.85rem;'>"
+                f"{blok['start'].strftime('%H:%M')}–{blok['end'].strftime('%H:%M')}</span></div>",
+                unsafe_allow_html=True,
+            )
+            if c2.button("Kaldır", key=f"kaldir_blok_{i}"):
+                st.session_state["uygun_olmayan_bloklar"].pop(i)
+                st.rerun()
+
+    with sag_kolon:
+        st.subheader("📋 Yapılması Gereken İşler")
+        g_title = st.text_input("İş adı (ör: Raporu yaz)", key="g_title")
+        gcol1, gcol2 = st.columns(2)
+        g_sure = gcol1.number_input("Süre (dakika)", min_value=1, value=30, key="g_sure")
+        g_oncelik = gcol2.selectbox(
+            "Öncelik Seç", options=[3, 2, 1], format_func=lambda p: ONCELIK_ETIKET[p], key="g_oncelik"
         )
-        if kapasite["asiri_yuklenme"]:
-            st.warning(
-                f"⚠️ Bugünkü işlerin toplam {kapasite['toplam_gorev_dakika']} dk, "
-                f"müsait zamanın {kapasite['musait_dakika']} dk — "
-                f"{kapasite['fark_dakika']} dk sığmayabilir."
-            )
+        if st.button("+ Görev Ekle", type="primary", width="stretch"):
+            try:
+                create_task(current_user_id, g_title, priority=g_oncelik, due_date=secili_gun, duration_minutes=g_sure)
+                st.toast(f"'{g_title}' eklendi", icon="✅")
+                st.rerun()
+            except ValueError as e:
+                logger.warning("Görev oluşturma hatası: %s", e)
+                st.error(str(e))
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🚀 Planı Oluştur", type="primary", width="stretch"):
-        if not aktif_gorevler:
-            st.warning("Plan oluşturmak için en az bir görev ekleyin.")
-        else:
-            planning_service.plan_olustur(
-                current_user_id, secili_gun, aktif_gorevler, st.session_state["uygun_olmayan_bloklar"], profil
+        gunun_gorevleri = list_tasks(current_user_id, due_date=secili_gun)
+        if not gunun_gorevleri:
+            st.caption("Bu gün için henüz görev eklenmedi.")
+
+        for task in gunun_gorevleri:
+            c1, c2, c3, c4 = st.columns([5, 1, 1, 1])
+            tamamlandi_isareti = " ✓" if task.done else ""
+            c1.markdown(
+                f"<div class='fd-gorev-row'>"
+                f"<span class='fd-rozet' style='background:{ONCELIK_RENK[task.priority]}; "
+                f"color:{ONCELIK_METIN_RENK[task.priority]};'>{ONCELIK_ETIKET[task.priority]}</span>"
+                f"<strong>{task.title}{tamamlandi_isareti}</strong>"
+                f"<br><span style='color:#898781; font-size:0.85rem;'>⏱ {task.duration_minutes} dakika</span>"
+                f"</div>",
+                unsafe_allow_html=True,
             )
-            st.success("Plan oluşturuldu! 'AI Planı' sekmesinden görüntüleyebilirsin.")
+            if c2.button("✓", key=f"tamamla_{task.id}", disabled=task.done, help="Görevi tamamla"):
+                complete_task(current_user_id, task.id)
+                st.rerun()
+            if c3.button("✎", key=f"duzenle_{task.id}", help="Görevi düzenle"):
+                st.session_state["duzenle_id"] = None if st.session_state.get("duzenle_id") == task.id else task.id
+                st.rerun()
+            if c4.button("🗑", key=f"sil_{task.id}", help="Görevi sil"):
+                delete_task(current_user_id, task.id)
+                st.rerun()
+
+            if st.session_state.get("duzenle_id") == task.id:
+                with st.form(f"duzenle_form_{task.id}"):
+                    e_title = st.text_input("Başlık", value=task.title)
+                    e_sure = st.number_input("Süre (dakika)", min_value=1, value=task.duration_minutes)
+                    e_oncelik = st.selectbox(
+                        "Öncelik", options=[3, 2, 1], index=[3, 2, 1].index(task.priority),
+                        format_func=lambda p: ONCELIK_ETIKET[p],
+                    )
+                    e_due = st.date_input("Son tarih", value=task.due_date or secili_gun)
+                    if st.form_submit_button("Kaydet"):
+                        try:
+                            update_task(current_user_id, task.id, e_title, task.description, e_oncelik, e_due, e_sure)
+                            st.session_state["duzenle_id"] = None
+                            st.toast("Görev güncellendi", icon="✅")
+                            st.rerun()
+                        except ValueError as e:
+                            logger.warning("Görev düzenleme hatası: %s", e)
+                            st.error(str(e))
+
+        aktif_gorevler = list_tasks(current_user_id, include_done=False, due_date=secili_gun)
+        if aktif_gorevler:
+            kapasite = planning_service.kapasite_kontrolu(
+                aktif_gorevler, st.session_state["uygun_olmayan_bloklar"], profil
+            )
+            if kapasite["asiri_yuklenme"]:
+                st.warning(
+                    f"⚠️ Bugünkü işlerin toplam {kapasite['toplam_gorev_dakika']} dk, "
+                    f"müsait zamanın {kapasite['musait_dakika']} dk — "
+                    f"{kapasite['fark_dakika']} dk sığmayabilir."
+                )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🚀 Planı Oluştur", type="primary", width="stretch"):
+            if not aktif_gorevler:
+                st.warning("Plan oluşturmak için en az bir görev ekleyin.")
+            else:
+                with st.spinner("Plan oluşturuluyor..."):
+                    planning_service.plan_olustur(
+                        current_user_id, secili_gun, aktif_gorevler, st.session_state["uygun_olmayan_bloklar"], profil
+                    )
+                st.success("Plan oluşturuldu! 'AI Planı' sekmesinden görüntüleyebilirsin.")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -468,7 +540,12 @@ with tab_ai:
     else:
         aktif_gorev_sayisi = len(list_tasks(current_user_id, include_done=False, due_date=kayit.gun))
         yerlesemeyen_sayisi = max(aktif_gorev_sayisi - len(kayit.dilimler), 0)
-        rozet = "Tamamen Planlandı ✓" if not yerlesemeyen_sayisi and kayit.dilimler else "Planlanamadı" if not kayit.dilimler else "Kısmen Planlandı"
+        if not kayit.dilimler:
+            rozet, rozet_renk, rozet_metin = "Planlanamadı", RENK_KRITIK, "#ffffff"
+        elif yerlesemeyen_sayisi:
+            rozet, rozet_renk, rozet_metin = "Kısmen Planlandı", RENK_UYARI, "#0b0b0b"
+        else:
+            rozet, rozet_renk, rozet_metin = "Tamamen Planlandı ✓", RENK_IYI, "#ffffff"
 
         gun_adi = GUNLER[kayit.gun.weekday()]
         gun_metni = f"{gun_adi}, {kayit.gun.day} {AYLAR[kayit.gun.month - 1]} {kayit.gun.year}"
@@ -476,7 +553,7 @@ with tab_ai:
             f"<div class='fd-info-card'>"
             f"<span style='color:#898781;'>{gun_metni}</span><br>"
             f"<strong style='font-size:1.2rem;'>Günlük Plan Hazır</strong><br>"
-            f"<span class='fd-badge'>{rozet}</span></div>",
+            f"<span class='fd-badge' style='background:{rozet_renk}; color:{rozet_metin};'>{rozet}</span></div>",
             unsafe_allow_html=True,
         )
         if yerlesemeyen_sayisi:
@@ -517,7 +594,7 @@ with tab_ai:
         )
 
         if st.button("← Geri Dön & Değiştir"):
-            st.caption("Değişiklik için 'Plan Oluştur' sekmesine geçebilirsin.")
+            st.toast("Değişiklik için 'Plan Oluştur' sekmesine geç.", icon="↩️")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -673,8 +750,12 @@ if tab_admin is not None:
             disabled=secilen.id == current_user_id,
             help="Kendi admin yetkini kaldıramazsın" if secilen.id == current_user_id else None,
         ):
-            user_service.set_admin(secilen.id, not secilen.is_admin)
-            st.rerun()
+            try:
+                user_service.set_admin(secilen.id, not secilen.is_admin)
+                st.toast(f"{secilen.username} artık {'admin değil' if secilen.is_admin else 'admin'}", icon="✅")
+                st.rerun()
+            except ValueError as e:
+                st.error(str(e))
 
         with st.form("admin_sifre_sifirla_formu"):
             yeni_sifre = st.text_input("Yeni parola", type="password")
@@ -694,8 +775,11 @@ if tab_admin is not None:
             if secilen.id == current_user_id:
                 st.error("Kendi hesabını silemezsin.")
             else:
-                user_service.delete_user(secilen.id)
-                st.success(f"{secilen.username} silindi.")
-                st.rerun()
+                try:
+                    user_service.delete_user(secilen.id)
+                    st.success(f"{secilen.username} silindi.")
+                    st.rerun()
+                except ValueError as e:
+                    st.error(str(e))
 
         st.markdown("</div>", unsafe_allow_html=True)
