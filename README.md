@@ -341,8 +341,6 @@ Sprint 3 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 
 Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüleri:
 
-<img width="1918" height="912" alt="Ekran görüntüsü 2026-07-20 221859" src="https://github.com/user-attachments/assets/4ff591ff-a839-492f-9d93-55be0bd9bd8c" />
-
 <img width="1600" height="900" alt="WhatsApp Image 2026-07-20 at 21 11 01" src="https://github.com/user-attachments/assets/c81ba178-63aa-4d7b-8c98-65546e793d49" />
 
 <img width="1912" height="902" alt="Ekran görüntüsü 2026-07-28 180412" src="https://github.com/user-attachments/assets/fbf68966-d324-4157-86f5-ece82536315c" />
