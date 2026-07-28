@@ -323,14 +323,21 @@ https://grup61-yzta-bootcamp.atlassian.net/wiki/spaces/~712020e68e0114d0814b6994
 
 Sprint 3 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştirilmiştir:
 
-20 Temmuz (Sprint 3 Planlama Toplantısı): Sprint 3 hedefleri belirlendi. Teknik geliştirme sürecinde yapılacak görevler gözden geçirilerek ekip üyeleri arasında görev dağılımı gerçekleştirildi.
+20 Temmuz (Sprint 3 Planlama Toplantısı): Sprint 3 hedefleri belirlendi. Teknik geliştirme sürecinde tamamlanacak backlog maddeleri gözden geçirildi, görev dağılımı yapıldı ve sprint takvimi oluşturuldu.
 
-21 Temmuz (AI Entegrasyon Toplantısı): OpenAI API entegrasyonu ve prompt yapısı değerlendirildi. Yapay zekâ tarafından oluşturulan günlük planların doğruluğu incelendi ve iyileştirilmesi gereken noktalar belirlendi.
+21 Temmuz (Profil ve Kullanıcı Ayarları Toplantısı): Kullanıcı profili ekranı, kişiselleştirme seçenekleri ve günlük planlamada kullanılacak profil bilgilerinin sisteme entegrasyonu değerlendirildi.
 
-23 Temmuz (Fonksiyonel Test Toplantısı): Uygulamanın temel fonksiyonları uçtan uca test edildi. Görev oluşturma, görev listeleme ve plan oluşturma süreçleri değerlendirildi.
+22 Temmuz (Plan Oluşturma Toplantısı): Görev oluşturma ekranı, uygun olmayan saatlerin yönetimi, öncelik sistemi ve günlük plan oluşturma akışı gözden geçirildi.
 
+24 Temmuz (AI Planı Toplantısı): Oluşturulan günlük planların kullanıcıya sunulacağı AI Planı ekranı değerlendirildi. Plan kayıtları, zaman blokları ve öneri metinleri üzerinde çalışıldı.
 
-...
+26 Temmuz (Raporlama ve Analiz Toplantısı): Haftalık performans raporları, verimlilik analizi ve erteleme istatistikleri incelenerek rapor ekranının son hali değerlendirildi.
+
+28 Temmuz (Entegrasyon ve Sistem Testleri Toplantısı): Profil, Plan Oluştur, AI Planı ve Rapor modülleri uçtan uca test edildi. Google Calendar senkronizasyonu ve hata düzeltmeleri gözden geçirildi.
+
+30 Temmuz (Sprint Review Toplantısı): Sprint boyunca tamamlanan geliştirmeler ekip tarafından değerlendirildi. Demo senaryosu, dokümantasyon ve canlı ortam hazırlıkları tamamlandı.
+
+31 Temmuz (Sprint Retrospective Toplantısı): Sprint süreci genel olarak değerlendirildi. Karşılaşılan sorunlar, elde edilen kazanımlar ve sonraki projelerde uygulanacak iyileştirmeler belirlendi.
 
 Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüleri:
 
