@@ -337,13 +337,24 @@ Sprint 3 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 
 30 Temmuz (Sprint Review Toplantısı): Sprint boyunca tamamlanan geliştirmeler ekip tarafından değerlendirildi. Demo senaryosu, dokümantasyon ve canlı ortam hazırlıkları tamamlandı.
 
-31 Temmuz (Sprint Retrospective Toplantısı): Sprint süreci genel olarak değerlendirildi. Karşılaşılan sorunlar, elde edilen kazanımlar ve sonraki projelerde uygulanacak iyileştirmeler belirlendi.
+2 Ağustos (Sprint Retrospective Toplantısı): Sprint süreci genel olarak değerlendirildi. Karşılaşılan sorunlar, elde edilen kazanımlar ve sonraki projelerde uygulanacak iyileştirmeler belirlendi.
 
 Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüleri:
 
 <img width="1918" height="912" alt="Ekran görüntüsü 2026-07-20 221859" src="https://github.com/user-attachments/assets/4ff591ff-a839-492f-9d93-55be0bd9bd8c" />
 
 <img width="1600" height="900" alt="WhatsApp Image 2026-07-20 at 21 11 01" src="https://github.com/user-attachments/assets/c81ba178-63aa-4d7b-8c98-65546e793d49" />
+
+<img width="1912" height="902" alt="Ekran görüntüsü 2026-07-28 180412" src="https://github.com/user-attachments/assets/fbf68966-d324-4157-86f5-ece82536315c" />
+
+<img width="1600" height="691" alt="15df2cdd-6365-4a22-8bed-94a4202a260e" src="https://github.com/user-attachments/assets/535426ed-f942-4de2-b04c-43abb89d9cd6" />
+
+<img width="1600" height="792" alt="a57e5d66-328c-4a57-a021-72ef2c61204c" src="https://github.com/user-attachments/assets/bd0ae6cd-eb6e-4d66-a1b2-156203f95f11" />
+
+<img width="1600" height="522" alt="a6400ee8-d03b-4baf-84fc-16e776055af1" src="https://github.com/user-attachments/assets/753f1027-2d30-452b-91ac-baab7249c462" />
+
+<img width="1600" height="756" alt="3588a436-50b4-46e4-8355-7f92751e3d3d" src="https://github.com/user-attachments/assets/fa0ebe96-6840-4fe9-93fb-9ff24f6d7d06" />
+
 
 # Sprint 3 Review
 Sprint 3, FlowDay projesinin teknik geliştirme aşamasının tamamlanıp son kullanıcıyla buluşmaya hazır hale getirildiği "Canlıya Alma ve Lansman" dönemi olarak başarıyla tamamlanmıştır.
