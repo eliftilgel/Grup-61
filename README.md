@@ -335,7 +335,7 @@ Sprint 3 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 
 28 Temmuz (Entegrasyon ve Sistem Testleri Toplantısı): Profil, Plan Oluştur, AI Planı ve Rapor modülleri uçtan uca test edildi. Google Calendar senkronizasyonu ve hata düzeltmeleri gözden geçirildi.
 
-30 Temmuz (Sprint Review Toplantısı): Sprint boyunca tamamlanan geliştirmeler ekip tarafından değerlendirildi. Demo senaryosu, dokümantasyon ve canlı ortam hazırlıkları tamamlandı.
+29 Temmuz (Sprint Review Toplantısı): Sprint boyunca tamamlanan geliştirmeler ekip tarafından değerlendirildi. Demo senaryosu, dokümantasyon ve canlı ortam hazırlıkları tamamlandı.
 
 2 Ağustos (Sprint Retrospective Toplantısı): Sprint süreci genel olarak değerlendirildi. Karşılaşılan sorunlar, elde edilen kazanımlar ve sonraki projelerde uygulanacak iyileştirmeler belirlendi.
 
@@ -348,6 +348,8 @@ Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüler
 <img width="1427" height="845" alt="Ekran görüntüsü 2026-07-28 181347" src="https://github.com/user-attachments/assets/06d1dc04-ae53-490d-984e-bf69955ed4ed" />
 
 <img width="1600" height="900" alt="WhatsApp Image 2026-07-20 at 21 11 01" src="https://github.com/user-attachments/assets/c81ba178-63aa-4d7b-8c98-65546e793d49" />
+
+<img width="1917" height="1020" alt="Ekran görüntüsü 2026-07-29 201419" src="https://github.com/user-attachments/assets/c41b343d-7616-422e-ac42-d967346243fc" />
 
 <img width="1600" height="691" alt="15df2cdd-6365-4a22-8bed-94a4202a260e" src="https://github.com/user-attachments/assets/535426ed-f942-4de2-b04c-43abb89d9cd6" />
 
