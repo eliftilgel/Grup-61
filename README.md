@@ -333,9 +333,9 @@ Sprint 3 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 
 26 Temmuz (Raporlama ve Analiz Toplantısı): Haftalık performans raporları, verimlilik analizi ve erteleme istatistikleri incelenerek rapor ekranının son hali değerlendirildi.
 
-28 Temmuz (Entegrasyon ve Sistem Testleri Toplantısı): Profil, Plan Oluştur, AI Planı ve Rapor modülleri uçtan uca test edildi. Google Calendar senkronizasyonu ve hata düzeltmeleri gözden geçirildi.
+29 Temmuz (Entegrasyon ve Sistem Testleri Toplantısı): Profil, Plan Oluştur, AI Planı ve Rapor modülleri uçtan uca test edildi. Google Calendar senkronizasyonu ve hata düzeltmeleri gözden geçirildi.
 
-29 Temmuz (Sprint Review Toplantısı): Sprint boyunca tamamlanan geliştirmeler ekip tarafından değerlendirildi. Demo senaryosu, dokümantasyon ve canlı ortam hazırlıkları tamamlandı.
+30 Temmuz (Sprint Review Toplantısı): Sprint boyunca tamamlanan geliştirmeler ekip tarafından değerlendirildi. Demo senaryosu, dokümantasyon ve canlı ortam hazırlıkları tamamlandı.
 
 2 Ağustos (Sprint Retrospective Toplantısı): Sprint süreci genel olarak değerlendirildi. Karşılaşılan sorunlar, elde edilen kazanımlar ve sonraki projelerde uygulanacak iyileştirmeler belirlendi.
 
