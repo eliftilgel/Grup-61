@@ -1,9 +1,17 @@
 """planning_service için birim testleri."""
 
-from datetime import date, time
+from datetime import date, datetime, time
 
-from core.models import Profil
-from core.services.planning_service import kapasite_kontrolu, kullanicinin_planlari, plan_olustur, son_plan
+from core.models import Profil, Task
+from core.services.planning_service import (
+    alternatif_planlari_uret,
+    erteleme_onerilerini_uret,
+    erteleme_onerisi_uret,
+    kapasite_kontrolu,
+    kullanicinin_planlari,
+    plan_olustur,
+    son_plan,
+)
 from core.services.task_service import create_task
 
 VARSAYILAN_PROFIL = Profil(
@@ -13,6 +21,16 @@ VARSAYILAN_PROFIL = Profil(
     uyku_baslangic=time(23, 0),
     uyku_bitis=time(7, 0),
     gunluk_hedef=5,
+)
+
+BUFFERLI_PROFIL = Profil(
+    ad_soyad="Test",
+    verimli_baslangic=time(7, 0),
+    verimli_bitis=time(13, 0),
+    uyku_baslangic=time(23, 0),
+    uyku_bitis=time(7, 0),
+    gunluk_hedef=5,
+    buffer_dakika=15,
 )
 
 
@@ -116,6 +134,226 @@ def test_kapasite_asilirsa_asiri_yuklenme_true(test_db, test_user_id):
     assert sonuc["fark_dakika"] == 40
 
 
+def _enerji_test_gorevleri_ekle(test_user_id, gun):
+    kisa_dusuk = create_task(test_user_id, "Kısa düşük öncelik", priority=1, duration_minutes=15, due_date=gun)
+    uzun_yuksek = create_task(test_user_id, "Uzun yüksek öncelik", priority=3, duration_minutes=30, due_date=gun)
+    return kisa_dusuk, uzun_yuksek
+
+
+_ENERJI_TEK_SLOT_DISINDA_KAPAT = [
+    {"start": time(6, 0), "end": time(9, 0), "label": "Meşgul"},
+    {"start": time(9, 30), "end": time(23, 0), "label": "Meşgul"},
+]
+
+
+def test_dusuk_enerjide_kisa_dusuk_oncelikli_gorev_once_yerlesir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    kisa_dusuk, uzun_yuksek = _enerji_test_gorevleri_ekle(test_user_id, gun)
+
+    kayit = plan_olustur(
+        test_user_id, gun, [uzun_yuksek, kisa_dusuk], _ENERJI_TEK_SLOT_DISINDA_KAPAT, VARSAYILAN_PROFIL,
+        enerji_seviyesi="dusuk",
+    )
+
+    yerlesen_ids = {d["task_id"] for d in kayit.dilimler}
+    assert kisa_dusuk.id in yerlesen_ids
+    assert uzun_yuksek.id not in yerlesen_ids
+
+
+def test_yuksek_enerjide_uzun_yuksek_oncelikli_gorev_once_yerlesir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    kisa_dusuk, uzun_yuksek = _enerji_test_gorevleri_ekle(test_user_id, gun)
+
+    kayit = plan_olustur(
+        test_user_id, gun, [uzun_yuksek, kisa_dusuk], _ENERJI_TEK_SLOT_DISINDA_KAPAT, VARSAYILAN_PROFIL,
+        enerji_seviyesi="yuksek",
+    )
+
+    yerlesen_ids = {d["task_id"] for d in kayit.dilimler}
+    assert uzun_yuksek.id in yerlesen_ids
+    assert kisa_dusuk.id not in yerlesen_ids
+
+
+def test_enerji_belirtilmezse_mevcut_oncelik_sirasi_korunur(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    kisa_dusuk, uzun_yuksek = _enerji_test_gorevleri_ekle(test_user_id, gun)
+
+    kayit = plan_olustur(
+        test_user_id, gun, [uzun_yuksek, kisa_dusuk], _ENERJI_TEK_SLOT_DISINDA_KAPAT, VARSAYILAN_PROFIL,
+    )
+
+    yerlesen_ids = {d["task_id"] for d in kayit.dilimler}
+    assert uzun_yuksek.id in yerlesen_ids
+    assert kisa_dusuk.id not in yerlesen_ids
+
+
+def test_orta_enerjide_mevcut_oncelik_sirasi_korunur(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    kisa_dusuk, uzun_yuksek = _enerji_test_gorevleri_ekle(test_user_id, gun)
+
+    kayit = plan_olustur(
+        test_user_id, gun, [uzun_yuksek, kisa_dusuk], _ENERJI_TEK_SLOT_DISINDA_KAPAT, VARSAYILAN_PROFIL,
+        enerji_seviyesi="orta",
+    )
+
+    yerlesen_ids = {d["task_id"] for d in kayit.dilimler}
+    assert uzun_yuksek.id in yerlesen_ids
+    assert kisa_dusuk.id not in yerlesen_ids
+
+
+def test_enerji_seviyesi_plan_kaydina_yazilir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    gorev = create_task(test_user_id, "İş", priority=2, duration_minutes=30, due_date=gun)
+
+    kayit = plan_olustur(test_user_id, gun, [gorev], [], VARSAYILAN_PROFIL, enerji_seviyesi="yuksek")
+
+    assert kayit.enerji_seviyesi == "yuksek"
+
+
+def test_dusuk_enerji_genel_tavsiyeye_not_ekler(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    gorev = create_task(test_user_id, "İş", priority=2, duration_minutes=30, due_date=gun)
+
+    kayit = plan_olustur(test_user_id, gun, [gorev], [], VARSAYILAN_PROFIL, enerji_seviyesi="dusuk")
+
+    assert "düşük enerji" in kayit.genel_tavsiye.lower()
+
+
+def test_kesin_gorev_dusuk_oncelikli_olsa_da_once_yerlestirilir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    # Gün boyunca tek boşluk 07:00-08:00 (60 dk) kalacak şekilde her yeri kapat.
+    tek_slot_disinda_kapat = [{"start": time(8, 0), "end": time(23, 0), "label": "Meşgul"}]
+    kesin_dusuk = create_task(
+        test_user_id, "Kesin ama düşük öncelikli", priority=1, duration_minutes=60, due_date=gun,
+        teslim_tipi="kesin", kesin_bitis=datetime(2026, 7, 6, 9, 0),
+    )
+    esnek_kritik = create_task(
+        test_user_id, "Esnek ama kritik", priority=3, duration_minutes=60, due_date=gun,
+    )
+
+    kayit = plan_olustur(
+        test_user_id, gun, [esnek_kritik, kesin_dusuk], tek_slot_disinda_kapat, VARSAYILAN_PROFIL
+    )
+
+    yerlesen_ids = {d["task_id"] for d in kayit.dilimler}
+    assert kesin_dusuk.id in yerlesen_ids
+    assert esnek_kritik.id not in yerlesen_ids
+    kesin_dilim = next(d for d in kayit.dilimler if d["task_id"] == kesin_dusuk.id)
+    assert "kesin" in kesin_dilim["gerekce"].lower()
+
+
+def _sabit_saatli_gorev_ekle(test_db, user_id, gun, saat, duration_minutes=30, priority=2, teslim_tipi="esnek"):
+    with test_db() as session:
+        task = Task(
+            user_id=user_id, title="Rutin görevi", tur="gorev", due_date=gun,
+            duration_minutes=duration_minutes, priority=priority, teslim_tipi=teslim_tipi,
+            sabit_saat=saat,
+        )
+        session.add(task)
+        session.commit()
+        session.refresh(task)
+        return task
+
+
+def test_sabit_saatli_gorev_tam_saatine_yerlesir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    rutin_gorevi = _sabit_saatli_gorev_ekle(test_db, test_user_id, gun, time(18, 0))
+
+    kayit = plan_olustur(test_user_id, gun, [rutin_gorevi], [], VARSAYILAN_PROFIL)
+
+    assert kayit.dilimler[0]["start"] == "18:00"
+    assert "rutin" in kayit.dilimler[0]["gerekce"].lower()
+
+
+def test_sabit_saat_doluysa_tercih_penceresine_duser(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    rutin_gorevi = _sabit_saatli_gorev_ekle(test_db, test_user_id, gun, time(18, 0), priority=2)
+    saati_kapatan_blok = [{"start": time(18, 0), "end": time(18, 30), "label": "Meşgul"}]
+
+    kayit = plan_olustur(test_user_id, gun, [rutin_gorevi], saati_kapatan_blok, VARSAYILAN_PROFIL)
+
+    assert kayit.dilimler[0]["start"] != "18:00"
+    assert "13:00" <= kayit.dilimler[0]["start"] < "18:00"
+    assert "başka bir şey vardı" in kayit.dilimler[0]["gerekce"]
+
+
+def test_sabit_saatli_gorev_kesin_gorevden_once_yerlesir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    # Tek boşluk 18:00-18:30 kalacak şekilde her yeri kapat.
+    tek_slot_disinda_kapat = [
+        {"start": time(6, 0), "end": time(18, 0), "label": "Meşgul"},
+        {"start": time(18, 30), "end": time(23, 0), "label": "Meşgul"},
+    ]
+    sabit_gorev = _sabit_saatli_gorev_ekle(test_db, test_user_id, gun, time(18, 0), duration_minutes=30, priority=1)
+    kesin_gorev = create_task(
+        test_user_id, "Kesin görev", priority=3, duration_minutes=30, due_date=gun,
+        teslim_tipi="kesin", kesin_bitis=datetime(2026, 7, 6, 19, 0),
+    )
+
+    kayit = plan_olustur(
+        test_user_id, gun, [kesin_gorev, sabit_gorev], tek_slot_disinda_kapat, VARSAYILAN_PROFIL
+    )
+
+    yerlesen_ids = {d["task_id"] for d in kayit.dilimler}
+    assert sabit_gorev.id in yerlesen_ids
+    assert kesin_gorev.id not in yerlesen_ids
+
+
+def test_buffer_yoksa_gorevler_yapisik_yerlesir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    birinci = create_task(test_user_id, "Birinci", priority=3, duration_minutes=60, due_date=gun)
+    ikinci = create_task(test_user_id, "İkinci", priority=3, duration_minutes=60, due_date=gun)
+
+    kayit = plan_olustur(test_user_id, gun, [birinci, ikinci], [], VARSAYILAN_PROFIL)
+
+    dilimler = sorted(kayit.dilimler, key=lambda d: d["start"])
+    assert dilimler[0]["end"] == dilimler[1]["start"]
+
+
+def test_buffer_varsa_gorevler_arasinda_bosluk_birakilir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    birinci = create_task(test_user_id, "Birinci", priority=3, duration_minutes=60, due_date=gun)
+    ikinci = create_task(test_user_id, "İkinci", priority=3, duration_minutes=60, due_date=gun)
+
+    kayit = plan_olustur(test_user_id, gun, [birinci, ikinci], [], BUFFERLI_PROFIL)
+
+    dilimler = sorted(kayit.dilimler, key=lambda d: d["start"])
+    birinci_bitis_dk = int(dilimler[0]["end"][:2]) * 60 + int(dilimler[0]["end"][3:])
+    ikinci_baslangic_dk = int(dilimler[1]["start"][:2]) * 60 + int(dilimler[1]["start"][3:])
+    assert ikinci_baslangic_dk >= birinci_bitis_dk + 15
+
+
+def test_esik_altindaki_gorev_oneri_almaz():
+    az_ertelenen = Task(title="Az ertelenen", duration_minutes=30, postponement_count=2)
+
+    assert erteleme_onerilerini_uret([az_ertelenen], VARSAYILAN_PROFIL) == []
+
+
+def test_esik_ustundeki_gorev_saat_onerisi_alir():
+    cok_ertelenen = Task(title="Rapor yaz", duration_minutes=30, postponement_count=3)
+
+    oneri = erteleme_onerisi_uret(cok_ertelenen, VARSAYILAN_PROFIL)
+
+    assert "Rapor yaz" in oneri
+    assert "07:00" in oneri
+
+
+def test_buyuk_gorev_bolme_onerisi_alir():
+    buyuk_gorev = Task(title="Büyük proje", duration_minutes=120, postponement_count=3)
+
+    oneri = erteleme_onerisi_uret(buyuk_gorev, VARSAYILAN_PROFIL)
+
+    assert "böl" in oneri.lower()
+
+
+def test_profilsiz_de_genel_oneri_uretilir():
+    cok_ertelenen = Task(title="Görev", duration_minutes=30, postponement_count=5)
+
+    oneri = erteleme_onerisi_uret(cok_ertelenen, profil=None)
+
+    assert "Görev" in oneri
+
+
 def test_kapasite_uygun_olmayan_bloklari_dikkate_alir(test_db, test_user_id):
     gorev = create_task(test_user_id, "İş", priority=2, duration_minutes=30)
     tam_gun_blogu = [{"start": time(7, 0), "end": time(23, 0), "label": "Meşgul"}]
@@ -125,3 +363,67 @@ def test_kapasite_uygun_olmayan_bloklari_dikkate_alir(test_db, test_user_id):
     assert sonuc["musait_dakika"] == 0
     assert sonuc["asiri_yuklenme"] is True
     assert sonuc["fark_dakika"] == 30
+
+
+_STRATEJI_TEK_SLOT_DISINDA_KAPAT = [{"start": time(7, 30), "end": time(23, 0), "label": "Meşgul"}]
+
+
+def test_sabah_yogun_stratejisinde_uzun_gorev_once_yerlesir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    kisa = create_task(test_user_id, "Kısa", priority=2, duration_minutes=10, due_date=gun)
+    uzun = create_task(test_user_id, "Uzun", priority=2, duration_minutes=25, due_date=gun)
+
+    kayit = plan_olustur(
+        test_user_id, gun, [kisa, uzun], _STRATEJI_TEK_SLOT_DISINDA_KAPAT, VARSAYILAN_PROFIL,
+        strateji="sabah_yogun",
+    )
+
+    yerlesen_ids = {d["task_id"] for d in kayit.dilimler}
+    assert uzun.id in yerlesen_ids
+    assert kisa.id not in yerlesen_ids
+
+
+def test_dengeli_dagitim_stratejisinde_id_sirasi_korunur(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    once_olusturulan = create_task(test_user_id, "Önce", priority=1, duration_minutes=20, due_date=gun)
+    sonra_olusturulan = create_task(test_user_id, "Sonra", priority=3, duration_minutes=20, due_date=gun)
+
+    kayit = plan_olustur(
+        test_user_id, gun, [sonra_olusturulan, once_olusturulan], _STRATEJI_TEK_SLOT_DISINDA_KAPAT,
+        VARSAYILAN_PROFIL, strateji="dengeli_dagitim",
+    )
+
+    yerlesen_ids = {d["task_id"] for d in kayit.dilimler}
+    assert once_olusturulan.id in yerlesen_ids
+    assert sonra_olusturulan.id not in yerlesen_ids
+
+
+def test_plan_olustur_strateji_plan_kaydina_yazilir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    gorev = create_task(test_user_id, "İş", priority=2, duration_minutes=30, due_date=gun)
+
+    kayit = plan_olustur(test_user_id, gun, [gorev], [], VARSAYILAN_PROFIL, strateji="sabah_yogun")
+
+    assert kayit.strateji == "sabah_yogun"
+
+
+def test_strateji_belirtilmezse_varsayilan_kaydedilir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    gorev = create_task(test_user_id, "İş", priority=2, duration_minutes=30, due_date=gun)
+
+    kayit = plan_olustur(test_user_id, gun, [gorev], [], VARSAYILAN_PROFIL)
+
+    assert kayit.strateji == "oncelik_agirlikli"
+
+
+def test_alternatif_planlari_uret_uc_strateji_dondurur_ve_kaydetmez(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    gorev = create_task(test_user_id, "İş", priority=2, duration_minutes=30, due_date=gun)
+    onceki_sayisi = len(kullanicinin_planlari(test_user_id))
+
+    sonuc = alternatif_planlari_uret([gorev], [], VARSAYILAN_PROFIL)
+
+    assert set(sonuc.keys()) == {"oncelik_agirlikli", "sabah_yogun", "dengeli_dagitim"}
+    for hesap in sonuc.values():
+        assert "dilimler" in hesap and "toplam_is_dakika" in hesap
+    assert len(kullanicinin_planlari(test_user_id)) == onceki_sayisi

@@ -28,6 +28,9 @@ def test_db(tmp_path, monkeypatch):
     monkeypatch.setattr("core.services.report_service.SessionLocal", TestSession)
     monkeypatch.setattr("core.services.export_service.SessionLocal", TestSession)
     monkeypatch.setattr("core.services.user_service.SessionLocal", TestSession)
+    monkeypatch.setattr("core.services.rutin_service.SessionLocal", TestSession)
+    monkeypatch.setattr("core.services.haftalik_blok_service.SessionLocal", TestSession)
+    monkeypatch.setattr("core.services.enerji_service.SessionLocal", TestSession)
     return TestSession
 
 

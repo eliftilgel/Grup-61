@@ -1,6 +1,6 @@
 """task_service için birim testleri."""
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 import pytest
 
@@ -171,6 +171,21 @@ def test_tamamlanmis_gecikmis_gorev_listelenmez(test_db, test_user_id):
     assert gecikmis_gorevleri_listele(test_user_id, bugun) == []
 
 
+def test_etkinlik_satiri_gorev_listesine_karismaz(test_db, test_user_id):
+    from core.models import Task
+
+    create_task(test_user_id, "Gerçek görev")
+    with test_db() as session:
+        session.add(Task(user_id=test_user_id, tur="etkinlik", title="Toplantı", start="", end="", updated=""))
+        session.commit()
+
+    gorevler = list_tasks(test_user_id)
+    etkinlikler = list_tasks(test_user_id, tur="etkinlik")
+
+    assert [g.title for g in gorevler] == ["Gerçek görev"]
+    assert [e.title for e in etkinlikler] == ["Toplantı"]
+
+
 def test_bugunku_ve_gelecek_gorevler_gecikmis_sayilmaz(test_db, test_user_id):
     bugun = date.today()
     create_task(test_user_id, "Bugünkü", due_date=bugun)
@@ -178,3 +193,96 @@ def test_bugunku_ve_gelecek_gorevler_gecikmis_sayilmaz(test_db, test_user_id):
     create_task(test_user_id, "Tarihsiz")
 
     assert gecikmis_gorevleri_listele(test_user_id, bugun) == []
+
+
+def test_en_erken_baslangic_kaydedilir(test_db, test_user_id):
+    task = create_task(
+        test_user_id, "Görev", due_date=date(2026, 8, 10), en_erken_baslangic=date(2026, 8, 5),
+    )
+
+    assert task.en_erken_baslangic == date(2026, 8, 5)
+
+
+def test_due_date_en_erken_baslangictan_once_ise_hata_verir(test_db, test_user_id):
+    with pytest.raises(ValueError):
+        create_task(
+            test_user_id, "Görev", due_date=date(2026, 8, 1), en_erken_baslangic=date(2026, 8, 5),
+        )
+
+
+def test_guncellemede_en_erken_baslangic_ihlali_hata_verir(test_db, test_user_id):
+    task = create_task(test_user_id, "Görev", due_date=date(2026, 8, 10))
+
+    with pytest.raises(ValueError):
+        update_task(
+            test_user_id, task.id, task.title, task.description, task.priority,
+            due_date=date(2026, 8, 1), en_erken_baslangic=date(2026, 8, 5),
+        )
+
+
+def test_konum_ve_link_kaydedilir(test_db, test_user_id):
+    task = create_task(test_user_id, "Toplantı", konum="Ofis", link="https://meet.example.com")
+
+    assert task.konum == "Ofis"
+    assert task.link == "https://meet.example.com"
+
+    guncel = update_task(
+        test_user_id, task.id, task.title, task.description, task.priority,
+        konum="Ev", link="https://zoom.example.com",
+    )
+
+    assert guncel.konum == "Ev"
+    assert guncel.link == "https://zoom.example.com"
+
+
+def test_gecersiz_teslim_tipi_hata_verir(test_db, test_user_id):
+    with pytest.raises(ValueError):
+        create_task(test_user_id, "Görev", teslim_tipi="belirsiz")
+
+
+def test_kesin_teslimde_bitis_zorunlu(test_db, test_user_id):
+    with pytest.raises(ValueError):
+        create_task(test_user_id, "Görev", teslim_tipi="kesin")
+
+
+def test_kesin_teslim_due_date_kesin_bitisten_turetilir(test_db, test_user_id):
+    bitis = datetime(2026, 8, 1, 14, 30)
+
+    task = create_task(test_user_id, "Kesin görev", teslim_tipi="kesin", kesin_bitis=bitis)
+
+    assert task.teslim_tipi == "kesin"
+    assert task.kesin_bitis == bitis
+    assert task.due_date == bitis.date()
+
+
+def test_esnek_teslimde_kesin_bitis_yoksayilir(test_db, test_user_id):
+    task = create_task(
+        test_user_id, "Esnek görev", teslim_tipi="esnek", kesin_bitis=datetime(2026, 8, 1, 14, 30)
+    )
+
+    assert task.teslim_tipi == "esnek"
+    assert task.kesin_bitis is None
+
+
+def test_kesin_gorev_ileri_ertelenince_sayac_artar(test_db, test_user_id):
+    ilk_bitis = datetime(2026, 8, 1, 14, 30)
+    task = create_task(test_user_id, "Kesin görev", teslim_tipi="kesin", kesin_bitis=ilk_bitis)
+
+    guncel = update_task(
+        test_user_id, task.id, task.title, task.description, task.priority,
+        teslim_tipi="kesin", kesin_bitis=ilk_bitis + timedelta(days=1),
+    )
+
+    assert guncel.postponement_count == 1
+
+
+def test_kesin_gorev_erkene_alinirsa_sayac_artmaz(test_db, test_user_id):
+    ilk_bitis = datetime(2026, 8, 1, 14, 30)
+    task = create_task(test_user_id, "Kesin görev", teslim_tipi="kesin", kesin_bitis=ilk_bitis)
+
+    guncel = update_task(
+        test_user_id, task.id, task.title, task.description, task.priority,
+        teslim_tipi="kesin", kesin_bitis=ilk_bitis - timedelta(hours=1),
+    )
+
+    assert guncel.postponement_count == 0

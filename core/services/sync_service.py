@@ -1,14 +1,16 @@
 """Google Calendar ile yerel veritabanı arasındaki senkronizasyon.
 
 Google hesabı tüm kullanıcılar arasında paylaşılan tek hesap (kullanıcı
-başına OAuth henüz yok) — yerel `CalendarEvent` kayıtları `user_id` ile
-kullanıcıya özel tutulur, `google_id` artık kullanıcı başına benzersizdir.
+başına OAuth henüz yok) — yerel etkinlik kayıtları (`Task`, `tur="etkinlik"`)
+`user_id` ile kullanıcıya özel tutulur, `google_id` artık kullanıcı başına
+benzersizdir. Etkinlikler görevlerle aynı `tasks` tablosunda tutulur —
+eskiden ayrı bir `CalendarEvent` tablosuydu, aynı yapıda birleştirildi.
 """
 
 import logging
 
 from core.database import SessionLocal
-from core.models import CalendarEvent
+from core.models import Task
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +27,12 @@ def upsert_events(user_id: int, events: list[dict]) -> dict:
     with SessionLocal() as session:
         for e in events:
             kayit = (
-                session.query(CalendarEvent)
-                .filter(CalendarEvent.user_id == user_id, CalendarEvent.google_id == e["google_id"])
+                session.query(Task)
+                .filter(Task.user_id == user_id, Task.tur == "etkinlik", Task.google_id == e["google_id"])
                 .one_or_none()
             )
             if kayit is None:
-                session.add(CalendarEvent(user_id=user_id, **e))
+                session.add(Task(user_id=user_id, tur="etkinlik", **e))
                 sayac["eklendi"] += 1
             elif kayit.updated != e["updated"]:
                 kayit.title = e["title"]
@@ -38,11 +40,12 @@ def upsert_events(user_id: int, events: list[dict]) -> dict:
                 kayit.start = e["start"]
                 kayit.end = e["end"]
                 kayit.updated = e["updated"]
+                kayit.konum = e.get("konum", "")
                 sayac["guncellendi"] += 1
 
         silinecekler = (
-            session.query(CalendarEvent)
-            .filter(CalendarEvent.user_id == user_id, CalendarEvent.google_id.not_in(gelen_idler))
+            session.query(Task)
+            .filter(Task.user_id == user_id, Task.tur == "etkinlik", Task.google_id.not_in(gelen_idler))
             .all()
         )
         for kayit in silinecekler:
@@ -70,36 +73,38 @@ def sync_from_google(user_id: int) -> dict:
     return sayac
 
 
-def list_events(user_id: int) -> list[CalendarEvent]:
+def list_events(user_id: int) -> list[Task]:
     """Kullanıcının yerel kopyasındaki etkinlikleri başlangıç sırasına göre döner."""
     with SessionLocal() as session:
         return list(
-            session.query(CalendarEvent)
-            .filter(CalendarEvent.user_id == user_id)
-            .order_by(CalendarEvent.start)
+            session.query(Task)
+            .filter(Task.user_id == user_id, Task.tur == "etkinlik")
+            .order_by(Task.start)
         )
 
 def create_event_everywhere(
-    user_id: int, title: str, start_iso: str, end_iso: str, description: str = ""
+    user_id: int, title: str, start_iso: str, end_iso: str, description: str = "", konum: str = ""
 ) -> None:
     """Etkinliği önce Google'da oluşturur, sonra kullanıcının yerel kopyasına işler."""
     from core.services.calendar_service import create_event
 
     try:
-        google_kayit = create_event(title, start_iso, end_iso, description)
+        google_kayit = create_event(title, start_iso, end_iso, description, konum)
     except Exception:
         logger.exception("Google Takvim'de etkinlik oluşturulamadı: %s", title)
         raise
 
     with SessionLocal() as session:
-        session.add(CalendarEvent(
+        session.add(Task(
             user_id=user_id,
+            tur="etkinlik",
             google_id=google_kayit["id"],
             title=title,
             description=description,
             start=start_iso,
             end=end_iso,
             updated=google_kayit.get("updated", ""),
+            konum=konum,
         ))
         session.commit()
     logger.info("Etkinlik oluşturuldu ve yerel kopyaya işlendi: %s", title)

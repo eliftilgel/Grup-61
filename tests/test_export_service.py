@@ -1,8 +1,8 @@
 """export_service için birim testleri."""
 
-from datetime import date, time
+from datetime import date, datetime, time
 
-from core.models import CalendarEvent, PlanKaydi
+from core.models import PlanKaydi, Task
 from core.services import export_service
 from core.services.profil_service import save as profil_kaydet
 from core.services.task_service import create_task
@@ -10,9 +10,9 @@ from core.services.task_service import create_task
 
 def _etkinlik_ekle(user_id):
     with export_service.SessionLocal() as session:
-        session.add(CalendarEvent(
-            user_id=user_id, google_id="g1", title="Toplantı", description="", start="2026-07-10T09:00:00",
-            end="2026-07-10T10:00:00", updated="2026-07-10T08:00:00",
+        session.add(Task(
+            user_id=user_id, tur="etkinlik", google_id="g1", title="Toplantı", description="",
+            start="2026-07-10T09:00:00", end="2026-07-10T10:00:00", updated="2026-07-10T08:00:00",
         ))
         session.commit()
 
@@ -45,6 +45,28 @@ def test_gorevler_dogru_serilestirilir(test_db, test_user_id):
     assert gorev["title"] == "Rapor yaz"
     assert gorev["due_date"] == "2026-07-10"
     assert gorev["duration_minutes"] == 60
+
+
+def test_gorev_konum_link_teslim_tipi_serilestirilir(test_db, test_user_id):
+    create_task(test_user_id, "Sunum", konum="Ofis", link="https://example.com")
+
+    yedek = export_service.tum_veriyi_disa_aktar(test_user_id)
+
+    gorev = yedek["gorevler"][0]
+    assert gorev["konum"] == "Ofis"
+    assert gorev["link"] == "https://example.com"
+    assert gorev["teslim_tipi"] == "esnek"
+    assert gorev["kesin_bitis"] is None
+
+
+def test_gorev_kesin_bitis_serilestirilir(test_db, test_user_id):
+    create_task(test_user_id, "Kesin görev", teslim_tipi="kesin", kesin_bitis=datetime(2026, 8, 1, 14, 30))
+
+    yedek = export_service.tum_veriyi_disa_aktar(test_user_id)
+
+    gorev = yedek["gorevler"][0]
+    assert gorev["teslim_tipi"] == "kesin"
+    assert gorev["kesin_bitis"] == "2026-08-01T14:30:00"
 
 
 def test_etkinlik_ve_plan_kaydi_dahil_edilir(test_db, test_user_id):

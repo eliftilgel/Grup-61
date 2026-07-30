@@ -6,7 +6,7 @@ Sadece dışa aktarma — içe aktarma/restore bu servisin kapsamında değil.
 from datetime import datetime, timezone
 
 from core.database import SessionLocal
-from core.models import CalendarEvent, PlanKaydi, Profil, Task
+from core.models import PlanKaydi, Profil, Task
 
 
 def _isoya_cevir(deger):
@@ -29,10 +29,14 @@ def _gorev_sozluk(task: Task) -> dict:
         "duration_minutes": task.duration_minutes,
         "completed_at": _isoya_cevir(task.completed_at),
         "postponement_count": task.postponement_count,
+        "konum": task.konum,
+        "link": task.link,
+        "teslim_tipi": task.teslim_tipi,
+        "kesin_bitis": _isoya_cevir(task.kesin_bitis),
     }
 
 
-def _etkinlik_sozluk(event: CalendarEvent) -> dict:
+def _etkinlik_sozluk(event: Task) -> dict:
     return {
         "id": event.id,
         "google_id": event.google_id,
@@ -73,8 +77,9 @@ def _plan_kaydi_sozluk(kayit: PlanKaydi) -> dict:
 def tum_veriyi_disa_aktar(user_id: int) -> dict:
     """Kullanıcının tüm verisini JSON-serileştirilebilir tek bir sözlükte döner."""
     with SessionLocal() as session:
-        gorevler = session.query(Task).filter(Task.user_id == user_id).all()
-        etkinlikler = session.query(CalendarEvent).filter(CalendarEvent.user_id == user_id).all()
+        kayitlar = session.query(Task).filter(Task.user_id == user_id).all()
+        gorevler = [k for k in kayitlar if k.tur == "gorev"]
+        etkinlikler = [k for k in kayitlar if k.tur == "etkinlik"]
         profil = session.query(Profil).filter(Profil.user_id == user_id).one_or_none()
         plan_kayitlari = session.query(PlanKaydi).filter(PlanKaydi.user_id == user_id).all()
 

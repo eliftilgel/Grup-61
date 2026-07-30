@@ -1,7 +1,7 @@
-# Proje: Planla!
+# Proje: FlowDay
 
 ## Ne işe yarar
-- Tek kullanıcılı, yerel çalışan günlük görev ve plan yöneticisi (README'de "FlowDay" olarak tanıtılan vizyonun MVP'si, ürün ismi artık "Planla!").
+- Tek kullanıcılı, yerel çalışan günlük görev ve plan yöneticisi (README'de "FlowDay" olarak tanıtılan vizyonun MVP'si, ürün adı da "FlowDay").
 - Görev CRUD (öncelik: Kritik/Orta/Düşük, süre, son tarih).
 - Google Takvim ile senkron (push yönü UI'ya bağlı; pull yönü `sync_service.sync_from_google()` kodda var ama hiçbir arayüze bağlı değil).
 - Kural tabanlı (henüz gerçek LLM'siz) günlük plan üretimi: görevleri önceliğe/kullanıcının verimli saatlerine göre yerleştirir, her yerleştirme için gerekçe metni üretir.
@@ -22,7 +22,7 @@
 - `core/database.py` — engine/`SessionLocal`, `core/config.py`'deki `settings`'i kullanır (mutlak DB yolu).
 - `core/config.py` — `pydantic-settings`, `.env`'den okunur (DB yolu, Google OAuth dosya yolları, `AUTH_PASSWORD_HASH`, `OPENAI_*` henüz kullanılmıyor).
 - `core/auth.py` — bcrypt parola doğrulama (tek kullanıcı; `.env`'de hash yoksa giriş ekranı tamamen devre dışı).
-- `core/logging_config.py` — `logs/planla.log`'a dönen (rotating) dosya handler'ı, dış servis yok.
+- `core/logging_config.py` — `logs/flowday.log`'a dönen (rotating) dosya handler'ı, dış servis yok.
 - `core/services/` — iş mantığı, arayüzden bağımsız, doğrudan test edilir:
   - `task_service.py` — görev CRUD, erteleme sayacı, gecikmiş görev listesi
   - `calendar_service.py` — Google Calendar API ham iletişim (OAuth)
@@ -50,7 +50,7 @@
 - `AUTH_PASSWORD_HASH` `.env`'de ayarlı değilse giriş ekranı tamamen devre dışı — bu kasıtlı, geriye dönük uyumlu bir varsayılan, "bug" değil.
 - Takvim senkronunun **pull yönü** (`sync_service.sync_from_google()`) kodda var ama hiçbir UI butonuna/API endpoint'ine bağlı değil — henüz kullanılmıyor.
 - `credentials.json`/`token.json` yerelde mevcut (gitignore'da) — Google Calendar entegrasyonu gerçekten yapılandırılmış durumda; elle test ederken gerçek bir Google hesabına bağlanabilir, dikkatli ol.
-- README.md'nin başındaki bölümler (Sprint 1 raporu, ekip rolleri, FlowDay ürün vizyonu) tarihsel takım dokümantasyonu — güncel teknik durumu yansıtmaz, silme/üzerine yazma. Güncel teknik durum README'nin sonundaki "Uygulama: Planla! — Teknik Genel Bakış" bölümünde.
+- README.md'nin başındaki bölümler (Sprint 1 raporu, ekip rolleri, FlowDay ürün vizyonu) tarihsel takım dokümantasyonu — güncel teknik durumu yansıtmaz, silme/üzerine yazma. Güncel teknik durum README'nin sonundaki "Uygulama: FlowDay — Teknik Genel Bakış" bölümünde.
 
 ## Nasıl çalışmanı istiyorum
 - Mimariyi veya özellik kapsamını etkileyen değişikliklerde önce plan sun, onay almadan koda geçme.

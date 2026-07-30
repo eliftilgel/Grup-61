@@ -27,6 +27,7 @@ def save(
     uyku_baslangic: time,
     uyku_bitis: time,
     gunluk_hedef: int,
+    buffer_dakika: int = 0,
 ) -> Profil:
     """Profil bilgilerini doğrular ve kaydeder."""
     if not ad_soyad.strip():
@@ -35,6 +36,8 @@ def save(
         raise ValueError("Verimli bitiş saati başlangıçtan sonra olmalı")
     if gunluk_hedef < 1:
         raise ValueError("Günlük hedef en az 1 olmalı")
+    if buffer_dakika < 0:
+        raise ValueError("Buffer dakika negatif olamaz")
 
     with SessionLocal() as session:
         profil = session.query(Profil).filter(Profil.user_id == user_id).one_or_none()
@@ -47,6 +50,7 @@ def save(
         profil.uyku_baslangic = uyku_baslangic
         profil.uyku_bitis = uyku_bitis
         profil.gunluk_hedef = gunluk_hedef
+        profil.buffer_dakika = buffer_dakika
         session.add(profil)
         session.commit()
         session.refresh(profil)

@@ -6,7 +6,7 @@ from logging.handlers import RotatingFileHandler
 from core.config import BASE_DIR
 
 LOG_DIR = BASE_DIR / "logs"
-LOG_FILE = LOG_DIR / "planla.log"
+LOG_FILE = LOG_DIR / "flowday.log"
 
 _kuruldu = False
 

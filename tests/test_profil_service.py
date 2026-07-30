@@ -48,6 +48,19 @@ def test_gecersiz_gunluk_hedef_hata_verir(test_db, test_user_id):
         save(test_user_id, "Ad Soyad", "e@e.com", time(7, 0), time(13, 0), time(23, 0), time(7, 0), 0)
 
 
+def test_buffer_dakika_kaydedilir_ve_okunur(test_db, test_user_id):
+    save(test_user_id, "Ece Gürbüz", "ece@planla.app", time(7, 0), time(13, 0), time(23, 0), time(7, 0), 5, 15)
+
+    profil = get_or_create(test_user_id)
+
+    assert profil.buffer_dakika == 15
+
+
+def test_negatif_buffer_dakika_hata_verir(test_db, test_user_id):
+    with pytest.raises(ValueError):
+        save(test_user_id, "Ad Soyad", "e@e.com", time(7, 0), time(13, 0), time(23, 0), time(7, 0), 5, -5)
+
+
 def test_farkli_kullanicilarin_profili_ayridir(test_db, test_user_id):
     from core.models import User
 

@@ -51,11 +51,12 @@ def fetch_events(limit: int = 50) -> list[dict]:
             "start": item["start"].get("dateTime", item["start"].get("date", "")),
             "end": item["end"].get("dateTime", item["end"].get("date", "")),
             "updated": item.get("updated", ""),
+            "konum": item.get("location", ""),
         })
     return events
 
 
-def create_event(title: str, start_iso: str, end_iso: str, description: str = "") -> dict:
+def create_event(title: str, start_iso: str, end_iso: str, description: str = "", location: str = "") -> dict:
     """Google Takvim'de etkinlik oluşturur; Google'ın döndürdüğü kaydı verir."""
     service = build("calendar", "v3", credentials=_get_credentials())
     govde = {
@@ -63,6 +64,7 @@ def create_event(title: str, start_iso: str, end_iso: str, description: str = ""
         "description": description,
         "start": {"dateTime": start_iso},
         "end": {"dateTime": end_iso},
+        "location": location,
     }
     return service.events().insert(calendarId="primary", body=govde).execute()
 

@@ -18,6 +18,9 @@ GUN_BASLANGIC = time(6, 0)
 GUN_BITIS = time(23, 0)
 OGLEDEN_SONRA_BITIS = time(18, 0)
 
+ERTELEME_ONERI_ESIGI = 3
+BUYUK_GOREV_ESIGI_DK = 90
+
 
 def _dk(t: time) -> int:
     return t.hour * 60 + t.minute
@@ -92,7 +95,32 @@ def _yerlestir(bos: list[tuple[int, int]], sure: int, tercih: tuple[int, int]) -
     return None
 
 
-def _tercih_penceresi(oncelik: int, profil) -> tuple[int, int]:
+def _sabit_saatte_yerlestir(
+    bos: list[tuple[int, int]], sure: int, sabit_dk: int
+) -> tuple[int, list[tuple[int, int]]] | None:
+    """Süreyi tam `sabit_dk`'dan başlatarak yerleştirmeyi dener; slot boşta değilse None döner
+    (çağıran, normal önceliğe dayalı yerleştirmeye düşer)."""
+    aralik = (sabit_dk, sabit_dk + sure)
+    for b_baslangic, b_bitis in bos:
+        if b_baslangic <= aralik[0] and aralik[1] <= b_bitis:
+            yeni_bos = _araligi_cikar(bos, aralik)
+            return sabit_dk, sorted(yeni_bos)
+    return None
+
+
+STRATEJILER = ("oncelik_agirlikli", "sabah_yogun", "dengeli_dagitim")
+STRATEJI_ETIKETLERI = {
+    "oncelik_agirlikli": "⚖️ Öncelik Ağırlıklı",
+    "sabah_yogun": "🌅 Sabah Yoğun",
+    "dengeli_dagitim": "🔄 Dengeli Dağıtım",
+}
+
+
+def _tercih_penceresi(oncelik: int, profil, strateji: str = "oncelik_agirlikli") -> tuple[int, int]:
+    if strateji == "sabah_yogun":
+        return _dk(profil.verimli_baslangic), _dk(profil.verimli_bitis)
+    if strateji == "dengeli_dagitim":
+        return _dk(GUN_BASLANGIC), _dk(GUN_BITIS)
     if oncelik == 3:
         return _dk(profil.verimli_baslangic), _dk(profil.verimli_bitis)
     if oncelik == 2:
@@ -101,6 +129,12 @@ def _tercih_penceresi(oncelik: int, profil) -> tuple[int, int]:
 
 
 def _varsayilan_gerekce_uret(task: Task, baslangic_dk: int, tercih_penceresinde: bool, profil) -> str:
+    if task.sabit_saat is not None:
+        if baslangic_dk == _dk(task.sabit_saat):
+            return f"Bu rutin görev için ayırdığın saat — {task.sabit_saat:%H:%M}."
+        return "Rutin saatinde başka bir şey vardı, en uygun boşluğa alındı."
+    if task.teslim_tipi == "kesin":
+        return "Bu görevin kesin bir teslim tarihi var, bu yüzden diğer görevlerden önce yerleştirildi."
     if task.priority == 3:
         if tercih_penceresinde:
             return "Sabah saatleri en verimli zamanın. Kritik görevi buraya yerleştirdim."
@@ -110,25 +144,33 @@ def _varsayilan_gerekce_uret(task: Task, baslangic_dk: int, tercih_penceresinde:
     return "Düşük zorluk görevi güne son. Hızlı kazanç sağlar."
 
 
-def _genel_tavsiye_uret(kritik_tercih_penceresinde: int, toplam_kritik: int) -> str:
+def _genel_tavsiye_uret(kritik_tercih_penceresinde: int, toplam_kritik: int, enerji_seviyesi: str | None = None) -> str:
     if toplam_kritik == 0:
-        return (
+        tavsiye = (
             "Bugün için kritik öncelikli görev yok. Yine de sabah saatlerini görece "
             "zor işler için ayırman verimliliğini artırabilir."
         )
-    oran = kritik_tercih_penceresinde / toplam_kritik
-    if oran == 1:
-        yuzde = 35
-        return (
-            "Geçmiş verine göre en verimli olduğun saatler günün en üretken zamanı. "
-            "Kritik görevlerin tamamını buraya yerleştirdim. "
-            f"**Sabah rutinine sadık kalırsan verimliliğin %{yuzde} artacak.**"
-        )
-    yuzde = 15
-    return (
-        "Kritik görevlerin bir kısmı en verimli pencerene sığmadı. "
-        f"**Uygun olmayan saatleri azaltırsan verimliliğin %{yuzde} artabilir.**"
-    )
+    else:
+        oran = kritik_tercih_penceresinde / toplam_kritik
+        if oran == 1:
+            yuzde = 35
+            tavsiye = (
+                "Geçmiş verine göre en verimli olduğun saatler günün en üretken zamanı. "
+                "Kritik görevlerin tamamını buraya yerleştirdim. "
+                f"**Sabah rutinine sadık kalırsan verimliliğin %{yuzde} artacak.**"
+            )
+        else:
+            yuzde = 15
+            tavsiye = (
+                "Kritik görevlerin bir kısmı en verimli pencerene sığmadı. "
+                f"**Uygun olmayan saatleri azaltırsan verimliliğin %{yuzde} artabilir.**"
+            )
+
+    if enerji_seviyesi == "dusuk":
+        tavsiye += " Bugünkü düşük enerji seviyene göre hafif işleri öne aldım."
+    elif enerji_seviyesi == "yuksek":
+        tavsiye += " Bugün enerjin yüksek olduğu için önemli ve uzun işleri öne aldım."
+    return tavsiye
 
 
 def kapasite_kontrolu(gorevler: list[Task], uygun_olmayan_bloklar: list[dict], profil) -> dict:
@@ -150,31 +192,66 @@ def kapasite_kontrolu(gorevler: list[Task], uygun_olmayan_bloklar: list[dict], p
     }
 
 
-def plan_olustur(
-    user_id: int,
-    gun: date,
+def _sirali_gorevler_uret(
+    gorevler: list[Task], enerji_seviyesi: str | None, strateji: str = "oncelik_agirlikli"
+) -> list[Task]:
+    """Sabit saatli (rutin) görevler en spesifik kısıta sahip olduğu için önce, ardından
+    kesin teslimliler yerleştirilir — bu sıra stratejiden etkilenmez. Geri kalan esnek
+    görevler arasında:
+    - "sabah_yogun": süre azalan sırada (en uzun görev önce, en verimli pencereyi ilk alır).
+    - "dengeli_dagitim": oluşturulma sırasında (id), özel bir önceliklendirme yok.
+    - "oncelik_agirlikli" (varsayılan): enerji seviyesi "dusuk"/"yuksek" ise "zorluk skoru"
+      (öncelik * süre) bazlı sıralanır — düşük enerjide kolay, yüksek enerjide zor görevler
+      önce; enerji "orta"/None ise mevcut öncelik bazlı sıralama korunur.
+    """
+    def anahtar(t: Task) -> tuple:
+        grup = 0 if t.sabit_saat is not None else (1 if t.teslim_tipi == "kesin" else 2)
+        if grup != 2:
+            return (grup, -t.priority, t.duration_minutes)
+        if strateji == "sabah_yogun":
+            return (grup, -t.duration_minutes, 0)
+        if strateji == "dengeli_dagitim":
+            return (grup, t.id, 0)
+        if enerji_seviyesi in ("dusuk", "yuksek"):
+            zorluk = t.priority * t.duration_minutes
+            return (grup, zorluk if enerji_seviyesi == "dusuk" else -zorluk, 0)
+        return (grup, -t.priority, t.duration_minutes)
+
+    return sorted(gorevler, key=anahtar)
+
+
+def _plan_hesapla(
     gorevler: list[Task],
     uygun_olmayan_bloklar: list[dict],
     profil,
-    gerekce_uret: Callable = _varsayilan_gerekce_uret,
-) -> PlanKaydi:
-    """Verilen gün için kural tabanlı bir plan üretir, yeni bir PlanKaydi olarak kaydeder."""
+    gerekce_uret: Callable,
+    enerji_seviyesi: str | None,
+    strateji: str,
+) -> dict:
+    """`plan_olustur`'un DB'ye kaydetmeyen saf hesaplama kısmı — alternatif planları
+    önizlemek için tekrar tekrar (kaydetmeden) çağrılabilir."""
     bos = _bos_araliklar(profil, uygun_olmayan_bloklar)
     toplam_bos_baslangic = sum(b - a for a, b in bos)
 
-    sirali_gorevler = sorted(gorevler, key=lambda t: (-t.priority, t.duration_minutes))
+    sirali_gorevler = _sirali_gorevler_uret(gorevler, enerji_seviyesi, strateji)
 
     dilimler = []
     kritik_tercih_penceresinde = 0
     toplam_kritik = sum(1 for t in sirali_gorevler if t.priority == 3)
 
     for task in sirali_gorevler:
-        tercih = _tercih_penceresi(task.priority, profil)
-        sonuc = _yerlestir(bos, task.duration_minutes, tercih)
+        sonuc = None
+        if task.sabit_saat is not None:
+            sonuc = _sabit_saatte_yerlestir(bos, task.duration_minutes, _dk(task.sabit_saat))
+        tercih = _tercih_penceresi(task.priority, profil, strateji)
+        if sonuc is None:
+            sonuc = _yerlestir(bos, task.duration_minutes, tercih)
         if sonuc is None:
             continue
         baslangic_dk, bos = sonuc
         bitis_dk = baslangic_dk + task.duration_minutes
+        if profil.buffer_dakika:
+            bos = _araligi_cikar(bos, (bitis_dk, bitis_dk + profil.buffer_dakika))
         tercih_penceresinde = tercih[0] <= baslangic_dk and bitis_dk <= tercih[1]
         if task.priority == 3 and tercih_penceresinde:
             kritik_tercih_penceresinde += 1
@@ -193,27 +270,63 @@ def plan_olustur(
 
     toplam_is_dakika = sum(d["duration_minutes"] for d in dilimler)
     bos_zaman_dakika = toplam_bos_baslangic - toplam_is_dakika
-    genel_tavsiye = _genel_tavsiye_uret(kritik_tercih_penceresinde, toplam_kritik)
+    genel_tavsiye = _genel_tavsiye_uret(kritik_tercih_penceresinde, toplam_kritik, enerji_seviyesi)
+
+    return {
+        "dilimler": dilimler,
+        "toplam_is_dakika": toplam_is_dakika,
+        "bos_zaman_dakika": bos_zaman_dakika,
+        "genel_tavsiye": genel_tavsiye,
+        "yerlesemeyen": len(sirali_gorevler) - len(dilimler),
+    }
+
+
+def plan_olustur(
+    user_id: int,
+    gun: date,
+    gorevler: list[Task],
+    uygun_olmayan_bloklar: list[dict],
+    profil,
+    gerekce_uret: Callable = _varsayilan_gerekce_uret,
+    enerji_seviyesi: str | None = None,
+    strateji: str = "oncelik_agirlikli",
+) -> PlanKaydi:
+    """Verilen gün için kural tabanlı bir plan üretir, yeni bir PlanKaydi olarak kaydeder."""
+    hesap = _plan_hesapla(gorevler, uygun_olmayan_bloklar, profil, gerekce_uret, enerji_seviyesi, strateji)
 
     with SessionLocal() as session:
         kayit = PlanKaydi(
             user_id=user_id,
             gun=gun,
-            dilimler=dilimler,
-            toplam_is_dakika=toplam_is_dakika,
-            bos_zaman_dakika=bos_zaman_dakika,
-            genel_tavsiye=genel_tavsiye,
+            dilimler=hesap["dilimler"],
+            toplam_is_dakika=hesap["toplam_is_dakika"],
+            bos_zaman_dakika=hesap["bos_zaman_dakika"],
+            genel_tavsiye=hesap["genel_tavsiye"],
+            enerji_seviyesi=enerji_seviyesi,
+            strateji=strateji,
         )
         session.add(kayit)
         session.commit()
         session.refresh(kayit)
 
-    yerlesemeyen = len(sirali_gorevler) - len(dilimler)
     logger.info(
-        "%s günü için plan oluşturuldu: %d/%d görev yerleştirildi (%d yerleşemedi)",
-        gun, len(dilimler), len(sirali_gorevler), yerlesemeyen,
+        "%s günü için plan oluşturuldu (%s): %d görev yerleştirildi (%d yerleşemedi)",
+        gun, strateji, len(hesap["dilimler"]), hesap["yerlesemeyen"],
     )
     return kayit
+
+
+def alternatif_planlari_uret(
+    gorevler: list[Task], uygun_olmayan_bloklar: list[dict], profil, enerji_seviyesi: str | None = None,
+) -> dict[str, dict]:
+    """Üç sıralama stratejisi için plan önizlemesi üretir — hiçbiri DB'ye kaydedilmez.
+    Kullanıcı birini seçince gerçek kayıt `plan_olustur(..., strateji=secilen)` ile yapılır."""
+    return {
+        strateji: _plan_hesapla(
+            gorevler, uygun_olmayan_bloklar, profil, _varsayilan_gerekce_uret, enerji_seviyesi, strateji,
+        )
+        for strateji in STRATEJILER
+    }
 
 
 def son_plan(user_id: int, gun: date) -> PlanKaydi | None:
@@ -225,6 +338,28 @@ def son_plan(user_id: int, gun: date) -> PlanKaydi | None:
             .order_by(PlanKaydi.created_at.desc())
             .first()
         )
+
+
+def erteleme_onerisi_uret(task: Task, profil=None) -> str:
+    """Eşik üzerinde ertelenmiş bir görev için öneri metni üretir (çağıran, eşiği önceden kontrol eder)."""
+    if task.duration_minutes > BUYUK_GOREV_ESIGI_DK:
+        return (
+            f"'{task.title}' {task.postponement_count} kez ertelendi ve {task.duration_minutes} dakika "
+            "sürüyor — daha küçük parçalara bölmeyi dene."
+        )
+    if profil is not None:
+        return (
+            f"'{task.title}' {task.postponement_count} kez ertelendi — "
+            f"{profil.verimli_baslangic:%H:%M} gibi daha uygun bir saate almayı dene."
+        )
+    return f"'{task.title}' {task.postponement_count} kez ertelendi — farklı bir gün/saat denemeyi düşün."
+
+
+def erteleme_onerilerini_uret(gorevler: list[Task], profil=None) -> list[str]:
+    """Listedeki eşik üzerinde ertelenmiş her görev için öneri metinlerini döner."""
+    return [
+        erteleme_onerisi_uret(t, profil) for t in gorevler if t.postponement_count >= ERTELEME_ONERI_ESIGI
+    ]
 
 
 def kullanicinin_planlari(user_id: int) -> list[PlanKaydi]:

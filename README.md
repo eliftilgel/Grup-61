@@ -367,13 +367,13 @@ Canlı Uygulama Linki: [Buraya uygulamanın canlı linki eklenecektir.]
 
 Gelecek Vizyonu (Future Work): Projenin ilerleyen versiyonları için Google Calendar entegrasyonu, kişiselleştirilmiş öğrenme modelleri ve mobil uygulama varyasyonları hedeflenmektedir.
 
-# Uygulama: Planla! — Teknik Genel Bakış
+# Uygulama: FlowDay — Teknik Genel Bakış
 
-Yukarıdaki bölümler Sprint 1'in ürün vizyonu ve proje yönetimi çıktılarını (tarihsel kayıt olarak) anlatıyor. Bu bölüm ise, o vizyondan yola çıkılarak şu ana kadar gerçekten kodlanmış ve çalışan uygulamayı ("Planla!") teknik olarak özetler.
+Yukarıdaki bölümler Sprint 1'in ürün vizyonu ve proje yönetimi çıktılarını (tarihsel kayıt olarak) anlatıyor. Bu bölüm ise, o vizyondan yola çıkılarak şu ana kadar gerçekten kodlanmış ve çalışan uygulamayı ("FlowDay") teknik olarak özetler.
 
 ## Ne Yapıyor
 
-"Planla!", çoklu kullanıcılı bir günlük görev/plan yöneticisidir (her kullanıcı kendi hesabıyla giriş yapar, verisi izole tutulur):
+"FlowDay", çoklu kullanıcılı bir günlük görev/plan yöneticisidir (her kullanıcı kendi hesabıyla giriş yapar, verisi izole tutulur):
 
 - Hesap oluşturma/giriş, görev oluşturma/düzenleme/tamamlama/silme (öncelik: Kritik/Orta/Düşük, süre, son tarih).
 - Google Takvim ile senkronizasyon: yerelde oluşturulan etkinlikler Google Takvim'e yazılır ve yerel bir kopya (`calendar_events`) tutulur (Google hesabı şu an tüm kullanıcılar arasında paylaşılan tek hesap — bkz. Kapsam Dışı).
