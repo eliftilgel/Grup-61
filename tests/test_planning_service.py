@@ -427,3 +427,66 @@ def test_alternatif_planlari_uret_uc_strateji_dondurur_ve_kaydetmez(test_db, tes
     for hesap in sonuc.values():
         assert "dilimler" in hesap and "toplam_is_dakika" in hesap
     assert len(kullanicinin_planlari(test_user_id)) == onceki_sayisi
+
+
+def test_havuz_gorevi_kalan_bosluga_yerlesir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    aktif = create_task(test_user_id, "Aktif görev", priority=2, duration_minutes=20, due_date=gun)
+    havuz_kucuk = create_task(test_user_id, "Küçük havuz görevi", priority=1, duration_minutes=10)
+    havuz_buyuk = create_task(test_user_id, "Büyük havuz görevi", priority=1, duration_minutes=15)
+
+    kayit = plan_olustur(
+        test_user_id, gun, [aktif, havuz_kucuk, havuz_buyuk], _STRATEJI_TEK_SLOT_DISINDA_KAPAT, VARSAYILAN_PROFIL,
+    )
+
+    yerlesen_ids = {d["task_id"] for d in kayit.dilimler}
+    assert aktif.id in yerlesen_ids
+    assert havuz_kucuk.id in yerlesen_ids
+    assert havuz_buyuk.id not in yerlesen_ids
+
+
+def test_plan_olustur_yerlesen_havuz_gorevinin_due_date_ini_gunceller(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    aktif = create_task(test_user_id, "Aktif görev", priority=2, duration_minutes=20, due_date=gun)
+    havuz_kucuk = create_task(test_user_id, "Küçük havuz görevi", priority=1, duration_minutes=10)
+    havuz_buyuk = create_task(test_user_id, "Büyük havuz görevi", priority=1, duration_minutes=15)
+
+    plan_olustur(
+        test_user_id, gun, [aktif, havuz_kucuk, havuz_buyuk], _STRATEJI_TEK_SLOT_DISINDA_KAPAT, VARSAYILAN_PROFIL,
+    )
+
+    with test_db() as session:
+        assert session.get(Task, havuz_kucuk.id).due_date == gun
+        assert session.get(Task, havuz_buyuk.id).due_date is None
+
+
+def test_alternatif_planlari_uret_havuz_gorevini_onizler_ama_due_date_degistirmez(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    aktif = create_task(test_user_id, "Aktif görev", priority=2, duration_minutes=20, due_date=gun)
+    havuz = create_task(test_user_id, "Havuz görevi", priority=1, duration_minutes=10)
+
+    sonuc = alternatif_planlari_uret(
+        [aktif, havuz], _STRATEJI_TEK_SLOT_DISINDA_KAPAT, VARSAYILAN_PROFIL,
+    )
+
+    havuz_yerlesti = any(
+        d["task_id"] == havuz.id and d["havuzdan"] for d in sonuc["oncelik_agirlikli"]["dilimler"]
+    )
+    assert havuz_yerlesti
+
+    with test_db() as session:
+        assert session.get(Task, havuz.id).due_date is None
+
+
+def test_dilimde_havuzdan_alani_dogru_gelir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    aktif = create_task(test_user_id, "Aktif görev", priority=2, duration_minutes=20, due_date=gun)
+    havuz = create_task(test_user_id, "Havuz görevi", priority=1, duration_minutes=10)
+
+    kayit = plan_olustur(
+        test_user_id, gun, [aktif, havuz], _STRATEJI_TEK_SLOT_DISINDA_KAPAT, VARSAYILAN_PROFIL,
+    )
+
+    dilim_by_id = {d["task_id"]: d for d in kayit.dilimler}
+    assert dilim_by_id[aktif.id]["havuzdan"] is False
+    assert dilim_by_id[havuz.id]["havuzdan"] is True

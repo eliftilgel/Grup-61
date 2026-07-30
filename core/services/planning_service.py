@@ -135,6 +135,8 @@ def _varsayilan_gerekce_uret(task: Task, baslangic_dk: int, tercih_penceresinde:
         return "Rutin saatinde başka bir şey vardı, en uygun boşluğa alındı."
     if task.teslim_tipi == "kesin":
         return "Bu görevin kesin bir teslim tarihi var, bu yüzden diğer görevlerden önce yerleştirildi."
+    if task.due_date is None:
+        return "Bu görev havuzdan geldi, boş kalan zamana otomatik yerleştirdim."
     if task.priority == 3:
         if tercih_penceresinde:
             return "Sabah saatleri en verimli zamanın. Kritik görevi buraya yerleştirdim."
@@ -196,8 +198,10 @@ def _sirali_gorevler_uret(
     gorevler: list[Task], enerji_seviyesi: str | None, strateji: str = "oncelik_agirlikli"
 ) -> list[Task]:
     """Sabit saatli (rutin) görevler en spesifik kısıta sahip olduğu için önce, ardından
-    kesin teslimliler yerleştirilir — bu sıra stratejiden etkilenmez. Geri kalan esnek
-    görevler arasında:
+    kesin teslimliler yerleştirilir — bu sıra stratejiden etkilenmez. Ardından bugüne ait
+    esnek görevler; en son da havuzdaki (son tarihi olmayan) görevler — bu grup yalnızca
+    diğer tüm görevler yerleştirildikten sonra kalan boşluğa denenir, stratejiden bağımsız
+    sabit `(-priority, duration_minutes)` sırasıyla. Bugüne ait esnek görevler arasında:
     - "sabah_yogun": süre azalan sırada (en uzun görev önce, en verimli pencereyi ilk alır).
     - "dengeli_dagitim": oluşturulma sırasında (id), özel bir önceliklendirme yok.
     - "oncelik_agirlikli" (varsayılan): enerji seviyesi "dusuk"/"yuksek" ise "zorluk skoru"
@@ -205,7 +209,14 @@ def _sirali_gorevler_uret(
       önce; enerji "orta"/None ise mevcut öncelik bazlı sıralama korunur.
     """
     def anahtar(t: Task) -> tuple:
-        grup = 0 if t.sabit_saat is not None else (1 if t.teslim_tipi == "kesin" else 2)
+        if t.sabit_saat is not None:
+            grup = 0
+        elif t.teslim_tipi == "kesin":
+            grup = 1
+        elif t.due_date is not None:
+            grup = 2
+        else:
+            grup = 3  # havuzdan — yalnızca boş kalan kapasiteye, stratejiden bağımsız doldurulur
         if grup != 2:
             return (grup, -t.priority, t.duration_minutes)
         if strateji == "sabah_yogun":
@@ -264,6 +275,7 @@ def _plan_hesapla(
             "end": _saat_str(bitis_dk),
             "duration_minutes": task.duration_minutes,
             "gerekce": gerekce,
+            "havuzdan": task.due_date is None,
         })
 
     dilimler.sort(key=lambda d: d["start"])
@@ -291,10 +303,19 @@ def plan_olustur(
     enerji_seviyesi: str | None = None,
     strateji: str = "oncelik_agirlikli",
 ) -> PlanKaydi:
-    """Verilen gün için kural tabanlı bir plan üretir, yeni bir PlanKaydi olarak kaydeder."""
+    """Verilen gün için kural tabanlı bir plan üretir, yeni bir PlanKaydi olarak kaydeder.
+
+    Plana havuzdan (son tarihi olmayan görevlerden) yerleşen olursa, o görevler bu günün
+    gerçek görevi haline gelir — `due_date` `gun` olarak güncellenir ve havuzdan çıkar.
+    """
     hesap = _plan_hesapla(gorevler, uygun_olmayan_bloklar, profil, gerekce_uret, enerji_seviyesi, strateji)
+    havuzdan_yerlesen_idler = [d["task_id"] for d in hesap["dilimler"] if d["havuzdan"]]
 
     with SessionLocal() as session:
+        if havuzdan_yerlesen_idler:
+            session.query(Task).filter(Task.id.in_(havuzdan_yerlesen_idler)).update(
+                {"due_date": gun}, synchronize_session=False
+            )
         kayit = PlanKaydi(
             user_id=user_id,
             gun=gun,

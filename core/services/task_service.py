@@ -95,6 +95,21 @@ def list_tasks(
         return list(query)
 
 
+def havuzdaki_gorevleri_listele(user_id: int) -> list[Task]:
+    """Son tarihi olmayan (havuzdaki), henüz tamamlanmamış görevleri önceliğe göre listeler."""
+    with SessionLocal() as session:
+        return list(
+            session.query(Task)
+            .filter(
+                Task.user_id == user_id,
+                Task.tur == "gorev",
+                Task.due_date.is_(None),
+                Task.done.is_(False),
+            )
+            .order_by(Task.priority.desc(), Task.created_at.desc())
+        )
+
+
 def gecikmis_gorevleri_listele(user_id: int, referans_gun: date) -> list[Task]:
     """referans_gun'dan önce vadesi geçmiş, henüz tamamlanmamış görevleri döner."""
     with SessionLocal() as session:

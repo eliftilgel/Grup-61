@@ -4,12 +4,14 @@ from datetime import date, datetime, timedelta
 
 import pytest
 
-from core.models import User
+from core.models import Task, User
+from core.services import task_service
 from core.services.task_service import (
     complete_task,
     create_task,
     delete_task,
     gecikmis_gorevleri_listele,
+    havuzdaki_gorevleri_listele,
     list_tasks,
     update_task,
 )
@@ -286,3 +288,27 @@ def test_kesin_gorev_erkene_alinirsa_sayac_artmaz(test_db, test_user_id):
     )
 
     assert guncel.postponement_count == 0
+
+
+def test_havuzdaki_gorevleri_listele_tarihsiz_gorevi_dondurur(test_db, test_user_id):
+    havuz_gorevi = create_task(test_user_id, "Havuz görevi")
+    create_task(test_user_id, "Tarihli görev", due_date=date(2026, 8, 1))
+
+    havuz = havuzdaki_gorevleri_listele(test_user_id)
+
+    assert [t.id for t in havuz] == [havuz_gorevi.id]
+
+
+def test_havuzdaki_gorevleri_listele_tamamlanani_disarida_birakir(test_db, test_user_id):
+    havuz_gorevi = create_task(test_user_id, "Tamamlanacak havuz görevi")
+    complete_task(test_user_id, havuz_gorevi.id)
+
+    assert havuzdaki_gorevleri_listele(test_user_id) == []
+
+
+def test_havuzdaki_gorevleri_listele_etkinligi_disarida_birakir(test_db, test_user_id):
+    with task_service.SessionLocal() as session:
+        session.add(Task(user_id=test_user_id, tur="etkinlik", title="Toplantı", start="", end="", updated=""))
+        session.commit()
+
+    assert havuzdaki_gorevleri_listele(test_user_id) == []

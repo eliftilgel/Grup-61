@@ -7,6 +7,7 @@ import streamlit as st
 
 from core.logging_config import setup_logging
 from core.services import (
+    degerlendirme_service,
     enerji_service,
     export_service,
     haftalik_blok_service,
@@ -23,6 +24,7 @@ from core.services.task_service import (
     create_task,
     delete_task,
     gecikmis_gorevleri_listele,
+    havuzdaki_gorevleri_listele,
     list_tasks,
     update_task,
 )
@@ -138,6 +140,111 @@ def _konum_link_satiri(task) -> str:
         else:
             parcalar.append(f"🔗 {_guvenli_metin(temiz_link)}")
     return " · " + " · ".join(parcalar) if parcalar else ""
+
+
+def _gorev_satirini_ciz(task, current_user_id: int, secili_gun: date, profil) -> None:
+    """Tek bir görev satırını (rozetler, tamamla/düzenle/sil butonları, düzenleme formu) çizer.
+
+    `gunun_gorevleri` ve `havuzdaki_gorevler` listeleri hiçbir zaman aynı task.id'yi
+    paylaşmaz (biri due_date=secili_gun, diğeri due_date=None ister) — bu yüzden aynı
+    fonksiyon iki farklı listede de widget key çakışması olmadan kullanılabilir.
+    """
+    c1, c2, c3, c4 = st.columns([5, 1, 1, 1])
+    tamamlandi_isareti = " ✓" if task.done else ""
+    kesin_rozeti = (
+        f"<span class='fd-rozet' style='background:{RENK_KRITIK_TON}; color:{RENK_KRITIK};'>KESİN</span>"
+        if task.teslim_tipi == "kesin" else ""
+    )
+    rutin_rozeti = (
+        f"<span class='fd-rozet' style='background:{RENK_MAVI_TON}; color:{RENK_MAVI};'>🔁 RUTİN</span>"
+        if task.rutin_id is not None else ""
+    )
+    c1.markdown(
+        f"<div class='fd-gorev-row'>"
+        f"<span class='fd-rozet' style='background:{ONCELIK_TON[task.priority]}; "
+        f"color:{ONCELIK_RENK[task.priority]};'>{ONCELIK_ETIKET[task.priority]}</span>"
+        f"{kesin_rozeti}{rutin_rozeti}"
+        f"<strong>{_guvenli_metin(task.title)}{tamamlandi_isareti}</strong>"
+        f"<br><span style='color:#898781; font-size:0.85rem;'>⏱ {task.duration_minutes} dakika"
+        f" · 🔁 {task.postponement_count} kez ertelendi"
+        f"{_konum_link_satiri(task)}</span>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+    if task.postponement_count >= planning_service.ERTELEME_ONERI_ESIGI:
+        st.caption(f"⚠️ {planning_service.erteleme_onerisi_uret(task, profil)}")
+    if task.en_erken_baslangic is not None:
+        st.caption(f"🚩 {task.en_erken_baslangic:%d.%m.%Y}'ten önce başlanamaz")
+    if c2.button("✓", key=f"tamamla_{task.id}", disabled=task.done, help="Görevi tamamla"):
+        complete_task(current_user_id, task.id)
+        st.rerun()
+    if c3.button("✎", key=f"duzenle_{task.id}", help="Görevi düzenle"):
+        st.session_state["duzenle_id"] = None if st.session_state.get("duzenle_id") == task.id else task.id
+        st.rerun()
+    if c4.button("🗑", key=f"sil_{task.id}", help="Görevi sil"):
+        delete_task(current_user_id, task.id)
+        st.rerun()
+
+    if st.session_state.get("duzenle_id") == task.id:
+        with st.form(f"duzenle_form_{task.id}"):
+            e_title = st.text_input("Başlık", value=task.title)
+            e_sure = st.number_input("Süre (dakika)", min_value=1, value=task.duration_minutes)
+            e_oncelik = st.selectbox(
+                "Öncelik", options=[3, 2, 1], index=[3, 2, 1].index(task.priority),
+                format_func=lambda p: ONCELIK_ETIKET[p],
+            )
+            e_konum = st.text_input("📍 Konum (opsiyonel)", value=task.konum)
+            e_link = st.text_input("🔗 Link (opsiyonel)", value=task.link)
+            e_teslim_tipi = st.selectbox(
+                "Teslim Tipi", options=["Esnek", "Kesin"],
+                index=["esnek", "kesin"].index(task.teslim_tipi),
+            )
+            e_kesin_tarih = e_kesin_saat = None
+            if e_teslim_tipi == "Kesin":
+                varsayilan_kesin = task.kesin_bitis or datetime.combine(
+                    task.due_date or secili_gun, dt_time(18, 0)
+                )
+                etcol1, etcol2 = st.columns(2)
+                e_kesin_tarih = etcol1.date_input("Kesin bitiş tarihi", value=varsayilan_kesin.date())
+                e_kesin_saat = etcol2.time_input("Kesin bitiş saati", value=varsayilan_kesin.time())
+                if (
+                    task.teslim_tipi == "kesin" and task.kesin_bitis is not None
+                    and datetime.combine(e_kesin_tarih, e_kesin_saat) > task.kesin_bitis
+                ):
+                    st.warning(
+                        "⚠️ Bu görev kesin teslimli — ertelemek önerilmez. "
+                        "Yeniden planlamada yine de önce yerleştirilecek."
+                    )
+                e_due = e_kesin_tarih
+            else:
+                e_due = st.date_input("Son tarih", value=task.due_date or secili_gun)
+            e_en_erken_var = st.checkbox(
+                "🚩 En erken başlangıç tarihi belirle", value=task.en_erken_baslangic is not None,
+            )
+            e_en_erken = None
+            if e_en_erken_var:
+                e_en_erken = st.date_input(
+                    "En erken başlangıç tarihi", value=task.en_erken_baslangic or (task.due_date or secili_gun),
+                )
+            if st.form_submit_button("Kaydet"):
+                try:
+                    kesin_bitis = (
+                        datetime.combine(e_kesin_tarih, e_kesin_saat)
+                        if e_teslim_tipi == "Kesin" else None
+                    )
+                    update_task(
+                        current_user_id, task.id, e_title, task.description, e_oncelik, e_due, e_sure,
+                        konum=e_konum, link=e_link,
+                        teslim_tipi="kesin" if e_teslim_tipi == "Kesin" else "esnek",
+                        kesin_bitis=kesin_bitis,
+                        en_erken_baslangic=e_en_erken,
+                    )
+                    st.session_state["duzenle_id"] = None
+                    st.toast("Görev güncellendi", icon="✅")
+                    st.rerun()
+                except ValueError as e:
+                    logger.warning("Görev düzenleme hatası: %s", e)
+                    st.error(str(e))
 
 
 def _uyku_bloklari_gun_icinde(uyku_baslangic: dt_time, uyku_bitis: dt_time) -> list[tuple[int, int]]:
@@ -750,10 +857,16 @@ with tab_plan:
                 help="Esnek: planlama ertelenebilir/yeniden düzenlenebilir. Kesin: belirli bir tarih/saate kadar bitmeli.",
             )
             g_kesin_tarih = g_kesin_saat = None
+            g_havuza_ekle = False
             if g_teslim_tipi == "Kesin":
                 gtcol1, gtcol2 = st.columns(2)
                 g_kesin_tarih = gtcol1.date_input("Kesin bitiş tarihi", value=secili_gun, key="g_kesin_tarih")
                 g_kesin_saat = gtcol2.time_input("Kesin bitiş saati", value=dt_time(18, 0), key="g_kesin_saat")
+            else:
+                g_havuza_ekle = st.checkbox(
+                    "📥 Son tarih belirtme (Havuza ekle)", key="g_havuza_ekle",
+                    help="Bu görev belirli bir güne bağlanmaz, havuzda bekler; plan oluştururken boş kalan zamana otomatik eklenebilir.",
+                )
             g_en_erken_var = st.checkbox("🚩 En erken başlangıç tarihi belirle", key="g_en_erken_var")
             g_en_erken = None
             if g_en_erken_var:
@@ -764,7 +877,8 @@ with tab_plan:
                         datetime.combine(g_kesin_tarih, g_kesin_saat) if g_teslim_tipi == "Kesin" else None
                     )
                     create_task(
-                        current_user_id, g_title, priority=g_oncelik, due_date=secili_gun, duration_minutes=g_sure,
+                        current_user_id, g_title, priority=g_oncelik,
+                        due_date=None if g_havuza_ekle else secili_gun, duration_minutes=g_sure,
                         konum=g_konum, link=g_link,
                         teslim_tipi="kesin" if g_teslim_tipi == "Kesin" else "esnek",
                         kesin_bitis=kesin_bitis,
@@ -807,102 +921,20 @@ with tab_plan:
             )
 
         for task in gunun_gorevleri:
-            c1, c2, c3, c4 = st.columns([5, 1, 1, 1])
-            tamamlandi_isareti = " ✓" if task.done else ""
-            kesin_rozeti = (
-                f"<span class='fd-rozet' style='background:{RENK_KRITIK_TON}; color:{RENK_KRITIK};'>KESİN</span>"
-                if task.teslim_tipi == "kesin" else ""
-            )
-            rutin_rozeti = (
-                f"<span class='fd-rozet' style='background:{RENK_MAVI_TON}; color:{RENK_MAVI};'>🔁 RUTİN</span>"
-                if task.rutin_id is not None else ""
-            )
-            c1.markdown(
-                f"<div class='fd-gorev-row'>"
-                f"<span class='fd-rozet' style='background:{ONCELIK_TON[task.priority]}; "
-                f"color:{ONCELIK_RENK[task.priority]};'>{ONCELIK_ETIKET[task.priority]}</span>"
-                f"{kesin_rozeti}{rutin_rozeti}"
-                f"<strong>{_guvenli_metin(task.title)}{tamamlandi_isareti}</strong>"
-                f"<br><span style='color:#898781; font-size:0.85rem;'>⏱ {task.duration_minutes} dakika"
-                f" · 🔁 {task.postponement_count} kez ertelendi"
-                f"{_konum_link_satiri(task)}</span>"
-                f"</div>",
+            _gorev_satirini_ciz(task, current_user_id, secili_gun, profil)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        havuzdaki_gorevler = havuzdaki_gorevleri_listele(current_user_id)
+        st.subheader(f"📥 Görev Havuzu ({len(havuzdaki_gorevler)} görev)")
+        st.caption("Son tarihi olmayan görevler burada bekler; plan oluştururken boş kalan zamana otomatik eklenebilirler.")
+        if not havuzdaki_gorevler:
+            st.markdown(
+                "<div class='fd-empty'><span class='fd-empty-icon'>📥</span>"
+                "Havuzda henüz görev yok.</div>",
                 unsafe_allow_html=True,
             )
-            if task.postponement_count >= planning_service.ERTELEME_ONERI_ESIGI:
-                st.caption(f"⚠️ {planning_service.erteleme_onerisi_uret(task, profil)}")
-            if task.en_erken_baslangic is not None:
-                st.caption(f"🚩 {task.en_erken_baslangic:%d.%m.%Y}'ten önce başlanamaz")
-            if c2.button("✓", key=f"tamamla_{task.id}", disabled=task.done, help="Görevi tamamla"):
-                complete_task(current_user_id, task.id)
-                st.rerun()
-            if c3.button("✎", key=f"duzenle_{task.id}", help="Görevi düzenle"):
-                st.session_state["duzenle_id"] = None if st.session_state.get("duzenle_id") == task.id else task.id
-                st.rerun()
-            if c4.button("🗑", key=f"sil_{task.id}", help="Görevi sil"):
-                delete_task(current_user_id, task.id)
-                st.rerun()
-
-            if st.session_state.get("duzenle_id") == task.id:
-                with st.form(f"duzenle_form_{task.id}"):
-                    e_title = st.text_input("Başlık", value=task.title)
-                    e_sure = st.number_input("Süre (dakika)", min_value=1, value=task.duration_minutes)
-                    e_oncelik = st.selectbox(
-                        "Öncelik", options=[3, 2, 1], index=[3, 2, 1].index(task.priority),
-                        format_func=lambda p: ONCELIK_ETIKET[p],
-                    )
-                    e_konum = st.text_input("📍 Konum (opsiyonel)", value=task.konum)
-                    e_link = st.text_input("🔗 Link (opsiyonel)", value=task.link)
-                    e_teslim_tipi = st.selectbox(
-                        "Teslim Tipi", options=["Esnek", "Kesin"],
-                        index=["esnek", "kesin"].index(task.teslim_tipi),
-                    )
-                    e_kesin_tarih = e_kesin_saat = None
-                    if e_teslim_tipi == "Kesin":
-                        varsayilan_kesin = task.kesin_bitis or datetime.combine(
-                            task.due_date or secili_gun, dt_time(18, 0)
-                        )
-                        etcol1, etcol2 = st.columns(2)
-                        e_kesin_tarih = etcol1.date_input("Kesin bitiş tarihi", value=varsayilan_kesin.date())
-                        e_kesin_saat = etcol2.time_input("Kesin bitiş saati", value=varsayilan_kesin.time())
-                        if (
-                            task.teslim_tipi == "kesin" and task.kesin_bitis is not None
-                            and datetime.combine(e_kesin_tarih, e_kesin_saat) > task.kesin_bitis
-                        ):
-                            st.warning(
-                                "⚠️ Bu görev kesin teslimli — ertelemek önerilmez. "
-                                "Yeniden planlamada yine de önce yerleştirilecek."
-                            )
-                        e_due = e_kesin_tarih
-                    else:
-                        e_due = st.date_input("Son tarih", value=task.due_date or secili_gun)
-                    e_en_erken_var = st.checkbox(
-                        "🚩 En erken başlangıç tarihi belirle", value=task.en_erken_baslangic is not None,
-                    )
-                    e_en_erken = None
-                    if e_en_erken_var:
-                        e_en_erken = st.date_input(
-                            "En erken başlangıç tarihi", value=task.en_erken_baslangic or (task.due_date or secili_gun),
-                        )
-                    if st.form_submit_button("Kaydet"):
-                        try:
-                            kesin_bitis = (
-                                datetime.combine(e_kesin_tarih, e_kesin_saat)
-                                if e_teslim_tipi == "Kesin" else None
-                            )
-                            update_task(
-                                current_user_id, task.id, e_title, task.description, e_oncelik, e_due, e_sure,
-                                konum=e_konum, link=e_link,
-                                teslim_tipi="kesin" if e_teslim_tipi == "Kesin" else "esnek",
-                                kesin_bitis=kesin_bitis,
-                                en_erken_baslangic=e_en_erken,
-                            )
-                            st.session_state["duzenle_id"] = None
-                            st.toast("Görev güncellendi", icon="✅")
-                            st.rerun()
-                        except ValueError as e:
-                            logger.warning("Görev düzenleme hatası: %s", e)
-                            st.error(str(e))
+        for task in havuzdaki_gorevler:
+            _gorev_satirini_ciz(task, current_user_id, secili_gun, profil)
 
         aktif_gorevler = list_tasks(current_user_id, include_done=False, due_date=secili_gun)
         if aktif_gorevler:
@@ -917,6 +949,12 @@ with tab_plan:
                 )
 
         st.markdown("<br>", unsafe_allow_html=True)
+        havuzdan_doldur = st.checkbox(
+            "📥 Havuzdan otomatik doldur", value=True, key="havuzdan_doldur",
+            help="İşaretliyse, plan oluşturulurken boş kalan zamana havuzdaki görevlerden uygun olanlar otomatik eklenir.",
+        )
+        gorevler_plan_icin = aktif_gorevler + havuzdaki_gorevler if havuzdan_doldur else aktif_gorevler
+
         pcol1, pcol2 = st.columns(2)
         if pcol1.button("🚀 Planı Oluştur", type="primary", width="stretch"):
             if not aktif_gorevler:
@@ -924,7 +962,7 @@ with tab_plan:
             else:
                 with st.spinner("Plan oluşturuluyor..."):
                     planning_service.plan_olustur(
-                        current_user_id, secili_gun, aktif_gorevler, st.session_state["uygun_olmayan_bloklar"], profil,
+                        current_user_id, secili_gun, gorevler_plan_icin, st.session_state["uygun_olmayan_bloklar"], profil,
                         enerji_seviyesi=enerji_service.get_enerji_seviyesi(current_user_id, secili_gun),
                     )
                 st.session_state["alternatif_planlar"] = None
@@ -936,7 +974,7 @@ with tab_plan:
             else:
                 with st.spinner("Alternatif planlar hesaplanıyor..."):
                     st.session_state["alternatif_planlar"] = planning_service.alternatif_planlari_uret(
-                        aktif_gorevler, st.session_state["uygun_olmayan_bloklar"], profil,
+                        gorevler_plan_icin, st.session_state["uygun_olmayan_bloklar"], profil,
                         enerji_seviyesi=enerji_service.get_enerji_seviyesi(current_user_id, secili_gun),
                     )
 
@@ -947,20 +985,26 @@ with tab_plan:
             acol1, acol2, acol3 = st.columns(3)
             for strateji_col, strateji in zip((acol1, acol2, acol3), planning_service.STRATEJILER):
                 hesap = alternatif_planlar[strateji]
+                havuzdan_dolan = sum(1 for d in hesap["dilimler"] if d["havuzdan"])
+                havuzdan_satiri = (
+                    f"<span style='color:#898781;'>Havuzdan Dolan: {havuzdan_dolan} görev</span><br>"
+                    if havuzdan_doldur else ""
+                )
                 with strateji_col:
                     st.markdown(
                         f"<div class='fd-info-card'>"
                         f"<strong>{planning_service.STRATEJI_ETIKETLERI[strateji]}</strong><br>"
                         f"<span style='color:#898781;'>Toplam İş: {hesap['toplam_is_dakika']} dk</span><br>"
                         f"<span style='color:#898781;'>Boş Zaman: {hesap['bos_zaman_dakika']} dk</span><br>"
-                        f"<span style='color:#898781;'>Yerleşemeyen: {hesap['yerlesemeyen']} görev</span>"
+                        f"<span style='color:#898781;'>Yerleşemeyen: {hesap['yerlesemeyen']} görev</span><br>"
+                        f"{havuzdan_satiri}"
                         f"</div>",
                         unsafe_allow_html=True,
                     )
                     if st.button("Bu Planı Kullan", key=f"alt_plan_sec_{strateji}", width="stretch"):
                         with st.spinner("Plan kaydediliyor..."):
                             planning_service.plan_olustur(
-                                current_user_id, secili_gun, aktif_gorevler,
+                                current_user_id, secili_gun, gorevler_plan_icin,
                                 st.session_state["uygun_olmayan_bloklar"], profil,
                                 enerji_seviyesi=enerji_service.get_enerji_seviyesi(current_user_id, secili_gun),
                                 strateji=strateji,
@@ -1086,10 +1130,14 @@ with tab_ai:
                 unsafe_allow_html=True,
             )
         for dilim in kayit.dilimler:
+            havuzdan_rozeti = (
+                f" <span class='fd-badge' style='background:{RENK_MAVI_TON}; color:{RENK_MAVI};'>📥 Havuzdan</span>"
+                if dilim.get("havuzdan") else ""
+            )
             st.markdown(
                 f"<div class='fd-dilim-card'>"
                 f"<span style='color:#898781; font-size:0.85rem;'>{dilim['start']} — {dilim['end']}</span><br>"
-                f"<strong>📝 {dilim['title']} ({dilim['duration_minutes']} dk)</strong><br>"
+                f"<strong>📝 {dilim['title']} ({dilim['duration_minutes']} dk)</strong>{havuzdan_rozeti}<br>"
                 f"<span style='color:{RENK_MAVI}; font-style:italic; font-size:0.9rem;'>"
                 f"💬 {dilim['gerekce']}</span></div>",
                 unsafe_allow_html=True,
@@ -1099,6 +1147,32 @@ with tab_ai:
             f"<div class='fd-oneri-kutu'>💡 <strong>Yapay Zeka Önerisi</strong><br>{kayit.genel_tavsiye}</div>",
             unsafe_allow_html=True,
         )
+
+        if kayit.gun <= date.today():
+            degerlendirme = degerlendirme_service.gun_sonu_degerlendirmesi_uret(current_user_id, kayit.gun)
+            if degerlendirme:
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.subheader("🌙 Gün Sonu Değerlendirmesi")
+                dcol1, dcol2 = st.columns(2)
+                dcol1.markdown(
+                    f"<div class='fd-info-card' style='text-align:center;'>"
+                    f"<span style='color:#898781;'>Tamamlama Oranı</span><br>"
+                    f"<strong style='font-size:1.4rem;'>%{degerlendirme['tamamlama_orani']}</strong></div>",
+                    unsafe_allow_html=True,
+                )
+                dcol2.markdown(
+                    f"<div class='fd-info-card' style='text-align:center;'>"
+                    f"<span style='color:#898781;'>Tamamlanan</span><br>"
+                    f"<strong style='font-size:1.4rem;'>{degerlendirme['tamamlanan_sayisi']}/"
+                    f"{degerlendirme['planlanan_sayisi']}</strong></div>",
+                    unsafe_allow_html=True,
+                )
+                if degerlendirme["tamamlanmayanlar"]:
+                    st.caption("Tamamlanmayanlar: " + ", ".join(degerlendirme["tamamlanmayanlar"]))
+                st.markdown(
+                    f"<div class='fd-oneri-kutu'>🌙 <strong>Gün Sonu Yorumu</strong><br>{degerlendirme['yorum']}</div>",
+                    unsafe_allow_html=True,
+                )
 
         if st.button("← Geri Dön & Değiştir"):
             st.toast("Değişiklik için 'Plan Oluştur' sekmesine geç.", icon="↩️")
