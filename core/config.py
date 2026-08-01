@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # ai_advisor.py: Gemini API anahtarı — boşsa AI zenginleştirme sessizce devre dışı kalır.
     gemini_api_key: str | None = None
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-flash-latest"
 
 
 settings = Settings()

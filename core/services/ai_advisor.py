@@ -31,6 +31,12 @@ def _client():
     return genai.Client(api_key=settings.gemini_api_key)
 
 
+# Önemli: _client()'ın dönüşünü her zaman bir değişkene ata, sonra .models.generate_content
+# çağır — `_client().models.generate_content(...)` şeklinde zincirlersen SDK'nın arka planda
+# kullandığı async httpx istemcisi istek tamamlanmadan kapanıyor ("Cannot send a request, as
+# the client has been closed" hatası). google-genai + Python 3.14 kombinasyonunda gözlemlendi.
+
+
 class _GerekceOgesi(BaseModel):
     task_id: int
     gerekce: str
@@ -90,7 +96,8 @@ def gerekceleri_zenginlestir(kayit_id: int, profil) -> None:
                 else {}
             )
             prompt = _gerekce_prompt_uret(kayit.dilimler, gorevler, profil)
-            yanit = _client().models.generate_content(
+            client = _client()
+            yanit = client.models.generate_content(
                 model=settings.gemini_model,
                 contents=prompt,
                 config=types.GenerateContentConfig(
@@ -126,7 +133,8 @@ def analiz_metni_uret(saat_dilimi_verimi: dict[str, int]) -> str:
             "çek ve iyileştirme önerisi sun. Sadece düz metin döndür, JSON kullanma, "
             "markdown başlığı ekleme."
         )
-        yanit = _client().models.generate_content(model=settings.gemini_model, contents=prompt)
+        client = _client()
+        yanit = client.models.generate_content(model=settings.gemini_model, contents=prompt)
         metin = (yanit.text or "").strip()
         return metin or _analiz_metni_uret(saat_dilimi_verimi)
     except Exception:
@@ -145,7 +153,8 @@ def yorum_uret(tamamlama_orani: int, planlanan_sayisi: int, tamamlanan_sayisi: i
             f"(%{tamamlama_orani} tamamlama oranı). Buna dayanarak 2-3 cümlelik, motive "
             "edici/yapıcı bir Türkçe gün sonu yorumu yaz. Sadece düz metin döndür."
         )
-        yanit = _client().models.generate_content(model=settings.gemini_model, contents=prompt)
+        client = _client()
+        yanit = client.models.generate_content(model=settings.gemini_model, contents=prompt)
         metin = (yanit.text or "").strip()
         return metin or _varsayilan_yorum_uret(tamamlama_orani, planlanan_sayisi, tamamlanan_sayisi)
     except Exception:
