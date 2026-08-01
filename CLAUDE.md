@@ -7,6 +7,8 @@
 - Kural tabanlı (henüz gerçek LLM'siz) günlük plan üretimi: rutinler + günlük enerji/ruh hali seviyesi + kullanıcının verimli saatlerine göre görevleri yerleştirir, her yerleştirme için gerekçe metni üretir; 3 farklı sıralama stratejisiyle (öncelik ağırlıklı/sabah yoğun/dengeli dağıtım) alternatif plan karşılaştırması sunar.
 - Haftalık verimlilik/erteleme raporu, en verimli saat dilimine göre profil güncelleme önerisi, aşırı yüklenme uyarısı, geçmişten kalan görevleri seçili güne taşıma.
 - Rutinler (tekrarlayan görevler) ve haftalık tekrar eden sabit/serbest zaman blokları.
+- Görev Havuzu: son tarihi olmayan görevler havuzda bekler; plan oluşturulurken boş kalan kapasiteye havuzdan uygun görevler otomatik doldurulur, yerleşince `due_date` o güne güncellenip görev havuzdan çıkar.
+- Gün Sonu AI Değerlendirmesi: günün planına göre kaç görev tamamlandı/tamamlanmadı hesaplanıp kural tabanlı bir yorum üretilir (AI Planı sekmesinde sadece bugün/geçmiş günler için gösterilir).
 - Veri dışa aktarma (kullanıcı başına tek JSON dosyası), dosya tabanlı loglama.
 - README'deki gerçek OpenAI/AI entegrasyonu **henüz yok** — bilinçli olarak ertelendi, kural tabanlı metin üretimi bunun yerini tutuyor.
 
@@ -25,7 +27,8 @@
   - `rutin_service.py` — tekrarlayan görev şablonu CRUD + haftalık materyalize
   - `haftalik_blok_service.py` — haftalık tekrar eden sabit/serbest zaman blokları
   - `enerji_service.py` — günlük enerji/ruh hali seviyesi
-  - `planning_service.py` — kural tabanlı plan üretimi + kapasite kontrolü + alternatif plan stratejileri
+  - `planning_service.py` — kural tabanlı plan üretimi + kapasite kontrolü + alternatif plan stratejileri + görev havuzundan (son tarihi olmayan görevlerden) boş kapasiteyi doldurma
+  - `degerlendirme_service.py` — gün sonu değerlendirmesi: günün planına göre tamamlanma oranı + kural tabanlı yorum
   - `report_service.py` — haftalık rapor hesaplamaları + verimli saat önerisi
   - `export_service.py` — kullanıcının verisini JSON'a döker
 - `api/` — FastAPI, sadece görev CRUD (`api/main.py`, `api/schemas.py`).
@@ -35,7 +38,7 @@
 
 ## Kurallar
 - Tüm kod, değişken adları, docstring'ler ve kullanıcıya dönen mesajlar **Türkçe** — İngilizce isimlendirmeye geçme.
-- `planning_service.gerekce_uret` ve `report_service`'in analiz metni fonksiyonu bilinçli olarak değiştirilebilir/enjekte edilebilir bırakıldı — ileride gerçek OpenAI entegrasyonu bu tek noktaları değiştirecek, geri kalan mantığa dokunmayacak şekilde tasarlandı. Yeni AI işi eklerken bu deseni koru.
+- `planning_service.gerekce_uret`, `report_service`'in analiz metni fonksiyonu ve `degerlendirme_service.gun_sonu_degerlendirmesi_uret`'in `yorum_uret` parametresi bilinçli olarak değiştirilebilir/enjekte edilebilir bırakıldı — ileride gerçek OpenAI entegrasyonu bu tek noktaları değiştirecek, geri kalan mantığa dokunmayacak şekilde tasarlandı. Yeni AI işi eklerken bu deseni koru.
 - Yeni bir servis/model alanı eklerken izlenecek adımlar için `.claude/skills/flowday-yeni-alan-servis` skill'ine bak.
 - Yeni bağımlılık eklemeden önce bana sor.
 
