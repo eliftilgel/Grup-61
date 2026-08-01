@@ -337,7 +337,7 @@ Sprint 3 süreci içerisinde aşağıdaki tarihlerde toplantılar gerçekleştir
 
 30 Temmuz (Sprint Review Toplantısı): Sprint boyunca tamamlanan geliştirmeler ekip tarafından değerlendirildi. Demo senaryosu, dokümantasyon ve canlı ortam hazırlıkları tamamlandı.
 
-2 Ağustos (Sprint Retrospective Toplantısı): Sprint süreci genel olarak değerlendirildi. Karşılaşılan sorunlar, elde edilen kazanımlar ve sonraki projelerde uygulanacak iyileştirmeler belirlendi.
+1 Ağustos (Sprint Retrospective Toplantısı): Sprint süreci genel olarak değerlendirildi. Karşılaşılan sorunlar, elde edilen kazanımlar ve sonraki projelerde uygulanacak iyileştirmeler belirlendi.
 
 Sprint boyunca: Ekip üyeleri WhatsApp grubu üzerinden sürekli iletişim halinde kalarak günlük geliştirme durumlarını paylaşmış, ekran görüntüleri ve kısa demo videoları ile ilerlemeyi takip etmiş, görev dağılımı ve teknik konular hakkında anlık koordinasyon sağlamıştır.
 
@@ -352,6 +352,9 @@ Confluence sayfasında takip edilen toplantılara ait örnek ekran görüntüler
 <img width="1917" height="1020" alt="Ekran görüntüsü 2026-07-29 201419" src="https://github.com/user-attachments/assets/c41b343d-7616-422e-ac42-d967346243fc" />
 
 <img width="1600" height="691" alt="15df2cdd-6365-4a22-8bed-94a4202a260e" src="https://github.com/user-attachments/assets/535426ed-f942-4de2-b04c-43abb89d9cd6" />
+
+<img width="1920" height="1080" alt="Ekran görüntüsü 2026-08-01 174036" src="https://github.com/user-attachments/assets/98934d88-31ae-4bdc-829b-4db94033b761" />
+
 
 <img width="1600" height="792" alt="a57e5d66-328c-4a57-a021-72ef2c61204c" src="https://github.com/user-attachments/assets/bd0ae6cd-eb6e-4d66-a1b2-156203f95f11" />
 
