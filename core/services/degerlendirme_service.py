@@ -13,7 +13,14 @@ from core.models import Task
 from core.services import planning_service
 
 
-def _varsayilan_yorum_uret(tamamlama_orani: int, planlanan_sayisi: int, tamamlanan_sayisi: int) -> str:
+def _varsayilan_yorum_uret(
+    tamamlama_orani: int,
+    planlanan_sayisi: int,
+    tamamlanan_sayisi: int,
+    tamamlanmayanlar: list[str] | None = None,
+) -> str:
+    """Son parametre kural tabanlı yorumda kullanılmaz — yalnızca
+    `core.services.ai_advisor.yorum_uret` ile aynı imzada kalmak için var."""
     if tamamlama_orani == 100:
         return (
             f"Harika! Planladığın {planlanan_sayisi} görevin tamamını bitirdin. "
@@ -71,5 +78,8 @@ def gun_sonu_degerlendirmesi_uret(
         "planlanan_dakika": kayit.toplam_is_dakika,
         "tamamlanan_dakika": tamamlanan_dakika,
         "tamamlanmayanlar": [d["title"] for d in tamamlanmayanlar],
-        "yorum": yorum_uret(tamamlama_orani, planlanan_sayisi, tamamlanan_sayisi),
+        "yorum": yorum_uret(
+            tamamlama_orani, planlanan_sayisi, tamamlanan_sayisi,
+            tamamlanmayanlar=[d["title"] for d in tamamlanmayanlar],
+        ),
     }

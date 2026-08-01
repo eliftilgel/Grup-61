@@ -9,6 +9,19 @@ SONRA çağırdığı ayrı bir toplu (batched) adım olarak uygulanıyor — ç
 görevlerin gerekçesini tek bir LLM çağrısında üretmek, görev başına ayrı çağrı
 yapmaktan çok daha hızlı/ucuz. Bu asimetriyi "tutarsızlık" sanıp per-task hale
 getirmeye çalışma; bkz. ai_advisor.py'nin modül docstring'i.
+
+`ai_sira` (opsiyonel, varsayılan `None`) Gemini'nin `_sirali_gorevler_uret`'teki
+GRUP 2'yi (bugüne ait, sabit saatsiz, esnek teslimli görevler) yeniden sıralama
+önerisidir — `core.services.ai_advisor.siralama_onerisi_uret`'ten gelir. Grup 0
+(sabit saatli rutinler), grup 1 (kesin teslimli görevler) ve grup 3 (havuzdan
+görevler) `ai_sira`'dan HİÇBİR ZAMAN etkilenmez; bunların yerleşimi her zaman
+deterministik kalır (sert kısıtlar: uyku, sabit randevu, kesin teslim, kapasite —
+LLM'e asla devredilmez). `ai_sira` geçersiz/eksik id kümesi içerirse veya
+üretimi başarısız olursa `ai_advisor` zaten `None` döner; bu durumda
+`_sirali_gorevler_uret` grup 2 için de kural tabanlı (strateji/enerji bazlı)
+sıralamaya döner. `tavsiye_uret` (opsiyonel, varsayılan `_genel_tavsiye_uret`)
+aynı "aynı imzada yerine geçebilir" deseniyle `ai_advisor.genel_tavsiye_uret`'e
+bağlanabilir.
 """
 
 import logging
@@ -201,18 +214,27 @@ def kapasite_kontrolu(gorevler: list[Task], uygun_olmayan_bloklar: list[dict], p
 
 
 def _sirali_gorevler_uret(
-    gorevler: list[Task], enerji_seviyesi: str | None, strateji: str = "oncelik_agirlikli"
+    gorevler: list[Task],
+    enerji_seviyesi: str | None,
+    strateji: str = "oncelik_agirlikli",
+    ai_sira: dict[int, int] | None = None,
 ) -> list[Task]:
     """Sabit saatli (rutin) görevler en spesifik kısıta sahip olduğu için önce, ardından
-    kesin teslimliler yerleştirilir — bu sıra stratejiden etkilenmez. Ardından bugüne ait
-    esnek görevler; en son da havuzdaki (son tarihi olmayan) görevler — bu grup yalnızca
-    diğer tüm görevler yerleştirildikten sonra kalan boşluğa denenir, stratejiden bağımsız
-    sabit `(-priority, duration_minutes)` sırasıyla. Bugüne ait esnek görevler arasında:
-    - "sabah_yogun": süre azalan sırada (en uzun görev önce, en verimli pencereyi ilk alır).
-    - "dengeli_dagitim": oluşturulma sırasında (id), özel bir önceliklendirme yok.
-    - "oncelik_agirlikli" (varsayılan): enerji seviyesi "dusuk"/"yuksek" ise "zorluk skoru"
-      (öncelik * süre) bazlı sıralanır — düşük enerjide kolay, yüksek enerjide zor görevler
-      önce; enerji "orta"/None ise mevcut öncelik bazlı sıralama korunur.
+    kesin teslimliler yerleştirilir — bu sıra stratejiden VE `ai_sira`'dan etkilenmez.
+    Ardından bugüne ait esnek görevler; en son da havuzdaki (son tarihi olmayan) görevler
+    — bu grup yalnızca diğer tüm görevler yerleştirildikten sonra kalan boşluğa denenir,
+    stratejiden bağımsız sabit `(-priority, duration_minutes)` sırasıyla. Bugüne ait esnek
+    görevler arasında:
+    - `ai_sira` verilmişse (Gemini'nin önerdiği sıralama, bkz. `ai_advisor.siralama_onerisi_uret`)
+      ve görevin id'si içindeyse, o sıra kullanılır — bu, tek karar yetkisi Gemini'ye
+      bırakılan noktadır; sabit saatli/kesin teslimli/havuzdan görevler bundan asla
+      etkilenmez (üsttekiler her zaman kural tabanlı/deterministik kalır).
+    - `ai_sira` yoksa veya görev onun içinde değilse, strateji bazlı kural tabanlı sıra:
+      - "sabah_yogun": süre azalan sırada (en uzun görev önce, en verimli pencereyi ilk alır).
+      - "dengeli_dagitim": oluşturulma sırasında (id), özel bir önceliklendirme yok.
+      - "oncelik_agirlikli" (varsayılan): enerji seviyesi "dusuk"/"yuksek" ise "zorluk
+        skoru" (öncelik * süre) bazlı sıralanır — düşük enerjide kolay, yüksek enerjide
+        zor görevler önce; enerji "orta"/None ise mevcut öncelik bazlı sıralama korunur.
     """
     def anahtar(t: Task) -> tuple:
         if t.sabit_saat is not None:
@@ -225,6 +247,8 @@ def _sirali_gorevler_uret(
             grup = 3  # havuzdan — yalnızca boş kalan kapasiteye, stratejiden bağımsız doldurulur
         if grup != 2:
             return (grup, -t.priority, t.duration_minutes)
+        if ai_sira is not None and t.id in ai_sira:
+            return (grup, ai_sira[t.id], 0)
         if strateji == "sabah_yogun":
             return (grup, -t.duration_minutes, 0)
         if strateji == "dengeli_dagitim":
@@ -244,13 +268,15 @@ def _plan_hesapla(
     gerekce_uret: Callable,
     enerji_seviyesi: str | None,
     strateji: str,
+    ai_sira: dict[int, int] | None = None,
+    tavsiye_uret: Callable = _genel_tavsiye_uret,
 ) -> dict:
     """`plan_olustur`'un DB'ye kaydetmeyen saf hesaplama kısmı — alternatif planları
     önizlemek için tekrar tekrar (kaydetmeden) çağrılabilir."""
     bos = _bos_araliklar(profil, uygun_olmayan_bloklar)
     toplam_bos_baslangic = sum(b - a for a, b in bos)
 
-    sirali_gorevler = _sirali_gorevler_uret(gorevler, enerji_seviyesi, strateji)
+    sirali_gorevler = _sirali_gorevler_uret(gorevler, enerji_seviyesi, strateji, ai_sira)
 
     dilimler = []
     kritik_tercih_penceresinde = 0
@@ -288,7 +314,7 @@ def _plan_hesapla(
 
     toplam_is_dakika = sum(d["duration_minutes"] for d in dilimler)
     bos_zaman_dakika = toplam_bos_baslangic - toplam_is_dakika
-    genel_tavsiye = _genel_tavsiye_uret(kritik_tercih_penceresinde, toplam_kritik, enerji_seviyesi)
+    genel_tavsiye = tavsiye_uret(kritik_tercih_penceresinde, toplam_kritik, enerji_seviyesi)
 
     return {
         "dilimler": dilimler,
@@ -308,13 +334,22 @@ def plan_olustur(
     gerekce_uret: Callable = _varsayilan_gerekce_uret,
     enerji_seviyesi: str | None = None,
     strateji: str = "oncelik_agirlikli",
+    ai_sira: dict[int, int] | None = None,
+    tavsiye_uret: Callable = _genel_tavsiye_uret,
 ) -> PlanKaydi:
     """Verilen gün için kural tabanlı bir plan üretir, yeni bir PlanKaydi olarak kaydeder.
 
     Plana havuzdan (son tarihi olmayan görevlerden) yerleşen olursa, o görevler bu günün
     gerçek görevi haline gelir — `due_date` `gun` olarak güncellenir ve havuzdan çıkar.
+
+    `ai_sira` verilmezse (varsayılan `None`) sıralama %100 kural tabanlıdır — bu parametre
+    yalnızca `ui/app.py`'nin `ai_advisor.siralama_onerisi_uret`'ten aldığı sonucu iletmesi
+    için var, çağıran belirtmezse davranış hiç değişmez.
     """
-    hesap = _plan_hesapla(gorevler, uygun_olmayan_bloklar, profil, gerekce_uret, enerji_seviyesi, strateji)
+    hesap = _plan_hesapla(
+        gorevler, uygun_olmayan_bloklar, profil, gerekce_uret, enerji_seviyesi, strateji,
+        ai_sira, tavsiye_uret,
+    )
     havuzdan_yerlesen_idler = [d["task_id"] for d in hesap["dilimler"] if d["havuzdan"]]
 
     with SessionLocal() as session:
@@ -382,10 +417,12 @@ def erteleme_onerisi_uret(task: Task, profil=None) -> str:
     return f"'{task.title}' {task.postponement_count} kez ertelendi — farklı bir gün/saat denemeyi düşün."
 
 
-def erteleme_onerilerini_uret(gorevler: list[Task], profil=None) -> list[str]:
+def erteleme_onerilerini_uret(
+    gorevler: list[Task], profil=None, oneri_uret: Callable = erteleme_onerisi_uret,
+) -> list[str]:
     """Listedeki eşik üzerinde ertelenmiş her görev için öneri metinlerini döner."""
     return [
-        erteleme_onerisi_uret(t, profil) for t in gorevler if t.postponement_count >= ERTELEME_ONERI_ESIGI
+        oneri_uret(t, profil) for t in gorevler if t.postponement_count >= ERTELEME_ONERI_ESIGI
     ]
 
 

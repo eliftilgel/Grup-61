@@ -3,7 +3,7 @@
 from datetime import date, time
 from unittest.mock import MagicMock
 
-from core.models import PlanKaydi, Profil
+from core.models import PlanKaydi, Profil, Task
 from core.services import ai_advisor
 from core.services.planning_service import plan_olustur
 from core.services.task_service import create_task
@@ -131,3 +131,126 @@ def test_basarili_gemini_yaniti_yorum_degisir(monkeypatch):
     monkeypatch.setattr(ai_advisor, "_client", lambda: sahte_client)
 
     assert ai_advisor.yorum_uret(60, 5, 3) == "Gemini'den gelen gün sonu yorumu."
+
+
+# --- siralama_onerisi_uret ---------------------------------------------------------------------
+
+
+def _esnek_gorevler_uret(user_id):
+    gun = date(2026, 7, 6)
+    return [
+        create_task(user_id, "Rapor yaz", priority=3, duration_minutes=60, due_date=gun),
+        create_task(user_id, "Email cevapla", priority=1, duration_minutes=15, due_date=gun),
+    ]
+
+
+def test_siralama_anahtar_yoksa_none_doner(test_db, test_user_id, monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", None)
+    gorevler = _esnek_gorevler_uret(test_user_id)
+    assert ai_advisor.siralama_onerisi_uret(gorevler, VARSAYILAN_PROFIL, None) is None
+
+
+def test_siralama_tek_gorevde_gemini_cagrilmadan_none_doner(test_db, test_user_id, monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", "sahte-anahtar")
+    sahte_client = MagicMock()
+    monkeypatch.setattr(ai_advisor, "_client", lambda: sahte_client)
+    gun = date(2026, 7, 6)
+    tek_gorev = [create_task(test_user_id, "Tek görev", priority=2, duration_minutes=30, due_date=gun)]
+
+    assert ai_advisor.siralama_onerisi_uret(tek_gorev, VARSAYILAN_PROFIL, None) is None
+    sahte_client.models.generate_content.assert_not_called()
+
+
+def test_siralama_gemini_hata_verirse_none_doner(test_db, test_user_id, monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", "sahte-anahtar")
+    monkeypatch.setattr(ai_advisor, "_client", _patlayan_client)
+    gorevler = _esnek_gorevler_uret(test_user_id)
+
+    assert ai_advisor.siralama_onerisi_uret(gorevler, VARSAYILAN_PROFIL, None) is None
+
+
+def test_siralama_gecersiz_id_kumesinde_none_doner(test_db, test_user_id, monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", "sahte-anahtar")
+    gorevler = _esnek_gorevler_uret(test_user_id)
+
+    sahte_yanit = MagicMock()
+    sahte_yanit.text = '{"sira": [999999]}'  # gerçek olmayan bir id, eksik/fazla
+    sahte_client = MagicMock()
+    sahte_client.models.generate_content.return_value = sahte_yanit
+    monkeypatch.setattr(ai_advisor, "_client", lambda: sahte_client)
+
+    assert ai_advisor.siralama_onerisi_uret(gorevler, VARSAYILAN_PROFIL, None) is None
+
+
+def test_siralama_gecerli_yanitta_dogru_dict_doner(test_db, test_user_id, monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", "sahte-anahtar")
+    gorevler = _esnek_gorevler_uret(test_user_id)
+    id1, id2 = gorevler[0].id, gorevler[1].id
+
+    sahte_yanit = MagicMock()
+    sahte_yanit.text = f'{{"sira": [{id2}, {id1}]}}'  # ikinci görev önce
+    sahte_client = MagicMock()
+    sahte_client.models.generate_content.return_value = sahte_yanit
+    monkeypatch.setattr(ai_advisor, "_client", lambda: sahte_client)
+
+    sonuc = ai_advisor.siralama_onerisi_uret(gorevler, VARSAYILAN_PROFIL, "yuksek")
+
+    assert sonuc == {id2: 0, id1: 1}
+
+
+# --- genel_tavsiye_uret -------------------------------------------------------------------------
+
+
+def test_genel_tavsiye_anahtar_yoksa_kural_tabanli(monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", None)
+    metin = ai_advisor.genel_tavsiye_uret(2, 2, None)
+    assert "Sabah rutinine" in metin
+
+
+def test_genel_tavsiye_gemini_hata_verirse_kural_tabanli(monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", "sahte-anahtar")
+    monkeypatch.setattr(ai_advisor, "_client", _patlayan_client)
+    metin = ai_advisor.genel_tavsiye_uret(0, 2, None)
+    assert "Uygun olmayan saatleri" in metin
+
+
+def test_genel_tavsiye_basarili_yanitta_degisir(monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", "sahte-anahtar")
+    sahte_yanit = MagicMock()
+    sahte_yanit.text = "Gemini'den gelen genel tavsiye."
+    sahte_client = MagicMock()
+    sahte_client.models.generate_content.return_value = sahte_yanit
+    monkeypatch.setattr(ai_advisor, "_client", lambda: sahte_client)
+
+    assert ai_advisor.genel_tavsiye_uret(1, 2, "dusuk") == "Gemini'den gelen genel tavsiye."
+
+
+# --- erteleme_onerisi_uret -----------------------------------------------------------------------
+
+
+def _ertelenen_gorev():
+    return Task(id=1, title="Sunum hazırla", priority=2, duration_minutes=45, postponement_count=4)
+
+
+def test_erteleme_onerisi_anahtar_yoksa_kural_tabanli(monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", None)
+    metin = ai_advisor.erteleme_onerisi_uret(_ertelenen_gorev(), VARSAYILAN_PROFIL)
+    assert "Sunum hazırla" in metin
+
+
+def test_erteleme_onerisi_gemini_hata_verirse_kural_tabanli(monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", "sahte-anahtar")
+    monkeypatch.setattr(ai_advisor, "_client", _patlayan_client)
+    metin = ai_advisor.erteleme_onerisi_uret(_ertelenen_gorev(), VARSAYILAN_PROFIL)
+    assert "Sunum hazırla" in metin
+
+
+def test_erteleme_onerisi_basarili_yanitta_degisir(monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", "sahte-anahtar")
+    sahte_yanit = MagicMock()
+    sahte_yanit.text = "Gemini'den gelen erteleme önerisi."
+    sahte_client = MagicMock()
+    sahte_client.models.generate_content.return_value = sahte_yanit
+    monkeypatch.setattr(ai_advisor, "_client", lambda: sahte_client)
+
+    assert ai_advisor.erteleme_onerisi_uret(_ertelenen_gorev(), VARSAYILAN_PROFIL) == "Gemini'den gelen erteleme önerisi."

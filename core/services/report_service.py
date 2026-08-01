@@ -51,7 +51,15 @@ def _son_planlar(user_id: int, baslangic: date, bitis: date, session) -> list[Pl
     return list(en_sonlar.values())
 
 
-def _analiz_metni_uret(saat_dilimi_verimi: dict[str, int]) -> str:
+def _analiz_metni_uret(
+    saat_dilimi_verimi: dict[str, int],
+    verimlilik_orani: int | None = None,
+    erteleme_orani: int | None = None,
+    en_cok_ertelenenler: list[str] | None = None,
+) -> str:
+    """Son 3 parametre kural tabanlı analizde kullanılmaz — yalnızca
+    `core.services.ai_advisor.analiz_metni_uret` ile aynı imzada kalmak için var,
+    böylece `analiz_uret` seam'i her iki fonksiyonla da birbirinin yerine geçebilir."""
     if not saat_dilimi_verimi or not any(saat_dilimi_verimi.values()):
         return "Bu hafta için yeterli veri yok — bir plan oluşturup tamamladığında burada analiz görünecek."
     en_dusuk_etiket = min(saat_dilimi_verimi, key=saat_dilimi_verimi.get)
@@ -69,6 +77,7 @@ def haftalik_rapor(
     gun_sayisi: int = 7,
     profil=None,
     analiz_uret: Callable = _analiz_metni_uret,
+    erteleme_oneri_uret: Callable = planning_service.erteleme_onerisi_uret,
 ) -> dict:
     """Kullanıcının [bitis - gun_sayisi + 1, bitis] aralığı için Rapor ekranının tüm sayılarını döner."""
     bitis = bitis or date.today()
@@ -135,8 +144,12 @@ def haftalik_rapor(
         "ertelenen_sayisi": len(ertelenen),
         "saat_dilimi_verimi": saat_dilimi_verimi,
         "en_cok_ertelenenler": en_cok_ertelenenler,
-        "analiz_metni": analiz_uret(saat_dilimi_verimi),
-        "erteleme_onerileri": planning_service.erteleme_onerilerini_uret(ertelenen, profil),
+        "analiz_metni": analiz_uret(
+            saat_dilimi_verimi, verimlilik_orani, erteleme_orani, en_cok_ertelenenler,
+        ),
+        "erteleme_onerileri": planning_service.erteleme_onerilerini_uret(
+            ertelenen, profil, oneri_uret=erteleme_oneri_uret,
+        ),
     }
 
 

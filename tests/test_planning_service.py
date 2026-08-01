@@ -490,3 +490,79 @@ def test_dilimde_havuzdan_alani_dogru_gelir(test_db, test_user_id):
     dilim_by_id = {d["task_id"]: d for d in kayit.dilimler}
     assert dilim_by_id[aktif.id]["havuzdan"] is False
     assert dilim_by_id[havuz.id]["havuzdan"] is True
+
+
+# --- ai_sira: Gemini'nin sıralama önerisi (opt-in, varsayılan davranışı değiştirmez) -------------
+
+
+def test_ai_sira_verilmezse_davranis_degismez(test_db, test_user_id):
+    """ai_sira parametresi hiç geçirilmezse (varsayılan None), mevcut önceliğe dayalı
+    sıralama birebir korunur — bu, mevcut testlerin (ai_sira'sız) hiç kırılmayacağının
+    açık bir güvencesi."""
+    gun = date(2026, 7, 6)
+    kisa_dusuk, uzun_yuksek = _enerji_test_gorevleri_ekle(test_user_id, gun)
+
+    kayit = plan_olustur(
+        test_user_id, gun, [kisa_dusuk, uzun_yuksek], _ENERJI_TEK_SLOT_DISINDA_KAPAT, VARSAYILAN_PROFIL,
+    )
+
+    yerlesen_ids = {d["task_id"] for d in kayit.dilimler}
+    assert uzun_yuksek.id in yerlesen_ids  # varsayılan öncelik sırası: yüksek öncelik kazanır
+    assert kisa_dusuk.id not in yerlesen_ids
+
+
+def test_ai_sira_gecerliyse_siralamayi_degistirir(test_db, test_user_id):
+    """Geçerli bir ai_sira verildiğinde, düşük öncelikli görev bile Gemini'nin
+    önerdiği sırayla tek boş slotu kazanabilir — gerçek karar yetkisinin kanıtı."""
+    gun = date(2026, 7, 6)
+    kisa_dusuk, uzun_yuksek = _enerji_test_gorevleri_ekle(test_user_id, gun)
+
+    ai_sira = {kisa_dusuk.id: 0, uzun_yuksek.id: 1}  # Gemini düşük öncelikliyi önce istiyor
+    kayit = plan_olustur(
+        test_user_id, gun, [kisa_dusuk, uzun_yuksek], _ENERJI_TEK_SLOT_DISINDA_KAPAT, VARSAYILAN_PROFIL,
+        ai_sira=ai_sira,
+    )
+
+    yerlesen_ids = {d["task_id"] for d in kayit.dilimler}
+    assert kisa_dusuk.id in yerlesen_ids  # ai_sira'nın önerdiği sırayla düşük öncelikli kazandı
+    assert uzun_yuksek.id not in yerlesen_ids
+
+
+def test_ai_sira_sabit_saatli_gorevi_asla_etkilemez(test_db, test_user_id):
+    """ai_sira sadece grup 2'yi (bugüne ait esnek görevler) etkiler — sabit saatli
+    (rutin) bir görev, ai_sira'da her ne yazarsa yazsın her zaman kendi saatine yerleşir."""
+    gun = date(2026, 7, 6)
+    rutin = _sabit_saatli_gorev_ekle(test_db, test_user_id, gun, time(18, 0), priority=1)
+    esnek = create_task(test_user_id, "Esnek", priority=3, duration_minutes=30, due_date=gun)
+
+    # ai_sira, esnek görevi rutinden "önce" istiyor gibi görünse de — grup 0 hep ilk yerleşir.
+    kayit = plan_olustur(
+        test_user_id, gun, [rutin, esnek], [], VARSAYILAN_PROFIL, ai_sira={esnek.id: 0, rutin.id: 1},
+    )
+
+    rutin_dilim = next(d for d in kayit.dilimler if d["task_id"] == rutin.id)
+    assert rutin_dilim["start"] == "18:00"
+
+
+def test_tavsiye_uret_enjekte_edilirse_kullanilir(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    gorev = create_task(test_user_id, "Görev", priority=2, duration_minutes=30, due_date=gun)
+
+    kayit = plan_olustur(
+        test_user_id, gun, [gorev], [], VARSAYILAN_PROFIL,
+        tavsiye_uret=lambda *a, **k: "sahte tavsiye metni",
+    )
+
+    assert kayit.genel_tavsiye == "sahte tavsiye metni"
+
+
+def test_oneri_uret_enjekte_edilirse_kullanilir(test_db, test_user_id):
+    gorev = create_task(
+        test_user_id, "Ertelenen görev", priority=2, duration_minutes=30,
+        due_date=date(2026, 7, 6),
+    )
+    gorev.postponement_count = 5  # eşik (3) üzerinde
+
+    sonuc = erteleme_onerilerini_uret([gorev], VARSAYILAN_PROFIL, oneri_uret=lambda t, p: "sahte öneri")
+
+    assert sonuc == ["sahte öneri"]

@@ -377,7 +377,7 @@ Yukarıdaki bölümler Sprint 1'in ürün vizyonu ve proje yönetimi çıktılar
 
 - Hesap oluşturma/giriş, görev oluşturma/düzenleme/tamamlama/silme (öncelik: Kritik/Orta/Düşük, süre, son tarih).
 - Google Takvim ile senkronizasyon: yerelde oluşturulan etkinlikler Google Takvim'e yazılır ve yerel bir kopya (`calendar_events`) tutulur (Google hesabı şu an tüm kullanıcılar arasında paylaşılan tek hesap — bkz. Kapsam Dışı).
-- Kural tabanlı bir motorla üretilen günlük plan: görevleri önceliğe göre kullanıcının "en verimli olduğu saatler"ine, uygun olmayan saatleri (ders, uyku vb.) hariç tutarak yerleştirir ve her yerleştirme için Türkçe bir gerekçe metni üretir. `GEMINI_API_KEY` tanımlıysa her yerleştirme için gerekçe metni, haftalık rapor analizi ve gün sonu yorumu gerçek bir LLM (Gemini) ile zenginleştirilir, anahtar yoksa otomatik olarak kural tabanlı metne düşer.
+- Kural tabanlı bir motorla üretilen günlük plan: görevleri önceliğe göre kullanıcının "en verimli olduğu saatler"ine, uygun olmayan saatleri (ders, uyku vb.) hariç tutarak yerleştirir ve her yerleştirme için Türkçe bir gerekçe metni üretir. `GEMINI_API_KEY` tanımlıysa her yerleştirme için gerekçe metni, haftalık rapor analizi, gün sonu yorumu, genel gün tavsiyesi ve erteleme önerileri gerçek bir LLM (Gemini) ile zenginleştirilir, anahtar yoksa otomatik olarak kural tabanlı metne düşer. Gemini ayrıca bugüne ait *esnek* görevlerin çalışma sırasına gerçekten karar verebilir (sabit saatli rutinler, kesin teslimli görevler, uyku/kapasite kısıtları her zaman deterministik kalır — LLM'ler kesin aralık aritmetiğinde güvenilir olmadığından geçersiz plan riskine karşı bu sınır korunuyor).
 - Haftalık verimlilik/erteleme raporu: tamamlanan/ertelenen görev oranları, saat dilimine göre verimlilik yüzdeleri, en çok ertelenen görevler.
 - Aşırı yüklenme uyarısı (günün müsait zamanı aşılırsa) ve geçmişten kalan görevleri seçili güne taşıma.
 - Admin paneli: tüm kullanıcıları listeleme, bir kullanıcının görev/etkinlik/plan kayıtlarını görüntüleme, admin yetkisi verme/alma, parola sıfırlama, hesap silme.
@@ -434,7 +434,7 @@ Kullanıcı silinince (`ondelete="CASCADE"` + SQLite `PRAGMA foreign_keys=ON`) t
 - `profil_service.py` — kullanıcı ayar profilinin okunması/kaydedilmesi.
 - `planning_service.py` — kural tabanlı günlük plan üretimi, kapasite kontrolü, kullanıcının plan geçmişi.
 - `report_service.py` — haftalık verimlilik/erteleme istatistiklerinin hesaplanması.
-- `ai_advisor.py` — Gemini tabanlı gerçek AI zenginleştirme (gerekçe/analiz metni/yorum); her çağrı başarısız olursa ilgili kural tabanlı fonksiyona sessizce düşer.
+- `ai_advisor.py` — Gemini tabanlı gerçek AI zenginleştirme (gerekçe/analiz metni/yorum/genel tavsiye/erteleme önerisi) + esnek görev sıralaması; her çağrı başarısız olursa ilgili kural tabanlı fonksiyona sessizce düşer.
 - `export_service.py` — kullanıcının tüm verisini JSON'a döker.
 
 ## Kurulum ve Çalıştırma
@@ -456,6 +456,7 @@ Google Takvim senkronu için proje köküne bir Google Cloud OAuth `credentials.
 ## Şu An Kapsamda Olmayanlar
 
 - LLM entegrasyonu (Gemini) opsiyonel ve tek paylaşılan bir `GEMINI_API_KEY`'e bağlı — kullanıcı başına ayrı anahtar/kota yok; anahtar tanımsızsa plan/rapor metinleri kural tabanlı şablonlarla üretilir.
+- Gemini'nin plan üzerindeki karar yetkisi kasıtlı olarak sınırlı: yalnızca bugüne ait esnek görevlerin göreceli sırasına etki eder. Başlangıç/bitiş saatlerinin kendisini, kapasite kontrolünü ve sabit/kesin kısıtları LLM'e hiç bırakmıyoruz — bir zamanlama uygulamasında ham LLM çıktısına dayanan geçersiz (çakışan/kısıtları ihlal eden) planlar üretme riski kabul edilebilir değil.
 - Google Calendar OAuth kullanıcı başına değil — tüm kullanıcılar tek paylaşılan Google hesabına yazar/okur.
 - API katmanının auth'u yok — endpoint'ler zorunlu bir `user_id` parametresi alır ama kimin o id'yi kullanmaya yetkili olduğunu doğrulamaz; ayrıca takvim ve plan/rapor endpoint'leri yok.
 

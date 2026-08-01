@@ -173,7 +173,7 @@ def _gorev_satirini_ciz(task, current_user_id: int, secili_gun: date, profil) ->
         unsafe_allow_html=True,
     )
     if task.postponement_count >= planning_service.ERTELEME_ONERI_ESIGI:
-        st.caption(f"⚠️ {planning_service.erteleme_onerisi_uret(task, profil)}")
+        st.caption(f"⚠️ {ai_advisor.erteleme_onerisi_uret(task, profil)}")
     if task.en_erken_baslangic is not None:
         st.caption(f"🚩 {task.en_erken_baslangic:%d.%m.%Y}'ten önce başlanamaz")
     if c2.button("✓", key=f"tamamla_{task.id}", disabled=task.done, help="Görevi tamamla"):
@@ -961,10 +961,17 @@ with tab_plan:
             if not aktif_gorevler:
                 st.warning("Plan oluşturmak için en az bir görev ekleyin.")
             else:
+                enerji_seviyesi = enerji_service.get_enerji_seviyesi(current_user_id, secili_gun)
                 with st.spinner("Plan oluşturuluyor..."):
+                    ai_sira = None
+                    if ai_advisor.etkin():
+                        with st.spinner("Görev sıralaması öneriliyor..."):
+                            ai_sira = ai_advisor.siralama_onerisi_uret(gorevler_plan_icin, profil, enerji_seviyesi)
                     kayit = planning_service.plan_olustur(
                         current_user_id, secili_gun, gorevler_plan_icin, st.session_state["uygun_olmayan_bloklar"], profil,
-                        enerji_seviyesi=enerji_service.get_enerji_seviyesi(current_user_id, secili_gun),
+                        enerji_seviyesi=enerji_seviyesi,
+                        ai_sira=ai_sira,
+                        tavsiye_uret=ai_advisor.genel_tavsiye_uret,
                     )
                     if ai_advisor.etkin():
                         with st.spinner("Gerekçeler yapay zeka ile zenginleştiriliyor..."):
@@ -1006,12 +1013,19 @@ with tab_plan:
                         unsafe_allow_html=True,
                     )
                     if st.button("Bu Planı Kullan", key=f"alt_plan_sec_{strateji}", width="stretch"):
+                        enerji_seviyesi = enerji_service.get_enerji_seviyesi(current_user_id, secili_gun)
                         with st.spinner("Plan kaydediliyor..."):
+                            ai_sira = None
+                            if ai_advisor.etkin():
+                                with st.spinner("Görev sıralaması öneriliyor..."):
+                                    ai_sira = ai_advisor.siralama_onerisi_uret(gorevler_plan_icin, profil, enerji_seviyesi)
                             kayit = planning_service.plan_olustur(
                                 current_user_id, secili_gun, gorevler_plan_icin,
                                 st.session_state["uygun_olmayan_bloklar"], profil,
-                                enerji_seviyesi=enerji_service.get_enerji_seviyesi(current_user_id, secili_gun),
+                                enerji_seviyesi=enerji_seviyesi,
                                 strateji=strateji,
+                                ai_sira=ai_sira,
+                                tavsiye_uret=ai_advisor.genel_tavsiye_uret,
                             )
                             if ai_advisor.etkin():
                                 with st.spinner("Gerekçeler yapay zeka ile zenginleştiriliyor..."):
@@ -1197,7 +1211,9 @@ with tab_rapor:
 
     rapor_profil = profil_service.get_or_create(current_user_id)
     rapor = report_service.haftalik_rapor(
-        current_user_id, profil=rapor_profil, analiz_uret=ai_advisor.analiz_metni_uret,
+        current_user_id, profil=rapor_profil,
+        analiz_uret=ai_advisor.analiz_metni_uret,
+        erteleme_oneri_uret=ai_advisor.erteleme_onerisi_uret,
     )
     r_bitis = date.today()
     r_baslangic = r_bitis - timedelta(days=6)
