@@ -1,8 +1,14 @@
-"""Kural tabanlı günlük plan üretimi (sirkadiyen ritim yaklaşımı, OpenAI'sız).
+"""Kural tabanlı günlük plan üretimi (sirkadiyen ritim yaklaşımı).
 
-`gerekce_uret` parametresi bilinçli olarak enjekte edilebilir bırakıldı:
-gelecekte gerçek bir OpenAI tabanlı `ai_advisor.py` bu tek fonksiyonu
-değiştirerek devreye girebilir, geri kalan yerleştirme mantığına dokunmadan.
+`gerekce_uret` parametresi bilinçli olarak enjekte edilebilir bırakıldı, ama
+`plan_olustur`'un kendisi hep kural tabanlı `_varsayilan_gerekce_uret`'i kullanır —
+bunu bilerek değiştirmiyoruz. Gemini tabanlı gerekçe zenginleştirmesi
+(`core.services.ai_advisor.gerekceleri_zenginlestir`) burada per-task bir
+`gerekce_uret` olarak değil, `ui/app.py`'nin `plan_olustur` başarıyla döndükten
+SONRA çağırdığı ayrı bir toplu (batched) adım olarak uygulanıyor — çünkü tüm
+görevlerin gerekçesini tek bir LLM çağrısında üretmek, görev başına ayrı çağrı
+yapmaktan çok daha hızlı/ucuz. Bu asimetriyi "tutarsızlık" sanıp per-task hale
+getirmeye çalışma; bkz. ai_advisor.py'nin modül docstring'i.
 """
 
 import logging

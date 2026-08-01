@@ -7,6 +7,7 @@ import streamlit as st
 
 from core.logging_config import setup_logging
 from core.services import (
+    ai_advisor,
     degerlendirme_service,
     enerji_service,
     export_service,
@@ -961,10 +962,13 @@ with tab_plan:
                 st.warning("Plan oluşturmak için en az bir görev ekleyin.")
             else:
                 with st.spinner("Plan oluşturuluyor..."):
-                    planning_service.plan_olustur(
+                    kayit = planning_service.plan_olustur(
                         current_user_id, secili_gun, gorevler_plan_icin, st.session_state["uygun_olmayan_bloklar"], profil,
                         enerji_seviyesi=enerji_service.get_enerji_seviyesi(current_user_id, secili_gun),
                     )
+                    if ai_advisor.etkin():
+                        with st.spinner("Gerekçeler yapay zeka ile zenginleştiriliyor..."):
+                            ai_advisor.gerekceleri_zenginlestir(kayit.id, profil)
                 st.session_state["alternatif_planlar"] = None
                 st.success("Plan oluşturuldu! 'AI Planı' sekmesinden görüntüleyebilirsin.")
 
@@ -1003,12 +1007,15 @@ with tab_plan:
                     )
                     if st.button("Bu Planı Kullan", key=f"alt_plan_sec_{strateji}", width="stretch"):
                         with st.spinner("Plan kaydediliyor..."):
-                            planning_service.plan_olustur(
+                            kayit = planning_service.plan_olustur(
                                 current_user_id, secili_gun, gorevler_plan_icin,
                                 st.session_state["uygun_olmayan_bloklar"], profil,
                                 enerji_seviyesi=enerji_service.get_enerji_seviyesi(current_user_id, secili_gun),
                                 strateji=strateji,
                             )
+                            if ai_advisor.etkin():
+                                with st.spinner("Gerekçeler yapay zeka ile zenginleştiriliyor..."):
+                                    ai_advisor.gerekceleri_zenginlestir(kayit.id, profil)
                         st.session_state["alternatif_planlar"] = None
                         st.success("Plan kaydedildi! 'AI Planı' sekmesinden görüntüleyebilirsin.")
                         st.rerun()
@@ -1149,7 +1156,9 @@ with tab_ai:
         )
 
         if kayit.gun <= date.today():
-            degerlendirme = degerlendirme_service.gun_sonu_degerlendirmesi_uret(current_user_id, kayit.gun)
+            degerlendirme = degerlendirme_service.gun_sonu_degerlendirmesi_uret(
+                current_user_id, kayit.gun, yorum_uret=ai_advisor.yorum_uret,
+            )
             if degerlendirme:
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.subheader("🌙 Gün Sonu Değerlendirmesi")
@@ -1187,7 +1196,9 @@ with tab_rapor:
     st.markdown("<div class='fd-card'>", unsafe_allow_html=True)
 
     rapor_profil = profil_service.get_or_create(current_user_id)
-    rapor = report_service.haftalik_rapor(current_user_id, profil=rapor_profil)
+    rapor = report_service.haftalik_rapor(
+        current_user_id, profil=rapor_profil, analiz_uret=ai_advisor.analiz_metni_uret,
+    )
     r_bitis = date.today()
     r_baslangic = r_bitis - timedelta(days=6)
     st.markdown(

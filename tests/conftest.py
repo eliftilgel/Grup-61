@@ -32,6 +32,7 @@ def test_db(tmp_path, monkeypatch):
     monkeypatch.setattr("core.services.haftalik_blok_service.SessionLocal", TestSession)
     monkeypatch.setattr("core.services.enerji_service.SessionLocal", TestSession)
     monkeypatch.setattr("core.services.degerlendirme_service.SessionLocal", TestSession)
+    monkeypatch.setattr("core.services.ai_advisor.SessionLocal", TestSession)
     return TestSession
 
 

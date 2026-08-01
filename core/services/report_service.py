@@ -1,10 +1,12 @@
-"""Haftalık verimlilik/erteleme raporu — kural tabanlı analiz metni (OpenAI'sız).
+"""Haftalık verimlilik/erteleme raporu — kural tabanlı analiz metni varsayılan.
 
-`_analiz_metni_uret` de `planning_service.gerekce_uret` ile aynı felsefeyle
-değiştirilebilir bir seam: ileride gerçek bir OpenAI çağrısıyla değiştirilebilir.
+`_analiz_metni_uret`, `analiz_uret` parametresiyle değiştirilebilir bir seam:
+`ui/app.py` bunun yerine `core.services.ai_advisor.analiz_metni_uret`'i geçirerek
+gerçek bir Gemini çağrısına düşürür (bkz. ai_advisor.py).
 """
 
 from datetime import date, time, timedelta
+from typing import Callable
 
 from core.database import SessionLocal
 from core.models import PlanKaydi, Rutin, Task
@@ -61,7 +63,13 @@ def _analiz_metni_uret(saat_dilimi_verimi: dict[str, int]) -> str:
     )
 
 
-def haftalik_rapor(user_id: int, bitis: date | None = None, gun_sayisi: int = 7, profil=None) -> dict:
+def haftalik_rapor(
+    user_id: int,
+    bitis: date | None = None,
+    gun_sayisi: int = 7,
+    profil=None,
+    analiz_uret: Callable = _analiz_metni_uret,
+) -> dict:
     """Kullanıcının [bitis - gun_sayisi + 1, bitis] aralığı için Rapor ekranının tüm sayılarını döner."""
     bitis = bitis or date.today()
     baslangic = bitis - timedelta(days=gun_sayisi - 1)
@@ -127,7 +135,7 @@ def haftalik_rapor(user_id: int, bitis: date | None = None, gun_sayisi: int = 7,
         "ertelenen_sayisi": len(ertelenen),
         "saat_dilimi_verimi": saat_dilimi_verimi,
         "en_cok_ertelenenler": en_cok_ertelenenler,
-        "analiz_metni": _analiz_metni_uret(saat_dilimi_verimi),
+        "analiz_metni": analiz_uret(saat_dilimi_verimi),
         "erteleme_onerileri": planning_service.erteleme_onerilerini_uret(ertelenen, profil),
     }
 

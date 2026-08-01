@@ -1,8 +1,8 @@
-"""Gün sonu değerlendirmesi — kural tabanlı yorum (OpenAI'sız).
+"""Gün sonu değerlendirmesi — kural tabanlı yorum varsayılan.
 
-`_varsayilan_yorum_uret` de `planning_service.gerekce_uret` ve
-`report_service._analiz_metni_uret` ile aynı felsefeyle değiştirilebilir bir
-seam: ileride gerçek bir OpenAI çağrısıyla değiştirilebilir.
+`_varsayilan_yorum_uret`, `yorum_uret` parametresiyle değiştirilebilir bir seam:
+`ui/app.py` bunun yerine `core.services.ai_advisor.yorum_uret`'i geçirerek gerçek
+bir Gemini çağrısına düşürür (bkz. ai_advisor.py).
 """
 
 from datetime import date

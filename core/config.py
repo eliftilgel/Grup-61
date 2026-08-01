@@ -17,9 +17,9 @@ class Settings(BaseSettings):
     google_token_file: Path = BASE_DIR / "token.json"
     google_calendar_scopes: list[str] = ["https://www.googleapis.com/auth/calendar.events"]
 
-    # İleride ai_advisor.py tarafından kullanılacak (Faz 3)
-    openai_api_key: str | None = None
-    openai_model: str = "gpt-4o-mini"
+    # ai_advisor.py: Gemini API anahtarı — boşsa AI zenginleştirme sessizce devre dışı kalır.
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-2.5-flash"
 
 
 settings = Settings()

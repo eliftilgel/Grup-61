@@ -377,7 +377,7 @@ Yukarıdaki bölümler Sprint 1'in ürün vizyonu ve proje yönetimi çıktılar
 
 - Hesap oluşturma/giriş, görev oluşturma/düzenleme/tamamlama/silme (öncelik: Kritik/Orta/Düşük, süre, son tarih).
 - Google Takvim ile senkronizasyon: yerelde oluşturulan etkinlikler Google Takvim'e yazılır ve yerel bir kopya (`calendar_events`) tutulur (Google hesabı şu an tüm kullanıcılar arasında paylaşılan tek hesap — bkz. Kapsam Dışı).
-- Kural tabanlı (kural motoruyla, henüz gerçek bir LLM çağrısı olmadan) günlük plan üretimi: görevleri önceliğe göre kullanıcının "en verimli olduğu saatler"ine, uygun olmayan saatleri (ders, uyku vb.) hariç tutarak yerleştirir ve her yerleştirme için Türkçe bir gerekçe metni üretir.
+- Kural tabanlı bir motorla üretilen günlük plan: görevleri önceliğe göre kullanıcının "en verimli olduğu saatler"ine, uygun olmayan saatleri (ders, uyku vb.) hariç tutarak yerleştirir ve her yerleştirme için Türkçe bir gerekçe metni üretir. `GEMINI_API_KEY` tanımlıysa her yerleştirme için gerekçe metni, haftalık rapor analizi ve gün sonu yorumu gerçek bir LLM (Gemini) ile zenginleştirilir, anahtar yoksa otomatik olarak kural tabanlı metne düşer.
 - Haftalık verimlilik/erteleme raporu: tamamlanan/ertelenen görev oranları, saat dilimine göre verimlilik yüzdeleri, en çok ertelenen görevler.
 - Aşırı yüklenme uyarısı (günün müsait zamanı aşılırsa) ve geçmişten kalan görevleri seçili güne taşıma.
 - Admin paneli: tüm kullanıcıları listeleme, bir kullanıcının görev/etkinlik/plan kayıtlarını görüntüleme, admin yetkisi verme/alma, parola sıfırlama, hesap silme.
@@ -390,7 +390,7 @@ Yukarıdaki bölümler Sprint 1'in ürün vizyonu ve proje yönetimi çıktılar
 | API | `api/main.py`, `api/schemas.py` | FastAPI — şu an yalnızca görev (task) CRUD endpoint'leri. |
 | Servisler | `core/services/` | İş mantığı; arayüzden bağımsız, doğrudan test edilebilir. |
 | Veri | `core/models.py`, `core/database.py` | SQLAlchemy 2.0 ORM, SQLite. |
-| Config | `core/config.py` | `pydantic-settings` ile `.env` tabanlı merkezi ayarlar (DB yolu, Google OAuth dosya yolları/scope'ları). |
+| Config | `core/config.py` | `pydantic-settings` ile `.env` tabanlı merkezi ayarlar (DB yolu, Google OAuth dosya yolları/scope'ları, `GEMINI_API_KEY`/`GEMINI_MODEL`). |
 | Migration | `migrations/` (Alembic) | Şema versiyonlama. |
 | Test | `tests/` | pytest — servis katmanı birim testleri. |
 
@@ -403,6 +403,7 @@ UI ve API, `core/` üzerinde çalışan iki bağımsız, simetrik istemci olarak
 - **ORM / Veritabanı:** SQLAlchemy 2.0 (typed `Mapped`/`mapped_column`), SQLite
 - **Migration:** Alembic
 - **Takvim entegrasyonu:** `google-api-python-client`, `google-auth-oauthlib` (OAuth 2.0 installed-app akışı)
+- **AI:** `google-genai` (Gemini API) — anahtar yoksa kural tabanlı metne düşer
 - **Config:** `pydantic-settings` (`.env` dosyasından okunur)
 - **Test:** pytest
 
@@ -433,6 +434,7 @@ Kullanıcı silinince (`ondelete="CASCADE"` + SQLite `PRAGMA foreign_keys=ON`) t
 - `profil_service.py` — kullanıcı ayar profilinin okunması/kaydedilmesi.
 - `planning_service.py` — kural tabanlı günlük plan üretimi, kapasite kontrolü, kullanıcının plan geçmişi.
 - `report_service.py` — haftalık verimlilik/erteleme istatistiklerinin hesaplanması.
+- `ai_advisor.py` — Gemini tabanlı gerçek AI zenginleştirme (gerekçe/analiz metni/yorum); her çağrı başarısız olursa ilgili kural tabanlı fonksiyona sessizce düşer.
 - `export_service.py` — kullanıcının tüm verisini JSON'a döker.
 
 ## Kurulum ve Çalıştırma
@@ -453,7 +455,7 @@ Google Takvim senkronu için proje köküne bir Google Cloud OAuth `credentials.
 
 ## Şu An Kapsamda Olmayanlar
 
-- Gerçek bir OpenAI/LLM entegrasyonu yok — plan ve rapor metinleri kural tabanlı şablonlarla üretiliyor (mimari, ileride bu metinleri üreten fonksiyonun bir LLM çağrısıyla değiştirilebilmesine göre tasarlandı).
+- LLM entegrasyonu (Gemini) opsiyonel ve tek paylaşılan bir `GEMINI_API_KEY`'e bağlı — kullanıcı başına ayrı anahtar/kota yok; anahtar tanımsızsa plan/rapor metinleri kural tabanlı şablonlarla üretilir.
 - Google Calendar OAuth kullanıcı başına değil — tüm kullanıcılar tek paylaşılan Google hesabına yazar/okur.
 - API katmanının auth'u yok — endpoint'ler zorunlu bir `user_id` parametresi alır ama kimin o id'yi kullanmaya yetkili olduğunu doğrulamaz; ayrıca takvim ve plan/rapor endpoint'leri yok.
 
