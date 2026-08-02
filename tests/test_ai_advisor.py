@@ -254,3 +254,37 @@ def test_erteleme_onerisi_basarili_yanitta_degisir(monkeypatch):
     monkeypatch.setattr(ai_advisor, "_client", lambda: sahte_client)
 
     assert ai_advisor.erteleme_onerisi_uret(_ertelenen_gorev(), VARSAYILAN_PROFIL) == "Gemini'den gelen erteleme önerisi."
+
+
+# --- yogunlasma_tavsiyesi_uret -------------------------------------------------------------------
+
+
+def _ornek_bosluk():
+    return {"baslangic": "13:00", "bitis": "18:00", "sure_dakika": 300}
+
+
+def test_yogunlasma_anahtar_yoksa_kural_tabanli(test_db, test_user_id, monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", None)
+    kayit = _plan_kur(test_user_id)
+    metin = ai_advisor.yogunlasma_tavsiyesi_uret(_ornek_bosluk(), kayit)
+    assert "13:00-18:00" in metin
+
+
+def test_yogunlasma_gemini_hata_verirse_kural_tabanli(test_db, test_user_id, monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", "sahte-anahtar")
+    monkeypatch.setattr(ai_advisor, "_client", _patlayan_client)
+    kayit = _plan_kur(test_user_id)
+    metin = ai_advisor.yogunlasma_tavsiyesi_uret(_ornek_bosluk(), kayit)
+    assert "Dengeli Dağıtım" in metin
+
+
+def test_yogunlasma_basarili_yanitta_degisir(test_db, test_user_id, monkeypatch):
+    monkeypatch.setattr(ai_advisor.settings, "gemini_api_key", "sahte-anahtar")
+    kayit = _plan_kur(test_user_id)
+    sahte_yanit = MagicMock()
+    sahte_yanit.text = "Gemini'den gelen yoğunlaşma tavsiyesi."
+    sahte_client = MagicMock()
+    sahte_client.models.generate_content.return_value = sahte_yanit
+    monkeypatch.setattr(ai_advisor, "_client", lambda: sahte_client)
+
+    assert ai_advisor.yogunlasma_tavsiyesi_uret(_ornek_bosluk(), kayit) == "Gemini'den gelen yoğunlaşma tavsiyesi."

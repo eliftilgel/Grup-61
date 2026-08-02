@@ -8,6 +8,7 @@
 - Haftalık verimlilik/erteleme raporu, en verimli saat dilimine göre profil güncelleme önerisi, aşırı yüklenme uyarısı, geçmişten kalan görevleri seçili güne taşıma.
 - Rutinler (tekrarlayan görevler) ve haftalık tekrar eden sabit/serbest zaman blokları.
 - Görev Havuzu: son tarihi olmayan görevler havuzda bekler; plan oluşturulurken boş kalan kapasiteye havuzdan uygun görevler otomatik doldurulur, yerleşince `due_date` o güne güncellenip görev havuzdan çıkar.
+- Yoğunlaşma tespiti: plan oluşturulduğunda, görevler arasında (uyku/uygun olmayan bloklar hariç) 3 saati aşan sürekli bir boşluk varsa (`planning_service.bosluk_analizi_yap`) Plan Oluştur sekmesinde bir uyarı + Gemini tavsiyesi + tek tıkla uygulanabilir "Dengeli Dağıtım" alternatifi gösterilir.
 - Gün Sonu AI Değerlendirmesi: günün planına göre kaç görev tamamlandı/tamamlanmadı hesaplanıp bir yorum üretilir (AI Planı sekmesinde sadece bugün/geçmiş günler için gösterilir) — `GEMINI_API_KEY` tanımlıysa Gemini, değilse kural tabanlı.
 - Veri dışa aktarma (kullanıcı başına tek JSON dosyası), dosya tabanlı loglama.
 - Plan gerekçeleri, haftalık rapor analiz metni ve gün sonu yorumu artık Gemini (`google-genai`) ile zenginleştiriliyor — `GEMINI_API_KEY` tanımlı değilse otomatik olarak kural tabanlı metne düşer (bkz. `core/services/ai_advisor.py`).
@@ -30,7 +31,7 @@
   - `planning_service.py` — kural tabanlı plan üretimi + kapasite kontrolü + alternatif plan stratejileri + görev havuzundan (son tarihi olmayan görevlerden) boş kapasiteyi doldurma; `ai_sira`/`tavsiye_uret`/`erteleme_onerilerini_uret`'in `oneri_uret`'i — hepsi opsiyonel, varsayılanı %100 kural tabanlı
   - `degerlendirme_service.py` — gün sonu değerlendirmesi: günün planına göre tamamlanma oranı + kural tabanlı yorum
   - `report_service.py` — haftalık rapor hesaplamaları + verimli saat önerisi
-  - `ai_advisor.py` — Gemini tabanlı gerçek AI zenginleştirme (gerekçe/analiz metni/yorum/genel tavsiye/erteleme önerisi) + esnek görev sıralaması (`siralama_onerisi_uret`); her çağrı başarısız olursa ilgili kural tabanlı fonksiyona sessizce düşer
+  - `ai_advisor.py` — Gemini tabanlı gerçek AI zenginleştirme (gerekçe/analiz metni/yorum/genel tavsiye/erteleme önerisi/yoğunlaşma tavsiyesi) + esnek görev sıralaması (`siralama_onerisi_uret`); her çağrı başarısız olursa ilgili kural tabanlı fonksiyona sessizce düşer
   - `export_service.py` — kullanıcının verisini JSON'a döker
 - `api/` — FastAPI, sadece görev CRUD (`api/main.py`, `api/schemas.py`).
 - `ui/app.py` — Streamlit, tek dosya, sekmeler: Profil / Plan Oluştur / AI Planı / Rapor / (admin kullanıcılar için) Admin. **API'yi çağırmaz**, `core/services/*`'ı doğrudan kullanır — bilinçli mimari karar: UI ve API, `core/` üzerinde çalışan iki bağımsız simetrik adaptör. `ui/`'a özel kurallar için bkz. `ui/CLAUDE.md`.

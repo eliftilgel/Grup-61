@@ -16,6 +16,7 @@ from core.database import SessionLocal
 from core.models import PlanKaydi, Task
 from core.services.degerlendirme_service import _varsayilan_yorum_uret
 from core.services.planning_service import _genel_tavsiye_uret as _varsayilan_genel_tavsiye_uret
+from core.services.planning_service import _varsayilan_yogunlasma_tavsiyesi_uret
 from core.services.planning_service import erteleme_onerisi_uret as _varsayilan_erteleme_onerisi_uret
 from core.services.report_service import _analiz_metni_uret
 
@@ -311,3 +312,31 @@ def erteleme_onerisi_uret(task: Task, profil=None) -> str:
     except Exception:
         logger.exception("Gemini ile erteleme önerisi üretimi başarısız oldu — kural tabanlı öneriye dönülüyor.")
         return _varsayilan_erteleme_onerisi_uret(task, profil)
+
+
+def yogunlasma_tavsiyesi_uret(bosluk: dict, kayit: PlanKaydi) -> str:
+    """planning_service._varsayilan_yogunlasma_tavsiyesi_uret ile aynı fallback'e
+    düşer — yalnızca planning_service.bosluk_analizi_yap None döndürmediğinde
+    çağrılır."""
+    if not etkin():
+        return _varsayilan_yogunlasma_tavsiyesi_uret(bosluk)
+    try:
+        gorev_ozeti = ", ".join(f"{d['start']}-{d['end']} {d['title']}" for d in kayit.dilimler)
+        prompt = (
+            "Sen deneyimli bir üretkenlik koçusun. Kullanıcının bugünkü planında "
+            f"{bosluk['baslangic']}-{bosluk['bitis']} arasında ({bosluk['sure_dakika']} "
+            "dakika) büyük, boş bir zaman dilimi var; görevler günün geri kalanında "
+            f"yoğunlaşmış. Planlanan görevler: {gorev_ozeti}.\n\n"
+            "Buna dayanarak 2-3 cümlelik, yapıcı bir Türkçe tavsiye yaz: bu boşluğun "
+            "neden oluşmuş olabileceğini kısaca değerlendir ve kullanıcıya iki somut "
+            "seçenek sun — (1) bu boşluğa uygun küçük bir görev eklemek ya da (2) "
+            "'Dengeli Dağıtım' stratejisini deneyerek görevleri güne daha eşit yaymak. "
+            "Klişe cümlelerden kaçın, sadece düz metin döndür."
+        )
+        client = _client()
+        yanit = client.models.generate_content(model=settings.gemini_model, contents=prompt)
+        metin = (yanit.text or "").strip()
+        return metin or _varsayilan_yogunlasma_tavsiyesi_uret(bosluk)
+    except Exception:
+        logger.exception("Gemini ile yoğunlaşma tavsiyesi üretimi başarısız oldu — kural tabanlı tavsiyeye dönülüyor.")
+        return _varsayilan_yogunlasma_tavsiyesi_uret(bosluk)

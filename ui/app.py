@@ -979,6 +979,11 @@ with tab_plan:
                 st.session_state["alternatif_planlar"] = None
                 st.success("Plan oluşturuldu! 'AI Planı' sekmesinden görüntüleyebilirsin.")
 
+                bosluk = planning_service.bosluk_analizi_yap(kayit, profil, st.session_state["uygun_olmayan_bloklar"])
+                st.session_state["yogunlasma_bilgisi"] = (
+                    {"tavsiye": ai_advisor.yogunlasma_tavsiyesi_uret(bosluk, kayit)} if bosluk else None
+                )
+
         if pcol2.button("🔀 Alternatif Planları Karşılaştır", width="stretch"):
             if not aktif_gorevler:
                 st.warning("Plan oluşturmak için en az bir görev ekleyin.")
@@ -1005,6 +1010,7 @@ with tab_plan:
                     st.markdown(
                         f"<div class='fd-info-card'>"
                         f"<strong>{planning_service.STRATEJI_ETIKETLERI[strateji]}</strong><br>"
+                        f"<span style='color:#898781; font-size:0.85rem;'>{planning_service.STRATEJI_ACIKLAMALARI[strateji]}</span><br>"
                         f"<span style='color:#898781;'>Toplam İş: {hesap['toplam_is_dakika']} dk</span><br>"
                         f"<span style='color:#898781;'>Boş Zaman: {hesap['bos_zaman_dakika']} dk</span><br>"
                         f"<span style='color:#898781;'>Yerleşemeyen: {hesap['yerlesemeyen']} görev</span><br>"
@@ -1032,7 +1038,46 @@ with tab_plan:
                                     ai_advisor.gerekceleri_zenginlestir(kayit.id, profil)
                         st.session_state["alternatif_planlar"] = None
                         st.success("Plan kaydedildi! 'AI Planı' sekmesinden görüntüleyebilirsin.")
+
+                        bosluk = planning_service.bosluk_analizi_yap(kayit, profil, st.session_state["uygun_olmayan_bloklar"])
+                        st.session_state["yogunlasma_bilgisi"] = (
+                            {"tavsiye": ai_advisor.yogunlasma_tavsiyesi_uret(bosluk, kayit)} if bosluk else None
+                        )
                         st.rerun()
+
+        yogunlasma = st.session_state.get("yogunlasma_bilgisi")
+        if yogunlasma:
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown(
+                f"<div class='fd-oneri-kutu'>⚠️ <strong>Yoğunlaşma Tespit Edildi</strong><br>{yogunlasma['tavsiye']}</div>",
+                unsafe_allow_html=True,
+            )
+            dengeli_hesap = planning_service.alternatif_planlari_uret(
+                gorevler_plan_icin, st.session_state["uygun_olmayan_bloklar"], profil,
+                enerji_seviyesi=enerji_service.get_enerji_seviyesi(current_user_id, secili_gun),
+            )["dengeli_dagitim"]
+            st.markdown(
+                f"<div class='fd-info-card'>"
+                f"<strong>{planning_service.STRATEJI_ETIKETLERI['dengeli_dagitim']} — Daha Dengeli Alternatif</strong><br>"
+                f"<span style='color:#898781;'>{planning_service.STRATEJI_ACIKLAMALARI['dengeli_dagitim']}</span><br>"
+                f"<span style='color:#898781;'>Toplam İş: {dengeli_hesap['toplam_is_dakika']} dk · "
+                f"Boş Zaman: {dengeli_hesap['bos_zaman_dakika']} dk</span></div>",
+                unsafe_allow_html=True,
+            )
+            if st.button("🔄 Dengeli Dağıtım'ı Kullan", key="yogunlasma_dengeli_uygula"):
+                enerji_seviyesi = enerji_service.get_enerji_seviyesi(current_user_id, secili_gun)
+                with st.spinner("Plan kaydediliyor..."):
+                    yeni_kayit = planning_service.plan_olustur(
+                        current_user_id, secili_gun, gorevler_plan_icin,
+                        st.session_state["uygun_olmayan_bloklar"], profil,
+                        enerji_seviyesi=enerji_seviyesi, strateji="dengeli_dagitim",
+                        tavsiye_uret=ai_advisor.genel_tavsiye_uret,
+                    )
+                    if ai_advisor.etkin():
+                        ai_advisor.gerekceleri_zenginlestir(yeni_kayit.id, profil)
+                st.session_state["yogunlasma_bilgisi"] = None
+                st.success("Dengeli Dağıtım planı kaydedildi! 'AI Planı' sekmesinden görüntüleyebilirsin.")
+                st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1084,6 +1129,7 @@ with tab_ai:
             f"{enerji_rozeti}{strateji_rozeti}</div>",
             unsafe_allow_html=True,
         )
+        st.caption(planning_service.STRATEJI_ACIKLAMALARI[kayit.strateji or "oncelik_agirlikli"])
         if yerlesemeyen_sayisi:
             st.warning(f"⚠️ {yerlesemeyen_sayisi} görev bu plana sığmadı — gün dolu.")
 

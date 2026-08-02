@@ -39,6 +39,7 @@ OGLEDEN_SONRA_BITIS = time(18, 0)
 
 ERTELEME_ONERI_ESIGI = 3
 BUYUK_GOREV_ESIGI_DK = 90
+YOGUNLASMA_ESIK_DK = 180  # bu süreyi aşan tek bir sürekli boşluk "yoğunlaşma" sayılır
 
 
 def _dk(t: time) -> int:
@@ -133,6 +134,11 @@ STRATEJI_ETIKETLERI = {
     "sabah_yogun": "🌅 Sabah Yoğun",
     "dengeli_dagitim": "🔄 Dengeli Dağıtım",
 }
+STRATEJI_ACIKLAMALARI = {
+    "oncelik_agirlikli": "Görevleri önem sırasına göre yerleştirir: kritik işler en verimli saatlerine, orta öncelikliler öğleden sonraya, düşük öncelikliler günün sonuna gider.",
+    "sabah_yogun": "Görevleri mümkün olduğunca en verimli saat aralığına sığdırır; uzun görevler önce yerleşir.",
+    "dengeli_dagitim": "Önceliğe bakmaksızın görevleri günün tamamına yayar — tek bir bölgede yoğunlaşma yerine daha dengeli bir dağılım hedefler.",
+}
 
 
 def _tercih_penceresi(oncelik: int, profil, strateji: str = "oncelik_agirlikli") -> tuple[int, int]:
@@ -210,6 +216,51 @@ def kapasite_kontrolu(gorevler: list[Task], uygun_olmayan_bloklar: list[dict], p
         "musait_dakika": musait_dakika,
         "asiri_yuklenme": fark_dakika > 0,
         "fark_dakika": max(fark_dakika, 0),
+    }
+
+
+def _saat_str_to_dk(s: str) -> int:
+    saat, dakika = s.split(":")
+    return int(saat) * 60 + int(dakika)
+
+
+def _varsayilan_yogunlasma_tavsiyesi_uret(bosluk: dict) -> str:
+    saat, dakika = divmod(bosluk["sure_dakika"], 60)
+    return (
+        f"Planında {bosluk['baslangic']}-{bosluk['bitis']} arası {saat} saat {dakika} "
+        "dakikalık büyük bir boşluk var. Bu bölgeye uygun bir görev eklemeyi veya "
+        "görevleri güne daha eşit yaymak için 'Dengeli Dağıtım' stratejisini "
+        "denemeyi düşünebilirsin."
+    )
+
+
+def bosluk_analizi_yap(
+    kayit: PlanKaydi, profil, uygun_olmayan_bloklar: list[dict] | None = None,
+) -> dict | None:
+    """Kaydedilmiş bir plandaki görevler arasında (uyku ve uygun olmayan bloklar
+    hariç) en büyük sürekli boşluğu bulur. En az 2 görev yoksa (tek görevde
+    "yoğunlaşma" kavramı anlamsız) veya en büyük boşluk eşik altındaysa None döner.
+
+    `uygun_olmayan_bloklar` verilmezse yalnızca uyku hariç tutulur — bu durumda
+    gerçek bir kısıt (ders/randevu) yüzünden oluşan boşluklar yanlışlıkla
+    "yoğunlaşma" sayılabilir, bu yüzden mümkünse çağıran tarafından geçirilmeli
+    (bkz. ui/app.py'nin "Plan Oluştur" sekmesindeki kullanımı).
+    """
+    if len(kayit.dilimler) < 2:
+        return None
+    bos = _bos_araliklar(profil, uygun_olmayan_bloklar or [])
+    for d in kayit.dilimler:
+        bos = _araligi_cikar(bos, (_saat_str_to_dk(d["start"]), _saat_str_to_dk(d["end"])))
+    if not bos:
+        return None
+    en_buyuk = max(bos, key=lambda ab: ab[1] - ab[0])
+    sure = en_buyuk[1] - en_buyuk[0]
+    if sure < YOGUNLASMA_ESIK_DK:
+        return None
+    return {
+        "baslangic": _saat_str(en_buyuk[0]),
+        "bitis": _saat_str(en_buyuk[1]),
+        "sure_dakika": sure,
     }
 
 

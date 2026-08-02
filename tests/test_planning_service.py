@@ -5,6 +5,7 @@ from datetime import date, datetime, time
 from core.models import Profil, Task
 from core.services.planning_service import (
     alternatif_planlari_uret,
+    bosluk_analizi_yap,
     erteleme_onerilerini_uret,
     erteleme_onerisi_uret,
     kapasite_kontrolu,
@@ -566,3 +567,61 @@ def test_oneri_uret_enjekte_edilirse_kullanilir(test_db, test_user_id):
     sonuc = erteleme_onerilerini_uret([gorev], VARSAYILAN_PROFIL, oneri_uret=lambda t, p: "sahte öneri")
 
     assert sonuc == ["sahte öneri"]
+
+
+# --- bosluk_analizi_yap (yoğunlaşma tespiti) ------------------------------------------------
+
+
+def test_bosluk_analizi_buyuk_bosluk_tespit_eder(test_db, test_user_id):
+    """ayse_yilmaz senaryosuyla aynı desen: tek bir kritik (sabah) ve birkaç düşük
+    (akşam) öncelikli görev var, ORTA öncelikli hiçbir görev yok — 13:00-18:00
+    penceresi tamamen boş kalır ve büyük bir boşluk olarak tespit edilmeli."""
+    gun = date(2026, 7, 6)
+    kritik = create_task(test_user_id, "Kritik iş", priority=3, duration_minutes=60, due_date=gun)
+    dusuk = create_task(test_user_id, "Düşük iş", priority=1, duration_minutes=60, due_date=gun)
+
+    kayit = plan_olustur(test_user_id, gun, [kritik, dusuk], [], VARSAYILAN_PROFIL)
+
+    bosluk = bosluk_analizi_yap(kayit, VARSAYILAN_PROFIL)
+
+    assert bosluk is not None
+    assert bosluk["sure_dakika"] >= 180
+
+
+def test_bosluk_analizi_gun_yogun_doluysa_none_doner(test_db, test_user_id):
+    """Gün, aralarında büyük boşluk bırakmayacak şekilde (rutin/sabit saatli
+    görevlerle) sık aralıklarla dolduysa None dönmeli."""
+    gun = date(2026, 7, 6)
+    for saat in (7, 9, 11, 13, 15, 17, 19, 21):
+        _sabit_saatli_gorev_ekle(test_db, test_user_id, gun, time(saat, 0), duration_minutes=30)
+
+    kayit = plan_olustur(test_user_id, gun, [], [], VARSAYILAN_PROFIL)
+
+    assert bosluk_analizi_yap(kayit, VARSAYILAN_PROFIL) is None
+
+
+def test_bosluk_analizi_tek_gorevde_none_doner(test_db, test_user_id):
+    gun = date(2026, 7, 6)
+    tek_gorev = create_task(test_user_id, "Tek görev", priority=3, duration_minutes=30, due_date=gun)
+
+    kayit = plan_olustur(test_user_id, gun, [tek_gorev], [], VARSAYILAN_PROFIL)
+
+    assert bosluk_analizi_yap(kayit, VARSAYILAN_PROFIL) is None
+
+
+def test_bosluk_analizi_uygun_olmayan_blogu_yanlislikla_yogunlasma_saymaz(test_db, test_user_id):
+    """08:00-20:00 arası gerçek bir kısıtla (ör. ders) meşgulse, bu bir 'yoğunlaşma'
+    değildir — bloklar doğru geçirildiğinde false positive olmamalı. Bloklar
+    geçirilmediğinde (eski/varsayılan davranış) aynı boşluk yanlışlıkla
+    yoğunlaşma sayılabilir; iki çağrı karşılaştırılarak bu risk somutlaştırılıyor."""
+    gun = date(2026, 7, 6)
+    kritik = create_task(test_user_id, "Sabah işi", priority=3, duration_minutes=60, due_date=gun)
+    dusuk = create_task(test_user_id, "Akşam işi", priority=1, duration_minutes=60, due_date=gun)
+    ders_blogu = [{"start": time(8, 0), "end": time(20, 0), "label": "Ders"}]
+
+    kayit = plan_olustur(test_user_id, gun, [kritik, dusuk], ders_blogu, VARSAYILAN_PROFIL)
+
+    # Blok doğru geçirildiğinde: kalan gerçek boşluk eşik altında, false positive yok.
+    assert bosluk_analizi_yap(kayit, VARSAYILAN_PROFIL, ders_blogu) is None
+    # Blok geçirilmezse: 08:00-20:00 (ders zamanı) yanlışlıkla boşluk sayılır.
+    assert bosluk_analizi_yap(kayit, VARSAYILAN_PROFIL) is not None
